@@ -199,6 +199,61 @@ const CompanyModel = {
     }
   },
 
+  userWiseCompanyQuestions: async (company_name, skills, user_id) => {
+    try {
+      const queryParams = [];
+      let query = `SELECT
+                        cq.id,
+                        cq.company_name,
+                        cq.company_logo,
+                        cq.skills,
+                        cq.is_active,
+                        cq.created_date,
+                        CASE WHEN cf.user_id = ? THEN 1 ELSE 0 END AS is_favourite
+                    FROM company_questions AS cq
+                    LEFT JOIN company_favorites AS cf ON
+                    	cq.id = cf.company_id
+                    WHERE 1 = 1`;
+      queryParams.push(user_id);
+      if (company_name) {
+        query += ` AND company_name LIKE '%${company_name}%'`;
+      }
+      if (skills) {
+        query += ` AND skills LIKE '%${skills}%'`;
+      }
+      query += ` ORDER BY created_date DESC`;
+      const [result] = await pool.query(query, queryParams);
+
+      const ids = [...new Set(result.map((item) => item.id))];
+
+      let attachmentsMap = new Map();
+      if (ids.length > 0) {
+        const [attachments] = await pool.query(
+          `SELECT id, company_id, content_type, title, file_name, original_name, size, mime_type, file_path, created_date FROM company_attachments WHERE company_id IN (?)`,
+          [ids],
+        );
+        attachments.forEach((attachment) => {
+          if (!attachmentsMap.has(attachment.company_id)) {
+            attachmentsMap.set(attachment.company_id, []);
+          }
+          attachmentsMap.get(attachment.company_id).push(attachment);
+        });
+      }
+
+      const combinedResult = result.map((item) => {
+        const itemAttachments = attachmentsMap.get(item.id) || [];
+        return {
+          ...item,
+          skills: JSON.parse(item.skills),
+          attachments: itemAttachments,
+        };
+      });
+      return combinedResult;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  },
+
   deleteCompanyQuestion: async (company_id) => {
     try {
       let affectedRows = 0;

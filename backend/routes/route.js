@@ -157,4 +157,10 @@ router.post("/addStream", verifyToken, JobController.addStreams);
 router.get("/getStreams", verifyToken, JobController.getStreams);
 router.delete("/deleteStream", verifyToken, JobController.deleteStream);
 
+router.post(
+  "/userWiseCompanyQuestions",
+  verifyToken,
+  CompanyController.userWiseCompanyQuestions,
+);
+
 module.exports = router;
