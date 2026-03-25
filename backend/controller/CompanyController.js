@@ -70,6 +70,22 @@ const getCompanyQuestions = async (req, res) => {
   }
 };
 
+const userWiseCompanyQuestions = async (req, res) => {
+  try {
+    const { company_name, skills, user_id } = req.query;
+    const result = await CompanyModel.userWiseCompanyQuestions(
+      company_name,
+      skills,
+      user_id,
+    );
+    return res
+      .status(200)
+      .json({ message: "Company questions fetched successfully", result });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 const deleteCompanyQuestion = async (req, res) => {
   try {
     const { company_id } = req.query;
@@ -216,4 +232,5 @@ module.exports = {
   addSkill,
   getSkill,
   deleteSkill,
+  userWiseCompanyQuestions,
 };
