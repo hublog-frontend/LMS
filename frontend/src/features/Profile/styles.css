@@ -1,0 +1,244 @@
+.profile_leftcontainer {
+  position: relative;
+  width: 100%;
+  height: 450px;
+  border: 1px solid #eaecf0;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px 0 var(--box-shadow-color-1);
+  box-shadow: 0 1px 3px 0 #1018281a;
+}
+.profile_left_header_container {
+  height: 180px;
+}
+.profile_cover_image {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+}
+.profile_avatar_container {
+  width: 100%;
+  position: absolute;
+  top: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.profilepage_avatar {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  border: 4px solid #ffffff;
+  box-shadow: 0 4px 6px -2px #10182808 0 12px 16px -4px #10182814;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #98a2b3;
+}
+.profilepage_avatar_name_first_letter {
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+  line-height: 28px;
+  text-align: left;
+  font-size: 2rem;
+}
+
+.profilepage_name_text {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 24px;
+  color: #101828;
+  margin-top: 2px !important;
+}
+
+.profilepage_studenttag {
+  color: #531dab;
+  background: #f9f0ff;
+  border-color: #d3adf7;
+  border-radius: 16px;
+  padding: 3px 8px;
+  font-size: 13px;
+  border: 1px solid #541dab3f;
+  margin-top: 4px;
+}
+
+.profilepage_progress_container {
+  width: 90%;
+  min-height: 84px;
+  gap: 10px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin-top: 150px;
+}
+.profilepage_progress_sub_container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.profilepage_progress_text {
+  color: gray;
+  font-size: 13px;
+  margin-top: 8px !important;
+}
+.profilepage_right_container {
+  width: 100%;
+  min-height: 808px;
+  padding: 20px;
+  border: 1px solid #eaecf0;
+  border-radius: 8px;
+  background-color: #fff;
+}
+.profilepage_profilesetting_heading {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 28px;
+  color: #101828;
+  margin-bottom: 16px;
+}
+.profilepage_tabs.ant-tabs .ant-tabs-tab + .ant-tabs-tab {
+  color: gray !important;
+}
+.profilepage_tabs.ant-tabs .ant-tabs-tab {
+  color: gray !important;
+}
+.profilepage_personalinfo_main_container {
+  border: 1px solid #eaecf0;
+  border-radius: 8px;
+  padding: 24px;
+}
+.profilepage_personalinfo_profileupload_container {
+  display: flex;
+  gap: 20px;
+}
+.profilepage_personalinfo_profileimage_container {
+  background-color: rgba(128, 128, 128, 0.233);
+  padding: 12px;
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #333333c4;
+}
+.profilepage_personalinfo_dragger.ant-upload-wrapper .ant-upload-drag {
+  background-color: transparent !important;
+}
+.profilepage_personalinfo_dragger.ant-upload-wrapper .ant-upload-drag:hover {
+  border-color: #2160ad !important;
+}
+.profilepage_personalinfo_dragger_icon_container {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(128, 128, 128, 0.233);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #333333c4;
+}
+.profilepage_personalinfo_dragger .ant-upload-text {
+  color: #2160ad !important;
+  font-size: 14px !important;
+  font-weight: 500;
+}
+.profilepage_personalinfo_dragger .ant-upload-hint {
+  font-weight: 500 !important;
+  font-size: 12px !important;
+}
+.profilepage_resume_label {
+  font-weight: 350 !important;
+  margin-bottom: 6px !important;
+}
+.profilepage_resumeupload_button {
+  padding: 21px 20px;
+  font-weight: 350 !important;
+}
+.profilepage_resumeupload_button:hover {
+  border-color: #2160ad !important;
+  color: #2160ad !important;
+}
+.profilepages_personalinfo_button_container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.profilepage_experience_startandenddate_heading {
+  font-weight: 500;
+  font-size: 16px;
+  color: #101828;
+  margin-bottom: 12px !important;
+}
+.profilepage_resume_zoom_buttons:hover {
+  color: #2160ad !important;
+  border-color: #2160ad !important;
+}
+/* experience styles */
+.profilepage_experience_card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.profilepage_experience_card_name_container {
+  display: flex;
+  gap: 8px;
+  max-width: 90%;
+}
+.profilepage_experience_card_image_container {
+  height: 100%;
+  min-width: 72px;
+  max-width: 10%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.profilepage_experience_card_image {
+  width: 48px;
+  height: 48px;
+}
+.profilepage_experience_details_div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.profilepage_experience_designation {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 30px;
+  color: #101828;
+}
+.profilepage_experience_company_name {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #101828;
+}
+.profilepage_experience_location_div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.profilepage_experience_location_details {
+  color: #667085;
+  font-size: 14px;
+}
+
+/* education styles */
+.profilepage_education_card_image_container {
+  height: 100%;
+  padding: 4px 6px 0px 6px;
+  display: flex;
+  justify-content: center;
+  background-color: #eaecf0;
+}
+.popconfirm-cancel-btn:hover {
+  color: #2160ad !important;
+  border-color: #2160ad !important;
+}

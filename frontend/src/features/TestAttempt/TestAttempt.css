@@ -1,0 +1,237 @@
+.test-attempt-container {
+  min-height: 100vh;
+  background-color: #f0f2f5;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Instructions Screen */
+.test-instructions-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #344054;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.test-instructions-card {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.test-instructions-header {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #101828;
+}
+
+.test-rule-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.test-rule-text {
+  font-size: 16px;
+  color: #475467;
+}
+
+.test-instructions-actions {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Coding Layout 3-Column */
+.test-coding-layout {
+  display: grid;
+  grid-template-columns: 350px 1fr 280px;
+  gap: 20px;
+  height: calc(100vh - 100px);
+  margin-top: 20px;
+}
+
+.test-problem-sidebar {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  overflow-y: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.test-editor-container {
+  background: white;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.test-editor-header {
+  padding: 12px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.test-editor-footer {
+  padding: 12px 20px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.test-status-sidebar {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Question Nav Grid */
+.question-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.question-nav-item {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 500;
+  border: 1px solid #d0d5dd;
+  background: #f9fafb;
+}
+
+.question-nav-item.active {
+  background: #f79009 !important;
+  color: white !important;
+  border-color: #f79009 !important;
+}
+
+.question-nav-item.answered {
+  background: #039855 !important;
+  color: white !important;
+  border-color: #039855 !important;
+}
+
+/* MCQ View Styles */
+.test-mcq-container {
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.test-mcq-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.test-mcq-header {
+  background: #003a8c;
+  color: white;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.test-mcq-body {
+  padding: 32px;
+}
+
+.test-mcq-option {
+  margin-bottom: 16px;
+  padding: 12px 20px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.test-mcq-option:hover {
+  background: #f9fafb;
+  border-color: #1890ff;
+}
+
+.test-mcq-option.selected {
+  background: #e6f7ff;
+  border-color: #1890ff;
+  font-weight: 500;
+}
+
+/* Section Header */
+.test-attempt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.test-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #101828;
+}
+
+.submit-section-btn {
+  background: #f04438 !important;
+  color: white !important;
+  border: none !important;
+  height: 44px;
+  padding: 0 24px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.sample-case-card {
+  background: #f9fafb;
+  border: 1px solid #eaecf0;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.sample-case-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #344054;
+  margin-bottom: 8px;
+}
+
+.sample-case-box {
+  background: #ffffff;
+  border: 1px solid #d0d5dd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-family: 'Courier New', Courier, monospace;
+}

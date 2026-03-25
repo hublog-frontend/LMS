@@ -1,0 +1,91 @@
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
+let isVideo;
+let isDocument;
+
+const fileFilter = (req, file, cb) => {
+  const typeCategories = {
+    video: [
+      "video/mp4",
+      "video/quicktime", // MOV
+      "video/x-msvideo", // AVI
+      "video/x-matroska", // MKV
+      "video/webm",
+    ],
+    document: [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "text/plain",
+      "text/csv",
+      "application/rtf",
+    ],
+  };
+
+  isVideo = typeCategories.video.includes(file.mimetype);
+  isDocument = typeCategories.document.includes(file.mimetype);
+
+  if (isVideo || isDocument) {
+    // Attach file type to request for later use
+    req.fileType = isVideo ? "video" : "document";
+    cb(null, true);
+  } else {
+    const allowedFormats = [
+      ...typeCategories.video.map((v) => v.split("/")[1]),
+      ...typeCategories.document.map((v) => v.split("/")[1]),
+    ].join(", ");
+
+    cb(
+      new Error(`Unsupported file type. Allowed formats: ${allowedFormats}`),
+      false,
+    );
+  }
+};
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    let uploadPath;
+    if (isVideo) {
+      uploadPath = path.join(__dirname, "../uploads/course-videos");
+    } else if (isDocument) {
+      uploadPath = path.join(__dirname, "../uploads/documents");
+    }
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    const ext = path.extname(file.originalname);
+    if (isVideo) cb(null, `video-${uniqueSuffix}${ext}`);
+    if (isDocument) cb(null, `document-${uniqueSuffix}${ext}`);
+  },
+});
+
+const uploadCourseVideo = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 10 * 1024 * 1024 * 1024, // 10gb limit
+  },
+});
+
+const uploadDocument = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5mb limit
+  },
+});
+
+module.exports = {
+  uploadCourseVideo,
+  uploadDocument,
+};

@@ -1,0 +1,185 @@
+.companyquestions_tabs .ant-tabs-tab {
+  color: #667085;
+}
+.company_questions_cards {
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 12px;
+  min-height: 174px;
+  box-shadow: 0 1px 2px 0 var(--box-shadow-color-1);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px 0 #1018281a;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+._card_header_1xrag_13 {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+._card_header_1xrag_13 ._container_1xrag_19 {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.company_questions_logo_container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.company_questions_logo {
+  width: 50px;
+  height: 50px;
+}
+
+.company_questions_company_name {
+  color: #101828;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 28px;
+  text-align: left;
+}
+
+.company_questions_card_tag_container {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.company_tag {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  text-align: left;
+  border-radius: 16px;
+  padding: 2px 8px;
+}
+
+/* Variants */
+.company_tag--java {
+  background-color: #f4f3ff;
+  color: #5925dc;
+}
+
+.company_tag--program {
+  background-color: #eff8ff;
+  color: #175cd3;
+}
+.company_tag--sql {
+  background-color: #fdf2fa;
+  color: #c11574;
+}
+.company_tag--hibernate {
+  background-color: #f4f3ff;
+  color: #5925dc;
+}
+
+.company_questions_card_getstart_button_container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #2160ad;
+  font-weight: 500;
+}
+
+/* company documents styles */
+.company_documents_main_container {
+  box-shadow: 0 1px 2px 0 #1018280d;
+  background: #ffffff;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border: 1px solid #eaecf0;
+  border-radius: 8px;
+  margin-top: 30px;
+}
+.company_documents_container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.company_documents_preparation_container {
+  background: #ffffff;
+  border: 1px solid #eaecf0;
+  border-radius: 8px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 6fr 9fr 4fr;
+  gap: 32px;
+  align-items: center;
+  min-height: 112px;
+}
+.company_documents_name_container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.company_documents_icon_container {
+  min-width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e9f4fa;
+}
+.company_documents_name {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  text-align: left;
+  color: #101828;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.company_documents_page_number {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: left;
+  color: #667085;
+}
+.company_documents_pdf_icon_container {
+  display: flex;
+  justify-content: flex-end;
+}
+.company_documents_viewpdf_button_container {
+  display: flex;
+  justify-content: flex-end;
+}
+.company_documents_viewpdf_button {
+  outline: none;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: left;
+  padding: 10px 16px;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d0d5dd;
+  box-shadow: 0 1px 2px 0 #1018280d;
+  color: #344054;
+  width: 100%;
+}
+.company_cards_icon_container {
+  position: absolute;
+  right: 32px;
+  bottom: 24px;
+  opacity: 0;
+  transform: translateX(20px); /* start hidden (right side) */
+  transition: all 0.3s ease-in-out;
+  display: flex;
+  gap: 8px;
+}
+.company_questions_cards:hover .company_cards_icon_container {
+  opacity: 1;
+  transform: translateX(0);
+}
