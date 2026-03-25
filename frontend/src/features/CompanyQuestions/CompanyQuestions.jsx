@@ -8,12 +8,24 @@ import BDILogo from "../../assets/bdi_logo.jpeg";
 import { PiHeartBold, PiHeartFill } from "react-icons/pi";
 import { IoArrowForwardOutline } from "react-icons/io5";
 import "./styles.css";
-import { getCompanyQuestions } from "../ApiService/action";
+import {
+  addCompanyQuestionToFavorite,
+  deleteCompanyQuestion,
+  getCompanyQuestions,
+  getFavoriteCompanies,
+} from "../ApiService/action";
 import { AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
 import { useSelector } from "react-redux";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
+import { CommonMessage } from "../Common/CommonMessage";
+import { useDispatch } from "react-redux";
+import {
+  storeCompanyQuestionList,
+  storeFavoriteCompanyQuestionList,
+} from "../Redux/Slice";
 
 export default function CompanyQuestions({ handleEdit }) {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const comapanyQuestionsData = useSelector(
     (state) => state.companyquestionlist,
@@ -26,20 +38,73 @@ export default function CompanyQuestions({ handleEdit }) {
   //   getCompanyQuestionsData();
   // }, []);
 
-  // const getCompanyQuestionsData = async () => {
-  //   try {
-  //     const response = await getCompanyQuestions();
-  //     console.log("get company questions response", response);
-  //     const company_questions_data = response?.data?.result || [];
-  //     setComapanyQuestionsData(company_questions_data);
-  //   } catch (error) {
-  //     setComapanyQuestionsData([]);
-  //     console.log("get company questions error", error);
-  //   }
-  // };
+  const getCompanyQuestionsData = async () => {
+    try {
+      const response = await getCompanyQuestions();
+      console.log("get company questions response", response);
+      const company_questions_data = response?.data?.result || [];
+      dispatch(storeCompanyQuestionList(company_questions_data));
+    } catch (error) {
+      dispatch(storeCompanyQuestionList([]));
+      console.log("get company questions error", error);
+    }
+  };
 
-  const handleDeleteCompanyQuestion = () => {
-    console.log("Hii");
+  const addToFavorite = async (company_id) => {
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+    console.log(converAsJson);
+
+    const payload = {
+      company_id: company_id,
+      user_id: converAsJson?.id || null,
+    };
+    try {
+      await addCompanyQuestionToFavorite(payload);
+      setTimeout(() => {
+        CommonMessage("success", `Added to favorites!`);
+        getFavoriteCompaniesData();
+      }, 300);
+    } catch (error) {
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
+    }
+  };
+
+  const getFavoriteCompaniesData = async () => {
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+    try {
+      const response = await getFavoriteCompanies(converAsJson?.id || null);
+      console.log("get favorite company questions response", response);
+      const favorites_questions_data = response?.data?.result || [];
+      dispatch(storeFavoriteCompanyQuestionList(favorites_questions_data));
+    } catch (error) {
+      dispatch(storeFavoriteCompanyQuestionList([]));
+      console.log("get await company questions error", error);
+    }
+  };
+
+  const handleDeleteCompanyQuestion = async () => {
+    try {
+      await deleteCompanyQuestion(companyId);
+      setTimeout(() => {
+        setButtonLoading(false);
+        setIsOpenDeleteModal(false);
+        getCompanyQuestionsData();
+        CommonMessage("success", `Company Deleted Successfully!`);
+      }, 300);
+    } catch (error) {
+      setButtonLoading(false);
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
+    }
   };
 
   return (
@@ -84,7 +149,14 @@ export default function CompanyQuestions({ handleEdit }) {
                       </p>
                     </div>
 
-                    <PiHeartBold size={22} color="#2160ad" />
+                    <PiHeartBold
+                      size={22}
+                      color="#2160ad"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToFavorite(item?.id || null);
+                      }}
+                    />
                   </div>
 
                   <div className="company_questions_card_tag_container">
@@ -138,19 +210,19 @@ export default function CompanyQuestions({ handleEdit }) {
             </Col>
           );
         })}
-
-        {/* delete modal */}
-        <CommonDeleteModal
-          open={isOpenDeleteModal}
-          onCancel={() => {
-            setIsOpenDeleteModal(false);
-            setCompanyId(null);
-          }}
-          content="Are you sure want to delete the Comapany?"
-          loading={buttonLoading}
-          onClick={handleDeleteCompanyQuestion}
-        />
       </Row>
+
+      {/* delete modal */}
+      <CommonDeleteModal
+        open={isOpenDeleteModal}
+        onCancel={() => {
+          setIsOpenDeleteModal(false);
+          setCompanyId(null);
+        }}
+        content="Are you sure want to delete the Comapany?"
+        loading={buttonLoading}
+        onClick={handleDeleteCompanyQuestion}
+      />
     </div>
   );
 }

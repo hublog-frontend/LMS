@@ -443,6 +443,33 @@ export const deleteCompanyQuestion = async (company_id) => {
   }
 };
 
+export const addCompanyQuestionToFavorite = async (payload) => {
+  try {
+    const response = await api.post(`/api/addToFavorite`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const removeCompanyQuestionToFavorite = async (payload) => {
+  try {
+    const response = await api.post(`/api/removeFromFavorite`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getFavoriteCompanies = async (user_id) => {
+  try {
+    const response = await api.get(`/api/getFavoriteCompanies/${user_id}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const runCode = async (payload) => {
   try {
     const response = await api.post(`/api/runCode`, payload);

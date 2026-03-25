@@ -13,7 +13,22 @@ const companyQuestionListSlice = createSlice({
   },
 });
 
+const favoriteCompanyQuestionListSlice = createSlice({
+  name: "favoritecompanyquestionlist",
+  initialState,
+  reducers: {
+    storeFavoriteCompanyQuestionList(state, action) {
+      state = action.payload;
+      return state;
+    },
+  },
+});
+
 export const { storeCompanyQuestionList } = companyQuestionListSlice.actions;
+export const { storeFavoriteCompanyQuestionList } =
+  favoriteCompanyQuestionListSlice.actions;
 
 //create reducer
 export const companyQuestionListReducer = companyQuestionListSlice.reducer;
+export const favoriteCompanyQuestionListReducer =
+  favoriteCompanyQuestionListSlice.reducer;
