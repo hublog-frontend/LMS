@@ -39,15 +39,13 @@ const deleteTopic = async (request, response) => {
 };
 
 const createTest = async (request, response) => {
-  const { test_id, topic_id, test_name, duration, total_marks, created_date } =
-    request.body;
+  const { test_id, topic_id, test_name, duration, created_date } = request.body;
   try {
     const result = await TestModel.createTest(
       test_id,
       topic_id,
       test_name,
       duration,
-      total_marks,
       created_date,
     );
 

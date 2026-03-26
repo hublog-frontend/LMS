@@ -96,7 +96,6 @@ const TestModel = {
                       t.topic_id,
                       t.test_name,
                       t.duration,
-                      t.total_marks,
                       t.created_date,
                       tp.topic_name,
                       tp.logo_image,
@@ -152,14 +151,7 @@ const TestModel = {
     }
   },
 
-  createTest: async (
-    test_id,
-    topic_id,
-    test_name,
-    duration,
-    total_marks,
-    created_date,
-  ) => {
+  createTest: async (test_id, topic_id, test_name, duration, created_date) => {
     let affectedRow = 0;
     try {
       if (!test_id) {
@@ -173,8 +165,8 @@ const TestModel = {
         }
 
         const [insertTest] = await pool.query(
-          `INSERT INTO tests(topic_id, test_name, duration, total_marks, created_date) VALUES(?, ?, ?, ?, ?)`,
-          [topic_id, test_name, duration, total_marks, created_date],
+          `INSERT INTO tests(topic_id, test_name, duration, created_date) VALUES(?, ?, ?, ?)`,
+          [topic_id, test_name, duration, created_date],
         );
 
         affectedRow += insertTest.affectedRows;
@@ -189,8 +181,8 @@ const TestModel = {
         }
 
         const [updateTest] = await pool.query(
-          `UPDATE tests SET test_name = ?, duration = ?, total_marks = ? WHERE id = ?`,
-          [test_name, duration, total_marks, test_id],
+          `UPDATE tests SET test_name = ?, duration = ? WHERE id = ?`,
+          [test_name, duration, test_id],
         );
 
         affectedRow += updateTest.affectedRows;
