@@ -256,10 +256,10 @@ const TestModel = {
 
       if (page && pageSize) {
         const offset = (page - 1) * pageSize;
-        query += ` ORDER BY th.id ASC LIMIT ? OFFSET ?`;
+        query += ` ORDER BY th.id DESC LIMIT ? OFFSET ?`;
         queryParams.push(parseInt(pageSize), parseInt(offset));
       } else {
-        query += ` ORDER BY th.id ASC`;
+        query += ` ORDER BY th.id DESC`;
       }
 
       const [[testHistory], [totalCount]] = await Promise.all([
