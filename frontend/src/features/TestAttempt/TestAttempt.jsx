@@ -125,7 +125,6 @@ const TestAttempt = () => {
   }, [showInstructions, isTerminated]);
 
   const terminateTest = (reason) => {
-    return;
     setIsTerminated(true);
     CommonMessage("warning", reason);
     handleSubmitTest(reason);
@@ -720,7 +719,6 @@ const TestAttempt = () => {
           </Button>,
         ]}
         closable={false}
-        maskClosable={false}
         centered
         title={
           <Space>

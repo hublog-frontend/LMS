@@ -21,6 +21,7 @@ import CompanyQuestionsTab from "../CompanyQuestions/CompanyQuestionsTab";
 import CompanyDocuments from "../CompanyQuestions/CompanyDocuments";
 import Bookmarks from "../Bookmarks/Bookmarks";
 import TestAttempt from "../TestAttempt/TestAttempt";
+import TestResult from "../Tests/TestResult";
 
 const { Sider, Content, Header } = Layout;
 const { useBreakpoint } = Grid;
@@ -227,7 +228,7 @@ export default function Pages() {
           style={{
             padding: isMobile ? "16px" : "24px",
             minHeight: "100vh",
-            background: "#f9fafb",
+            // background: "#f9fafb",
           }}
         >
           <Routes>
@@ -236,6 +237,7 @@ export default function Pages() {
             <Route element={<CourseVideos />} path="/course-videos" />
             <Route element={<Tests />} path="/tests" />
             <Route path="/tests/:testType/:topicId" element={<TestTopics />} />
+            <Route path="/testresult" element={<TestResult />} />
             <Route element={<Assignments />} path="/assignments" />
             <Route
               path="/assignments/:testType/:id"

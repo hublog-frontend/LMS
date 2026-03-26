@@ -179,6 +179,15 @@ export const insertTestResult = async (payload) => {
   }
 };
 
+export const getTestHistory = async (payload) => {
+  try {
+    const response = await api.get(`/api/getTestHistory`, { params: payload });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // videos api's
 export const getVideos = async (payload) => {
   try {
