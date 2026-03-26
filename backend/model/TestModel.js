@@ -246,9 +246,13 @@ const TestModel = {
 
   getTestHistory: async (test_id, user_id, page, pageSize) => {
     try {
-      let query = `SELECT th.id, th.test_id, th.created_date, t.test_name, th.total_marks_scored, th.total_time_taken FROM test_history th JOIN tests t ON th.test_id = t.id WHERE th.test_id = ? AND th.user_id = ? AND th.is_active = 1`;
-      let countQuery = `SELECT COUNT(*) as total FROM test_history WHERE test_id = ? AND user_id = ? AND is_active = 1`;
-      let queryParams = [test_id, user_id];
+      const queryParams = [];
+      const countParams = [];
+      let query = `SELECT th.id, th.test_id, th.created_date, t.test_name, th.total_marks_scored, th.total_time_taken FROM test_history th JOIN tests t ON th.test_id = t.id WHERE th.test_id = ? AND th.user_id = ?`;
+      let countQuery = `SELECT COUNT(*) as total FROM test_history WHERE test_id = ? AND user_id = ?`;
+
+      queryParams.push(test_id, user_id);
+      countParams.push(test_id, user_id);
 
       if (page && pageSize) {
         const offset = (page - 1) * pageSize;
@@ -258,8 +262,10 @@ const TestModel = {
         query += ` ORDER BY th.id ASC`;
       }
 
-      const [testHistory] = await pool.query(query, queryParams);
-      const [totalCount] = await pool.query(countQuery, [test_id]);
+      const [[testHistory], [totalCount]] = await Promise.all([
+        pool.query(query, queryParams),
+        pool.query(countQuery, countParams),
+      ]);
 
       return {
         testHistory,
