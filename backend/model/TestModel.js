@@ -267,8 +267,37 @@ const TestModel = {
         pool.query(countQuery, countParams),
       ]);
 
+      const testIds = [...new Set(testHistory.map((test) => test.test_id))];
+
+      let maxMarkMap = new Map();
+
+      if (testIds.length > 0) {
+        const [questionCounts] = await pool.query(
+          `SELECT
+              SUM(CASE WHEN q.question_type = 'MCQ' THEN 2 ELSE 0 END) AS mcq_questions,
+              SUM(CASE WHEN q.question_type = 'CODING' THEN 10 ELSE 0 END) AS coding_questions,
+              tq.test_id
+          FROM
+              test_questions AS tq
+          INNER JOIN questions AS q ON
+              tq.question_id = q.id
+              AND q.is_active = 1
+          WHERE tq.is_active = 1
+            AND tq.test_id IN (?)
+          GROUP BY tq.test_id`,
+          [testIds],
+        );
+
+        questionCounts.forEach((r) => maxMarkMap.set(r.test_id, r));
+      }
+
       return {
-        testHistory,
+        testHistory: testHistory.map((test) => ({
+          ...test,
+          max_mark:
+            maxMarkMap.get(test.test_id)?.mcq_questions +
+              maxMarkMap.get(test.test_id)?.coding_questions || 0,
+        })),
         total: totalCount[0].total,
       };
     } catch (error) {
