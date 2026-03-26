@@ -180,13 +180,18 @@
 
 .test-mcq-option:hover {
   background: #f9fafb;
-  border-color: #1890ff;
+  border-color: #2160ad;
 }
 
 .test-mcq-option.selected {
   background: #e6f7ff;
-  border-color: #1890ff;
+  border-color: #2160ad;
   font-weight: 500;
+}
+
+.test_attempt_radio.ant-radio-wrapper .ant-radio-checked {
+  background-color: #2160ad !important;
+  border-color: #2160ad !important;
 }
 
 /* Section Header */
@@ -233,5 +238,5 @@
   border: 1px solid #d0d5dd;
   border-radius: 4px;
   padding: 8px 12px;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
 }

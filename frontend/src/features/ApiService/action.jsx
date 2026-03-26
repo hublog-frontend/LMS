@@ -170,6 +170,15 @@ export const getReviews = async (course_id) => {
   }
 };
 
+export const insertTestResult = async (payload) => {
+  try {
+    const response = await api.post(`/api/insertTestResult`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // videos api's
 export const getVideos = async (payload) => {
   try {

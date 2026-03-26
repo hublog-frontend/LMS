@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   Button,
   Card,
@@ -24,7 +24,9 @@ import {
   runCode,
   submitCode,
   getTestQuestionsData,
+  insertTestResult,
 } from "../ApiService/action";
+import { formatToBackendIST } from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import "./TestAttempt.css";
 
@@ -42,16 +44,21 @@ const TestAttempt = () => {
   const { testName, testId } = useParams();
   const navigate = useNavigate();
 
+  const location = useLocation();
+  const testDurationMinutes = location.state?.duration || 30;
+
   // States
   const [showInstructions, setShowInstructions] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({}); // Stores answers by question ID
   const [visitedQuestions, setVisitedQuestions] = useState(new Set([0]));
-  const [timeLeft, setTimeLeft] = useState(1800); // 30 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(testDurationMinutes * 60);
+  const [questionTimeMap, setQuestionTimeMap] = useState({}); // Stores time (in seconds) per question ID
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("Java");
   const [executing, setExecuting] = useState(false);
   const [output, setOutput] = useState(null); // Stores { stdout, stderr, run }
+  const [userOutputs, setUserOutputs] = useState({});
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -118,12 +125,81 @@ const TestAttempt = () => {
   }, [showInstructions, isTerminated]);
 
   const terminateTest = (reason) => {
+    return;
     setIsTerminated(true);
     CommonMessage("warning", reason);
-    // Auto submit logic here
-    setTimeout(() => {
+    handleSubmitTest(reason);
+  };
+
+  const handleSubmitTest = async (reason = "Test submitted successfully.") => {
+    setLoading(true);
+    let totalMarks = 0;
+
+    const testResults = questions.map((q) => {
+      const isCoding = q.question_type === "CODING";
+      const answer = userAnswers[q.id];
+
+      let marksScored = 0;
+      let isSolved = 0;
+
+      let expectedOutput = q.sample_output || "";
+      let actualOutput = userOutputs[q.id] || "";
+
+      expectedOutput = String(expectedOutput).replace(/^"|"$/g, "").trim();
+      actualOutput = String(actualOutput).replace(/^"|"$/g, "").trim();
+
+      if (!isCoding && answer && answer === q.correct_answer) {
+        marksScored = 2; // MCQ question mark is 2
+        isSolved = 1;
+      } else if (isCoding && answer) {
+        if (
+          expectedOutput !== "" &&
+          actualOutput !== "" &&
+          expectedOutput === actualOutput
+        ) {
+          marksScored = 10; // Coding question mark is 10
+          isSolved = 1;
+        }
+      }
+
+      totalMarks += marksScored;
+
+      return {
+        question_id: q.id,
+        submitted_code: isCoding ? answer || null : null,
+        language: isCoding ? selectedLanguage.toUpperCase() : null,
+        selected_option: !isCoding
+          ? answer || null
+          : actualOutput
+            ? actualOutput
+            : null,
+        marks_scored: marksScored,
+        time_taken: questionTimeMap[q.id] || 0,
+        is_solved: isSolved,
+      };
+    });
+
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const user = JSON.parse(getloginUserDetails || "{}");
+
+    const payload = {
+      test_id: testId,
+      user_id: user?.id,
+      total_marks_scored: totalMarks,
+      total_time_taken: testDurationMinutes * 60 - timeLeft,
+      test_results: testResults,
+      created_date: formatToBackendIST(new Date()),
+    };
+
+    try {
+      await insertTestResult(payload);
+      CommonMessage("success", reason);
       navigate("/tests");
-    }, 3000);
+    } catch (error) {
+      console.error(error);
+      CommonMessage("error", "Error submitting test result");
+      setLoading(false);
+    }
   };
 
   // Timer calculation
@@ -131,12 +207,19 @@ const TestAttempt = () => {
     if (!showInstructions && timeLeft > 0 && !isTerminated) {
       const timer = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
+
+        if (currentQuestion?.id) {
+          setQuestionTimeMap((prev) => ({
+            ...prev,
+            [currentQuestion.id]: (prev[currentQuestion.id] || 0) + 1,
+          }));
+        }
       }, 1000);
       return () => clearInterval(timer);
-    } else if (timeLeft === 0) {
+    } else if (timeLeft === 0 && !isTerminated) {
       terminateTest("Your time is up! Test submitted automatically.");
     }
-  }, [showInstructions, timeLeft, isTerminated]);
+  }, [showInstructions, timeLeft, isTerminated, currentQuestion]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -200,6 +283,10 @@ const TestAttempt = () => {
       const resp = await runCode(payload);
       if (resp?.data?.data) {
         setOutput(resp.data.data);
+        setUserOutputs((prev) => ({
+          ...prev,
+          [currentQuestion.id]: resp.data.data.stdout || "",
+        }));
       } else {
         CommonMessage("error", "Failed to get execution results");
       }
@@ -215,9 +302,9 @@ const TestAttempt = () => {
   };
 
   const onSubmitCode = async () => {
-    // For now the logic is same, but we could add submission/test case check here
+    // Current setup just runs code. Later we can add specific test-case validations.
     onRunCode();
-    CommonMessage("success", "Code submitted successfully!");
+    CommonMessage("success", "Code output displayed!");
   };
 
   if (loading) {
@@ -248,7 +335,12 @@ const TestAttempt = () => {
           {testName + " Test"}
         </Title>
         <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-          <Button className="submit-section-btn">Submit & End section</Button>
+          <Button
+            className="submit-section-btn"
+            onClick={() => handleSubmitTest()}
+          >
+            Submit & End section
+          </Button>
         </div>
       </div>
 
@@ -269,13 +361,13 @@ const TestAttempt = () => {
 
             <Title level={5}>Sample Inputs & Outputs</Title>
             <div className="sample-case-card">
-              <div className="sample-case-label">Sample Input 1</div>
+              <div className="sample-case-label">Sample Input</div>
               <div className="sample-case-box">
                 {currentQuestion.sample_input}
               </div>
             </div>
             <div className="sample-case-card">
-              <div className="sample-case-label">Sample Output 1</div>
+              <div className="sample-case-label">Sample Output</div>
               <div className="sample-case-box">
                 {currentQuestion.sample_output}
               </div>
@@ -400,13 +492,13 @@ const TestAttempt = () => {
               >
                 Run code
               </Button>
-              <Button
+              {/* <Button
                 type="primary"
                 style={{ background: "#175cd3" }}
                 onClick={onSubmitCode}
               >
                 Submit code
-              </Button>
+              </Button> */}
             </div>
           </div>
 
@@ -424,8 +516,7 @@ const TestAttempt = () => {
               }}
             >
               <Space>
-                <AiOutlineHistory />{" "}
-                <Text strong>{currentQuestion.category_name}</Text>
+                <AiOutlineHistory /> <Text strong>{testName}</Text>
               </Space>
               <Text type="secondary">{formatTime(timeLeft)} mins</Text>
             </div>
@@ -510,11 +601,28 @@ const TestAttempt = () => {
               <Text strong style={{ color: "white" }}>
                 {currentQuestion.category_name} MCQ
               </Text>
-              <div style={{ display: "flex", gap: "24px" }}>
+              <div
+                style={{ display: "flex", gap: "24px", alignItems: "center" }}
+              >
                 <Text style={{ color: "white" }}>Max Score: 2</Text>
                 <Text style={{ color: "white" }}>
                   Total Questions: {questions.length}
                 </Text>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    background: "rgba(255,255,255,0.2)",
+                    padding: "4px 12px",
+                    borderRadius: "16px",
+                  }}
+                >
+                  <AiOutlineHistory color="white" size={16} />
+                  <Text style={{ color: "white", fontWeight: "600" }}>
+                    {formatTime(timeLeft)}
+                  </Text>
+                </div>
               </div>
             </div>
 
@@ -540,6 +648,7 @@ const TestAttempt = () => {
                   >
                     <Radio
                       checked={userAnswers[currentQuestion.id] === opt.label}
+                      className="test_attempt_radio"
                     />
                     <Text>{opt.label}</Text>
                   </div>
@@ -564,11 +673,17 @@ const TestAttempt = () => {
                   type="primary"
                   size="large"
                   style={{ width: "120px" }}
-                  onClick={handleNext}
+                  onClick={() => {
+                    if (currentQuestionIndex === questions.length - 1) {
+                      handleSubmitTest();
+                    } else {
+                      handleNext();
+                    }
+                  }}
                 >
                   {currentQuestionIndex === questions.length - 1
                     ? "Finish"
-                    : "Submit"}
+                    : "Next"}
                 </Button>
               </div>
             </div>

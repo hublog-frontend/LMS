@@ -8,7 +8,11 @@ import { CiSearch } from "react-icons/ci";
 import { IoIosCheckmarkCircle } from "react-icons/io";
 import { createTest, getTests } from "../ApiService/action";
 import CommonNodataFound from "../Common/CommonNoDataFound";
-import { addressValidator, formatToBackendIST } from "../Common/Validation";
+import {
+  addressValidator,
+  formatToBackendIST,
+  selectValidator,
+} from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
 import { AiOutlineEdit } from "react-icons/ai";
@@ -29,6 +33,8 @@ export default function TestTopics() {
   const [isOpenAddTestModal, setIsOpenAddTestModal] = useState(false);
   const [testName, setTestName] = useState("");
   const [testNameError, setTestNameError] = useState("");
+  const [duration, setDuration] = useState("");
+  const [durationError, setDurationError] = useState("");
   const [validationTrigger, setValidationTrigger] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [testsData, setTestsData] = useState([]);
@@ -95,10 +101,12 @@ export default function TestTopics() {
   const handleCreateTest = async () => {
     setValidationTrigger(true);
     const testNameValidate = addressValidator(testName);
+    const durationValidate = selectValidator(String(duration));
 
     setTestNameError(testNameValidate);
+    setDurationError(durationValidate);
 
-    if (testNameValidate) return;
+    if (testNameValidate || durationValidate) return;
 
     setButtonLoading(true);
     const today = new Date();
@@ -107,6 +115,7 @@ export default function TestTopics() {
       ...(editTestId ? { test_id: editTestId } : {}),
       topic_id: topicId,
       test_name: testName,
+      duration: Number(duration),
       created_date: formatToBackendIST(today),
     };
 
@@ -135,6 +144,8 @@ export default function TestTopics() {
     setIsOpenAddTestModal(false);
     setTestName("");
     setTestNameError("");
+    setDuration("");
+    setDurationError("");
     setValidationTrigger(false);
     setButtonLoading(false);
   };
@@ -352,6 +363,9 @@ export default function TestTopics() {
                               e.stopPropagation();
                               setEditTestId(item.id);
                               setTestName(item.test_name);
+                              setDuration(
+                                item.duration ? String(item.duration) : "",
+                              );
                               setIsOpenAddTestModal(true);
                             }}
                           />
@@ -390,6 +404,7 @@ export default function TestTopics() {
                             onClick={() =>
                               navigate(
                                 `/test-attempt/${item.test_name}/${item.id}`,
+                                { state: { duration: item.duration } }
                               )
                             }
                           >
@@ -521,6 +536,22 @@ export default function TestTopics() {
             value={testName}
             error={testNameError}
           />
+
+          <div style={{ marginTop: "20px" }}>
+            <CommonInputField
+              label="Duration (mins)"
+              type="number"
+              required={true}
+              onChange={(e) => {
+                setDuration(e.target.value);
+                if (validationTrigger) {
+                  setDurationError(selectValidator(String(e.target.value)));
+                }
+              }}
+              value={duration}
+              error={durationError}
+            />
+          </div>
         </div>
       </Modal>
 
