@@ -295,8 +295,8 @@ const TestModel = {
         testHistory: testHistory.map((test) => ({
           ...test,
           max_mark:
-            maxMarkMap.get(test.test_id)?.mcq_questions +
-              maxMarkMap.get(test.test_id)?.coding_questions || 0,
+            Number(maxMarkMap.get(test.test_id)?.mcq_questions || 0) +
+            Number(maxMarkMap.get(test.test_id)?.coding_questions || 0),
         })),
         total: totalCount[0].total,
       };
