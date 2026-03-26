@@ -64,11 +64,20 @@
 
 .action-edit-icon {
   cursor: pointer;
-  color: #1890ff;
+  color: #2160ad;
+  transition: transform 0.2s;
 }
+.action-edit-icon:hover {
+  transform: scale(1.2);
+}
+
 .action-delete-icon {
   cursor: pointer;
   color: #ff4d4f;
+  transition: transform 0.2s;
+}
+.action-delete-icon:hover {
+  transform: scale(1.2);
 }
 
 .questions_heading_margin {
@@ -78,6 +87,52 @@
   display: flex;
   gap: 10px;
   justify-content: flex-end;
+}
+
+/* Category Option Styles */
+.category-option-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+}
+
+.category-option-wrapper span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 8px;
+}
+
+.category-option-actions {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.category-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.category-action-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.category-edit-icon {
+  color: #2160ad;
+}
+
+.category-delete-icon {
+  color: #ff4d4f;
 }
 
 .questions-bulk-modal .ant-modal-content {
@@ -254,4 +309,36 @@
   margin-top: 20px;
   position: relative;
   margin-bottom: 20px;
+}
+
+.modal_close_btn_circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-right: -10px;
+}
+
+.modal_close_btn_circle:hover {
+  background: #ff4d4f;
+  color: white !important;
+}
+
+.resume_modal_cancel_btn {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  height: auto !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.resume_modal_cancel_btn:hover {
+  border-color: #fff !important;
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.1) !important;
 }

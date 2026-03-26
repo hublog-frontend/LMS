@@ -31,6 +31,7 @@ import { addressValidator, selectValidator } from "../Common/Validation";
 import {
   createCategory,
   createQuestion,
+  deleteCategory,
   deleteQuestion,
   getCategories,
   getQuestions,
@@ -82,6 +83,12 @@ export default function Questions() {
     total: 0,
     totalPages: 0,
   });
+
+  // edit states
+  const [isEdit, setIsEdit] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [isCategoryEdit, setIsCategoryEdit] = useState(false);
+  const [editCategoryId, setEditCategoryId] = useState(null);
 
   // coding question usestates
   const [questionType, setQuestionType] = useState("MCQ");
@@ -280,13 +287,19 @@ export default function Questions() {
       render: (text, record) => (
         <Space size="middle">
           <Tooltip title="Edit Question">
-            <AiOutlineEdit size={18} style={{ cursor: "pointer" }} />
+            <span
+              className="action-edit-icon"
+              onClick={() => handleQuestionEdit(record)}
+            >
+              <AiOutlineEdit size={18} />
+            </span>
           </Tooltip>
           <Popconfirm
-            title="Are you sure to delete?"
+            title="Are you sure to delete this question?"
             onConfirm={() => handleQuestionDelete(record.id)}
             okText="Yes"
             cancelText="No"
+            okButtonProps={{ danger: true }}
           >
             <Tooltip title="Delete Question">
               <span className="action-delete-icon">
@@ -345,6 +358,7 @@ export default function Questions() {
     const payload = {
       questions: [
         {
+          ...(isEdit && { id: editId }),
           question: question,
           question_type: questionType,
           category_id: questionCategoryId,
@@ -369,7 +383,10 @@ export default function Questions() {
     try {
       await createQuestion(payload);
       setTimeout(() => {
-        CommonMessage("success", "Question Uploaded Successfully!");
+        CommonMessage(
+          "success",
+          `Question ${isEdit ? "Updated" : "Uploaded"} Successfully!`,
+        );
         getQuestionsData(
           pagination.page,
           pagination.limit,
@@ -583,13 +600,17 @@ export default function Questions() {
 
     setButtonLoading(true);
     const payload = {
+      category_id: editCategoryId,
       category_name: categoryName,
     };
 
     try {
       await createCategory(payload);
       setTimeout(() => {
-        CommonMessage("success", "Category Created Successfully!");
+        CommonMessage(
+          "success",
+          `Category ${isCategoryEdit ? "Updated" : "Created"} Successfully!`,
+        );
         formReset();
         getCategoriesData();
       }, 300);
@@ -604,11 +625,15 @@ export default function Questions() {
   };
 
   const handleQuestionDelete = async (question_id) => {
-    // Simulate deleting a question
     try {
       await deleteQuestion(question_id);
       setTimeout(() => {
-        getQuestionsData(pagination.page, pagination.limit, categoryFilterId);
+        getQuestionsData(
+          pagination.page,
+          pagination.limit,
+          categoryFilterId,
+          questionTypeFilter,
+        );
         CommonMessage("success", `Question Deleted Successfully!`);
       }, 300);
     } catch (error) {
@@ -616,6 +641,67 @@ export default function Questions() {
         "error",
         error?.response?.data?.details ||
           "Something went wrong. Try again later",
+      );
+    }
+  };
+
+  const handleQuestionEdit = (record) => {
+    setIsEdit(true);
+    setEditId(record.id);
+    setQuestion(record.question);
+    setQuestionType(record.question_type);
+    setQuestionCategoryId(record.category_id);
+
+    if (record.question_type === "MCQ") {
+      setOptionA(record.option_a);
+      setOptionB(record.option_b);
+      setOptionC(record.option_c);
+      setOptionD(record.option_d);
+
+      const optionsMap = {
+        "Option A": record.option_a,
+        "Option B": record.option_b,
+        "Option C": record.option_c,
+        "Option D": record.option_d,
+      };
+
+      const foundLabel = Object.keys(optionsMap).find(
+        (key) => optionsMap[key] === record.correct_answer,
+      );
+
+      setCorrectAnswer(foundLabel || "");
+      setCorrectAnswerText(record.correct_answer);
+    } else {
+      setDescription(record.description);
+      setConstraints(record.constraints);
+      setDifficulty(record.difficulty);
+      setSampleInput(record.sample_input);
+      setSampleOutput(record.sample_output);
+    }
+
+    setIsOpenAddDrawer(true);
+  };
+
+  const handleCategoryEdit = (record) => {
+    setIsCategoryEdit(true);
+    setEditCategoryId(record.id);
+    setCategoryName(record.name);
+    setIsOpenCategoryModal(true);
+  };
+
+  const handleCategoryDelete = async (category_id) => {
+    try {
+      await deleteCategory(category_id);
+      CommonMessage("success", "Category Deleted Successfully!");
+      getCategoriesData();
+      if (categoryFilterId === category_id) {
+        setCategoryFilterId(null);
+        getQuestionsData(1, pagination.limit, null, questionTypeFilter);
+      }
+    } catch (error) {
+      CommonMessage(
+        "error",
+        error?.response?.data?.details || "Failed to delete category",
       );
     }
   };
@@ -639,6 +725,10 @@ export default function Questions() {
     setCorrectAnswerError("");
     setCategoryName("");
     setCategoryNameError("");
+    setIsEdit(false);
+    setEditId(null);
+    setIsCategoryEdit(false);
+    setEditCategoryId(null);
     setQuestionCategoryId(null);
     setQuestionCategoryIdError("");
     setQuestionType("MCQ");
@@ -714,6 +804,41 @@ export default function Questions() {
             label="Category"
             isFilterField={true}
             options={categoriesData}
+            renderOption={(opt) => (
+              <div className="category-option-wrapper">
+                <span>{opt.name}</span>
+                <div className="category-option-actions">
+                  <div
+                    className="category-action-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCategoryEdit(opt);
+                    }}
+                  >
+                    <Tooltip title="Edit Category">
+                      <AiOutlineEdit className="category-edit-icon" />
+                    </Tooltip>
+                  </div>
+                  <div
+                    className="category-action-btn"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Popconfirm
+                      title="Delete category?"
+                      description="Are you sure you want to delete the category?"
+                      onConfirm={() => handleCategoryDelete(opt.id)}
+                      okText="Yes"
+                      cancelText="No"
+                      okButtonProps={{ danger: true }}
+                    >
+                      <Tooltip title="Delete Category">
+                        <AiOutlineDelete className="category-delete-icon" />
+                      </Tooltip>
+                    </Popconfirm>
+                  </div>
+                </div>
+              </div>
+            )}
             onChange={(e) => {
               setCategoryFilterId(e.target.value);
               getQuestionsData(
@@ -912,7 +1037,7 @@ export default function Questions() {
 
       {/* create question drawer */}
       <Drawer
-        title="Create a new Question"
+        title={isEdit ? "Edit Question" : "Create a new Question"}
         onClose={formReset}
         open={isOpenAddDrawer}
         size={"40%"}
@@ -1121,7 +1246,7 @@ export default function Questions() {
                 className="courses_createcourses_drawer_submitbutton"
                 onClick={handleSubmit}
               >
-                Submit
+                {isEdit ? "Update" : "Submit"}
               </button>
             )}
           </div>
@@ -1130,7 +1255,7 @@ export default function Questions() {
 
       {/* add category modal */}
       <Modal
-        title={"Add New Category"}
+        title={isCategoryEdit ? "Edit Category" : "Add New Category"}
         open={isOpenCategoryModal}
         onCancel={formReset}
         width="35%"
@@ -1158,7 +1283,7 @@ export default function Questions() {
               onClick={handleCreateCategory}
               className="courses_addmodule_modal_createbutton"
             >
-              Create
+              {isCategoryEdit ? "Update" : "Create"}
             </Button>
           ),
         ]}
