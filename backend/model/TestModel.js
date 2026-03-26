@@ -95,6 +95,8 @@ const TestModel = {
                       t.id,
                       t.topic_id,
                       t.test_name,
+                      t.duration,
+                      t.total_marks,
                       t.created_date,
                       tp.topic_name,
                       tp.logo_image,
@@ -150,7 +152,14 @@ const TestModel = {
     }
   },
 
-  createTest: async (test_id, topic_id, test_name, created_date) => {
+  createTest: async (
+    test_id,
+    topic_id,
+    test_name,
+    duration,
+    total_marks,
+    created_date,
+  ) => {
     let affectedRow = 0;
     try {
       if (!test_id) {
@@ -164,8 +173,8 @@ const TestModel = {
         }
 
         const [insertTest] = await pool.query(
-          `INSERT INTO tests(topic_id, test_name, created_date) VALUES(?, ?, ?)`,
-          [topic_id, test_name, created_date],
+          `INSERT INTO tests(topic_id, test_name, duration, total_marks, created_date) VALUES(?, ?, ?, ?, ?)`,
+          [topic_id, test_name, duration, total_marks, created_date],
         );
 
         affectedRow += insertTest.affectedRows;
@@ -180,8 +189,8 @@ const TestModel = {
         }
 
         const [updateTest] = await pool.query(
-          `UPDATE tests SET test_name = ? WHERE id = ?`,
-          [test_name, test_id],
+          `UPDATE tests SET test_name = ?, duration = ?, total_marks = ? WHERE id = ?`,
+          [test_name, duration, total_marks, test_id],
         );
 
         affectedRow += updateTest.affectedRows;
@@ -193,12 +202,19 @@ const TestModel = {
     }
   },
 
-  insertTestResult: async (test_id, test_results, created_date) => {
+  insertTestResult: async (
+    test_id,
+    user_id,
+    total_marks_scored,
+    total_time_taken,
+    test_results,
+    created_date,
+  ) => {
     try {
       const [insertHistory] = await pool.query(
-        `INSERT INTO test_history(test_id, created_date)
-        VALUES(?, ?)`,
-        [test_id, created_date],
+        `INSERT INTO test_history(test_id, user_id, total_marks_scored, total_time_taken, created_date)
+        VALUES(?, ?, ?, ?, ?)`,
+        [test_id, user_id, total_marks_scored, total_time_taken, created_date],
       );
 
       const history_id = insertHistory.insertId;
@@ -206,18 +222,24 @@ const TestModel = {
       const values = test_results.map((item) => [
         history_id,
         item.question_id,
+        item.submitted_code,
+        item.language,
         item.selected_option,
-        item.mark,
-        item.is_attended,
+        item.marks_scored,
+        item.time_taken,
+        item.is_solved,
         created_date,
       ]);
 
       const insertQuery = `INSERT INTO test_result(
                                 history_id,
                                 question_id,
+                                submitted_code,
+                                language,
                                 selected_option,
-                                mark,
-                                is_attended,
+                                marks_scored,
+                                time_taken,
+                                is_solved,
                                 created_date
                             )
                             VALUES ?`;
@@ -230,11 +252,11 @@ const TestModel = {
     }
   },
 
-  getTestHistory: async (test_id, page, pageSize) => {
+  getTestHistory: async (test_id, user_id, page, pageSize) => {
     try {
-      let query = `SELECT th.id, th.test_id, th.created_date, t.test_name FROM test_history th JOIN tests t ON th.test_id = t.id WHERE th.test_id = ? AND th.is_active = 1`;
-      let countQuery = `SELECT COUNT(*) as total FROM test_history WHERE test_id = ? AND is_active = 1`;
-      let queryParams = [test_id];
+      let query = `SELECT th.id, th.test_id, th.created_date, t.test_name, th.total_marks_scored, th.total_time_taken FROM test_history th JOIN tests t ON th.test_id = t.id WHERE th.test_id = ? AND th.user_id = ? AND th.is_active = 1`;
+      let countQuery = `SELECT COUNT(*) as total FROM test_history WHERE test_id = ? AND user_id = ? AND is_active = 1`;
+      let queryParams = [test_id, user_id];
 
       if (page && pageSize) {
         const offset = (page - 1) * pageSize;
@@ -259,7 +281,7 @@ const TestModel = {
   getTestResult: async (history_id) => {
     try {
       const [testResult] = await pool.query(
-        `SELECT tr.id, tr.history_id, tr.question_id, tr.selected_option, tr.mark, tr.is_attended, tr.created_date, q.question, q.correct_answer, q.option_a, q.option_b, q.option_c, q.option_d 
+        `SELECT tr.id, tr.history_id, tr.question_id, tr.submitted_code, tr.language, tr.selected_option, tr.marks_scored, tr.time_taken, tr.is_solved, tr.created_date, q.question, q.correct_answer, q.option_a, q.option_b, q.option_c, q.option_d, q.category_type, q.question_type, q.description, q.constraints, q.difficulty, q.sample_input, q.sample_output 
          FROM test_result tr 
          JOIN questions q ON tr.question_id = q.id 
          WHERE tr.history_id = ? AND tr.is_active = 1 
@@ -292,7 +314,7 @@ const TestModel = {
       let isExists = false;
       for (const question of questions) {
         const [isExistsResult] = await pool.query(
-          `SELECT id FROM questions WHERE category_id = ? AND question = ? AND correct_answer = ? AND option_a = ? AND option_b = ? AND option_c = ? AND option_d = ? AND is_active = 1`,
+          `SELECT id FROM questions WHERE category_id = ? AND question = ? AND correct_answer = ? AND option_a = ? AND option_b = ? AND option_c = ? AND option_d = ? AND question_type = ? AND description = ? AND constraints = ? AND difficulty = ? AND sample_input = ? AND sample_output = ? AND is_active = 1`,
           [
             question.category_id,
             question.question,
@@ -301,6 +323,12 @@ const TestModel = {
             question.option_b,
             question.option_c,
             question.option_d,
+            question.question_type,
+            question.description,
+            question.constraints,
+            question.difficulty,
+            question.sample_input,
+            question.sample_output,
           ],
         );
         if (isExists.length > 0) {
@@ -369,8 +397,7 @@ const TestModel = {
                       q.constraints,
                       q.difficulty,
                       q.sample_input,
-                      q.sample_output,
-                      q.test_cases
+                      q.sample_output
                   FROM questions AS q
                   LEFT JOIN question_category AS qc ON
                     qc.id = q.category_id

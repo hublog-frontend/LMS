@@ -39,12 +39,15 @@ const deleteTopic = async (request, response) => {
 };
 
 const createTest = async (request, response) => {
-  const { test_id, topic_id, test_name, created_date } = request.body;
+  const { test_id, topic_id, test_name, duration, total_marks, created_date } =
+    request.body;
   try {
     const result = await TestModel.createTest(
       test_id,
       topic_id,
       test_name,
+      duration,
+      total_marks,
       created_date,
     );
 
@@ -93,10 +96,20 @@ const getTests = async (request, response) => {
 };
 
 const insertTestResult = async (request, response) => {
-  const { test_id, test_results, created_date } = request.body;
+  const {
+    test_id,
+    user_id,
+    total_marks_scored,
+    total_time_taken,
+    test_results,
+    created_date,
+  } = request.body;
   try {
     const result = await TestModel.insertTestResult(
       test_id,
+      user_id,
+      total_marks_scored,
+      total_time_taken,
       test_results,
       created_date,
     );
@@ -113,9 +126,14 @@ const insertTestResult = async (request, response) => {
 };
 
 const getTestHistory = async (request, response) => {
-  const { test_id, page, pageSize } = request.query;
+  const { test_id, user_id, page, pageSize } = request.query;
   try {
-    const result = await TestModel.getTestHistory(test_id, page, pageSize);
+    const result = await TestModel.getTestHistory(
+      test_id,
+      user_id,
+      page,
+      pageSize,
+    );
     return response.status(200).send({
       message: "Test history fetched successfully",
       ...result,
