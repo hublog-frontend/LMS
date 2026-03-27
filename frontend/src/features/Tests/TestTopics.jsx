@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Row, Col, Modal, Button } from "antd";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { HiOutlineClipboard } from "react-icons/hi";
@@ -29,6 +29,7 @@ import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 export default function TestTopics() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { topicId } = useParams();
   const [editTestId, setEditTestId] = useState(null);
   const [isOpenAddTestModal, setIsOpenAddTestModal] = useState(false);
@@ -72,7 +73,12 @@ export default function TestTopics() {
     console.log("paramssss", topicId);
     getTestsData();
     getCategoriesData();
-  }, []);
+
+    if (location.state?.showHistory) {
+      setIsHistory(true);
+      setSelectedHistoryTestId(location.state.test_id);
+    }
+  }, [topicId, location.state]);
 
   const getCategoriesData = async () => {
     try {
@@ -433,7 +439,7 @@ export default function TestTopics() {
           )}
         </Row>
       ) : (
-        <TestHistory testId={selectedHistoryTestId} />
+        <TestHistory testId={selectedHistoryTestId} topicId={topicId} />
       )}
 
       {/* add test modal */}

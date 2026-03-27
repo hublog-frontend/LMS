@@ -1,93 +1,133 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { Collapse, Tabs, Button, Row, Col, Progress } from "antd";
 import { AiOutlineClockCircle, AiOutlineStar } from "react-icons/ai";
 import "./styles.css";
 import { FiDownload } from "react-icons/fi";
+import { getTestResult } from "../ApiService/action";
 
 export default function TestResult() {
-  const resultData = [
-    {
-      id: 1,
-      topic: "Loops",
-      attempted: 1,
-      solved: 0,
-      timeTaken: "1801h:12m:8s",
-      marksScored: "0 / 30",
-      questions: [
-        {
-          id: 1,
-          title: "Power Calculation",
-          marks: "0 / 10",
-          problem: {
-            description:
-              "Given two integers n and k, compute the power of n raised to k using a loop. The program should multiply n by itself k times to compute n^k without using built-in power functions.",
-            inputFormat:
-              "The first line contains an integer n. The second line contains an integer k.",
-            outputFormat:
-              "Print a single integer representing n raised to the power k.",
-            sampleInput: "2 10",
-            sampleOutput: "1024",
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { testName, history_id } = useParams();
+  const [testResultData, setTestResultData] = useState([]);
+  const [summary, setSummary] = useState({
+    totalTime: "0h:0m:0s",
+    totalMarks: "0 / 0",
+    percentage: 0,
+  });
+
+  useEffect(() => {
+    getTestResultData();
+  }, []);
+
+  const formatTime = (seconds) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h}h:${m}m:${s}s`;
+  };
+
+  const getTestResultData = async () => {
+    const payload = {
+      history_id: history_id,
+    };
+    try {
+      const response = await getTestResult(payload);
+      const data = response?.data?.testResult || [];
+
+      if (data.length > 0) {
+        // Calculate Summary and Combine all Questions
+        let totalScored = 0;
+        let totalPossible = 0;
+        let totalSeconds = 0;
+        let totalSolved = 0;
+
+        const allQuestions = data.map((item, index) => {
+          const qMark = item.question_type === "CODING" ? 10 : 2;
+          totalScored += parseFloat(item.marks_scored) || 0;
+          totalPossible += qMark;
+          totalSeconds += parseInt(item.time_taken) || 0;
+          if (item.is_solved) totalSolved += 1;
+
+          return {
+            id: index + 1,
+            question_id: item.question_id,
+            title: item.question,
+            marks: `${item.marks_scored || 0} / ${qMark}`,
+            question_type: item.question_type,
+            problem: {
+              description: item.description,
+              inputFormat: item.input_format || "Standard Input",
+              outputFormat: item.output_format || "Standard Output",
+              sampleInput: item.sample_input,
+              sampleOutput: item.sample_output,
+              constraints: item.constraints,
+            },
+            userCode: item.submitted_code,
+            language: item.language,
+            selected_option: item.selected_option,
+            correct_answer: item.correct_answer,
+            options: [
+              { label: item.option_a, key: "A" },
+              { label: item.option_b, key: "B" },
+              { label: item.option_c, key: "C" },
+              { label: item.option_d, key: "D" },
+            ],
+          };
+        });
+
+        const mappedData = [
+          {
+            id: 1,
+            topic: testName,
+            attempted: allQuestions.length,
+            solved: totalSolved,
+            timeTaken: formatTime(totalSeconds),
+            marksScored: `${totalScored} / ${totalPossible}`,
+            questions: allQuestions,
           },
-          userCode: "// User's code for Power Calculation",
-        },
-        {
-          id: 2,
-          title: "Odd Multiples of N",
-          marks: "0 / 10",
-          problem: {
-            description:
-              "Given two positive integers N and M, print all the odd multiples of N till M.",
-            inputFormat:
-              "Two integers N and M (1 <= N, M <= 10^5) representing the base number and the maximum natural number.",
-            outputFormat:
-              "Print all the odd multiples of N till M, each separated by a space. If the multiples don't exist, print -1.",
-            sampleInput: "3 20",
-            sampleOutput: "3 9 15",
-          },
-          userCode: "// User's code for Odd Multiples of N",
-        },
-        {
-          id: 3,
-          title: "3Sum",
-          marks: "0 / 10",
-          problem: {
-            description:
-              "Given an integer array nums, return all the triplets [nums[i], nums[j], nums[k]] such that i != j, i != k, and j != k, and nums[i] + nums[j] + nums[k] == 0.",
-            inputFormat: "An integer array nums.",
-            outputFormat: "A list of lists containing the unique triplets.",
-            sampleInput: "[-1,0,1,2,-1,-4]",
-            sampleOutput: "[[-1,-1,2],[-1,0,1]]",
-          },
-          userCode: "// User's code for 3Sum",
-        },
-      ],
-    },
-  ];
+        ];
+
+        setTestResultData(mappedData);
+        setSummary({
+          totalTime: formatTime(totalSeconds),
+          totalMarks: `${totalScored} / ${totalPossible}`,
+          percentage:
+            totalPossible > 0
+              ? Math.round((totalScored / totalPossible) * 100)
+              : 0,
+        });
+      }
+    } catch (error) {
+      setTestResultData([]);
+      console.log("get test result error", error);
+    }
+  };
 
   return (
-    <div style={{ padding: "24px" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "24px",
-        }}
-      >
-        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-          <IoArrowBackOutline size={26} style={{ cursor: "pointer" }} />
-          <p className="common_heading" style={{ margin: 0 }}>
-            Test Result
-          </p>
-        </div>
-        <div style={{ display: "flex", gap: "12px" }}>
-          <Button size="large">Collapse all</Button>
-          <Button type="primary" size="large" icon={<FiDownload />}>
-            Download Report
-          </Button>
-        </div>
-      </div>
+    <div>
+      <Row>
+        <Col xs={12} sm={12} md={12} lg={12}>
+          <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+            <IoArrowBackOutline
+              size={30}
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                navigate(`/tests/onDemandTests/${location?.state?.topic_id}`, {
+                  state: {
+                    showHistory: true,
+                    test_id: location?.state?.test_id,
+                  },
+                });
+              }}
+            />
+            <p className="common_heading">Test Result</p>
+          </div>
+        </Col>
+      </Row>
 
       <Tabs
         defaultActiveKey="1"
@@ -119,7 +159,9 @@ export default function TestResult() {
               <p style={{ margin: 0, color: "#667085", fontSize: "14px" }}>
                 Total time
               </p>
-              <p className="testresult_top_cards_totaltime">0h:0m:33s</p>
+              <p className="testresult_top_cards_totaltime">
+                {summary.totalTime}
+              </p>
             </div>
           </div>
         </Col>
@@ -142,7 +184,9 @@ export default function TestResult() {
               <p style={{ margin: 0, color: "#667085", fontSize: "14px" }}>
                 Total marks
               </p>
-              <p className="testresult_top_cards_totaltime">0/30</p>
+              <p className="testresult_top_cards_totaltime">
+                {summary.totalMarks}
+              </p>
             </div>
           </div>
         </Col>
@@ -157,7 +201,7 @@ export default function TestResult() {
             >
               <Progress
                 type="dashboard"
-                percent={0}
+                percent={summary.percentage}
                 strokeColor="#175cd3"
                 strokeWidth={10}
                 size={140}
@@ -181,7 +225,7 @@ export default function TestResult() {
                     color: "#101828",
                   }}
                 >
-                  0%
+                  {summary.percentage}%
                 </span>
               </div>
             </div>
@@ -193,7 +237,7 @@ export default function TestResult() {
         defaultActiveKey={["1"]}
         expandIconPosition="end"
         className="testresult_main_collapse"
-        items={resultData.map((section) => ({
+        items={testResultData.map((section) => ({
           key: section.id,
           label: (
             <div
@@ -271,10 +315,15 @@ export default function TestResult() {
                       items={[
                         {
                           key: "1",
-                          label: "Problem",
+                          label:
+                            q.question_type === "CODING"
+                              ? "Problem"
+                              : "Solution",
                           children: (
                             <Row gutter={24}>
-                              <Col span={10}>
+                              <Col
+                                span={q.question_type === "CODING" ? 10 : 24}
+                              >
                                 <div>
                                   <p
                                     style={{
@@ -283,7 +332,9 @@ export default function TestResult() {
                                       marginBottom: "8px",
                                     }}
                                   >
-                                    Problem
+                                    {q.question_type === "CODING"
+                                      ? "Problem"
+                                      : "Question"}
                                   </p>
                                   <p
                                     style={{
@@ -291,122 +342,218 @@ export default function TestResult() {
                                       lineHeight: "1.6",
                                     }}
                                   >
-                                    {q.problem.description}
+                                    {q.problem.description || q.title}
                                   </p>
 
-                                  <p
-                                    style={{
-                                      fontWeight: "700",
-                                      fontSize: "16px",
-                                      marginTop: "16px",
-                                      marginBottom: "8px",
-                                    }}
-                                  >
-                                    Input Format
-                                  </p>
-                                  <p style={{ color: "#475467" }}>
-                                    {q.problem.inputFormat}
-                                  </p>
+                                  {q.question_type === "CODING" ? (
+                                    <>
+                                      <p
+                                        style={{
+                                          fontWeight: "700",
+                                          fontSize: "16px",
+                                          marginTop: "16px",
+                                          marginBottom: "8px",
+                                        }}
+                                      >
+                                        Input Format
+                                      </p>
+                                      <p style={{ color: "#475467" }}>
+                                        {q.problem.inputFormat}
+                                      </p>
 
-                                  <p
-                                    style={{
-                                      fontWeight: "700",
-                                      fontSize: "16px",
-                                      marginTop: "16px",
-                                      marginBottom: "8px",
-                                    }}
-                                  >
-                                    Output Format
-                                  </p>
-                                  <p style={{ color: "#475467" }}>
-                                    {q.problem.outputFormat}
-                                  </p>
+                                      <p
+                                        style={{
+                                          fontWeight: "700",
+                                          fontSize: "16px",
+                                          marginTop: "16px",
+                                          marginBottom: "8px",
+                                        }}
+                                      >
+                                        Output Format
+                                      </p>
+                                      <p style={{ color: "#475467" }}>
+                                        {q.problem.outputFormat}
+                                      </p>
 
-                                  <p
-                                    style={{
-                                      fontWeight: "700",
-                                      fontSize: "16px",
-                                      marginTop: "16px",
-                                      marginBottom: "8px",
-                                    }}
-                                  >
-                                    Sample Inputs & Outputs
-                                  </p>
-                                  <div
-                                    style={{
-                                      padding: "12px",
-                                      border: "1px solid #eaecf0",
-                                      borderRadius: "8px",
-                                      background: "#f9fafb",
-                                    }}
-                                  >
-                                    <p
-                                      style={{
-                                        fontWeight: "600",
-                                        marginBottom: "4px",
-                                      }}
+                                      <p
+                                        style={{
+                                          fontWeight: "700",
+                                          fontSize: "16px",
+                                          marginTop: "16px",
+                                          marginBottom: "8px",
+                                        }}
+                                      >
+                                        Sample Inputs & Outputs
+                                      </p>
+                                      <div
+                                        style={{
+                                          padding: "12px",
+                                          border: "1px solid #eaecf0",
+                                          borderRadius: "8px",
+                                          background: "#f9fafb",
+                                        }}
+                                      >
+                                        <p
+                                          style={{
+                                            fontWeight: "600",
+                                            marginBottom: "4px",
+                                          }}
+                                        >
+                                          Sample Input
+                                        </p>
+                                        <pre
+                                          style={{
+                                            margin: 0,
+                                            padding: 0,
+                                            background: "none",
+                                            border: "none",
+                                          }}
+                                        >
+                                          {q.problem.sampleInput}
+                                        </pre>
+                                        <p
+                                          style={{
+                                            fontWeight: "600",
+                                            marginTop: "8px",
+                                            marginBottom: "4px",
+                                          }}
+                                        >
+                                          Sample Output
+                                        </p>
+                                        <pre
+                                          style={{
+                                            margin: 0,
+                                            padding: 0,
+                                            background: "none",
+                                            border: "none",
+                                          }}
+                                        >
+                                          {q.problem.sampleOutput}
+                                        </pre>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <div
+                                      className="test-mcq-options-list"
+                                      style={{ marginTop: "24px" }}
                                     >
-                                      Sample Input 1
-                                    </p>
-                                    <pre
-                                      style={{
-                                        margin: 0,
-                                        padding: 0,
-                                        background: "none",
-                                        border: "none",
-                                      }}
-                                    >
-                                      {q.problem.sampleInput}
-                                    </pre>
-                                  </div>
+                                      {q.options.map((opt, idx) => {
+                                        const isSelected =
+                                          q.selected_option === opt.label;
+                                        const isCorrect =
+                                          q.correct_answer === opt.label;
+                                        let borderColor = "#eaecf0";
+                                        let bgColor = "#fff";
+
+                                        if (isSelected && isCorrect) {
+                                          borderColor = "#039855";
+                                          bgColor = "#ecfdf3";
+                                        } else if (isSelected && !isCorrect) {
+                                          borderColor = "#d92d20";
+                                          bgColor = "#fef3f2";
+                                        } else if (isCorrect) {
+                                          borderColor = "#039855";
+                                          bgColor = "#f6fef9";
+                                        }
+
+                                        return (
+                                          <div
+                                            key={idx}
+                                            style={{
+                                              padding: "12px 16px",
+                                              border: `2px solid ${borderColor}`,
+                                              borderRadius: "8px",
+                                              background: bgColor,
+                                              marginBottom: "12px",
+                                              display: "flex",
+                                              alignItems: "center",
+                                              gap: "12px",
+                                            }}
+                                          >
+                                            <div
+                                              style={{
+                                                width: "24px",
+                                                height: "24px",
+                                                borderRadius: "50%",
+                                                border: `1px solid ${isSelected ? borderColor : "#d0d5dd"}`,
+                                                background: isSelected
+                                                  ? borderColor
+                                                  : "#fff",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                color: isSelected
+                                                  ? "white"
+                                                  : "#667085",
+                                                fontSize: "12px",
+                                                fontWeight: "600",
+                                              }}
+                                            >
+                                              {opt.key}
+                                            </div>
+                                            <span
+                                              style={{
+                                                color: "#344054",
+                                                fontWeight: isSelected
+                                                  ? "600"
+                                                  : "400",
+                                              }}
+                                            >
+                                              {opt.label}
+                                            </span>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
                                 </div>
                               </Col>
-                              <Col span={14}>
-                                <div
-                                  style={{
-                                    border: "1px solid #eaecf0",
-                                    borderRadius: "8px",
-                                    overflow: "hidden",
-                                  }}
-                                >
+                              {q.question_type === "CODING" && (
+                                <Col span={14}>
                                   <div
                                     style={{
-                                      padding: "8px 16px",
-                                      background: "#f9fafb",
-                                      borderBottom: "1px solid #eaecf0",
-                                      display: "flex",
-                                      justifyContent: "space-between",
-                                    }}
-                                  >
-                                    <span>Java</span>
-                                  </div>
-                                  <div
-                                    style={{
-                                      padding: "16px",
-                                      background: "#fff",
-                                      minHeight: "300px",
-                                      fontFamily: "monospace",
+                                      border: "1px solid #eaecf0",
+                                      borderRadius: "8px",
+                                      overflow: "hidden",
                                     }}
                                   >
                                     <div
-                                      style={{ display: "flex", gap: "16px" }}
+                                      style={{
+                                        padding: "8px 16px",
+                                        background: "#f9fafb",
+                                        borderBottom: "1px solid #eaecf0",
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                      }}
                                     >
-                                      <span style={{ color: "#98a2b3" }}>
-                                        1
+                                      <span>
+                                        {q.language
+                                          ? q.language.charAt(0).toUpperCase() +
+                                            q.language.slice(1).toLowerCase()
+                                          : ""}
                                       </span>
-                                      <div
+                                    </div>
+                                    <div
+                                      style={{
+                                        padding: "16px",
+                                        background: "#fff",
+                                        minHeight: "300px",
+                                        fontFamily: "monospace",
+                                        overflow: "auto",
+                                      }}
+                                    >
+                                      <pre
                                         style={{
-                                          borderLeft: "1px solid #eaecf0",
-                                          paddingLeft: "8px",
-                                          width: "100%",
+                                          margin: 0,
+                                          whiteSpace: "pre-wrap",
                                         }}
                                       >
-                                        {q.userCode}
-                                      </div>
+                                        {q.userCode || "// No code submitted"}
+                                      </pre>
                                     </div>
                                   </div>
-                                </div>
-                              </Col>
+                                </Col>
+                              )}
                             </Row>
                           ),
                         },

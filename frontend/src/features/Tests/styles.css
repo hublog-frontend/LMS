@@ -480,8 +480,8 @@
 .testresult_header_tag {
   padding: 4px 12px !important;
   border-radius: 16px !important;
-  font-size: 13px !important;
-  font-weight: 500 !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Row, Col, Modal, Button, Progress } from "antd";
 import { CiSearch } from "react-icons/ci";
 import { IoIosCheckmarkCircle } from "react-icons/io";
@@ -9,7 +10,8 @@ import CommonInputField from "../Common/CommonInputField";
 import Chart from "react-apexcharts";
 import { AiOutlineClockCircle, AiOutlineStar } from "react-icons/ai";
 
-export default function TestHistory({ testId }) {
+export default function TestHistory({ testId, topicId }) {
+  const navigate = useNavigate();
   const [historyData, setHistoryData] = useState([]);
   const [isOpenResultModal, setIsOpenResultModal] = useState(false);
   const [selectedResultData, setSelectedResultData] = useState(null);
@@ -388,6 +390,17 @@ export default function TestHistory({ testId }) {
               marginTop: "30px",
               width: "fit-content",
               padding: "0 24px",
+            }}
+            onClick={() => {
+              navigate(
+                `/testresult/${selectedResultData?.test_name}/${selectedResultData?.id}`,
+                {
+                  state: {
+                    test_id: testId, // Correctly using the prop
+                    topic_id: topicId,
+                  },
+                },
+              );
             }}
           >
             View Detailed Result

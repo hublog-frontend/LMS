@@ -237,7 +237,10 @@ export default function Pages() {
             <Route element={<CourseVideos />} path="/course-videos" />
             <Route element={<Tests />} path="/tests" />
             <Route path="/tests/:testType/:topicId" element={<TestTopics />} />
-            <Route path="/testresult" element={<TestResult />} />
+            <Route
+              path="/testresult/:testName/:history_id"
+              element={<TestResult />}
+            />
             <Route element={<Assignments />} path="/assignments" />
             <Route
               path="/assignments/:testType/:id"

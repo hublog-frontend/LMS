@@ -332,6 +332,15 @@ export const createTest = async (payload) => {
   }
 };
 
+export const getTestResult = async (payload) => {
+  try {
+    const response = await api.get(`/api/getTestResult`, { params: payload });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // question api's
 export const createQuestion = async (payload) => {
   try {
