@@ -308,11 +308,35 @@ const TestModel = {
   getTestResult: async (history_id) => {
     try {
       const [testResult] = await pool.query(
-        `SELECT tr.id, tr.history_id, tr.question_id, tr.submitted_code, tr.language, tr.selected_option, tr.marks_scored, tr.time_taken, tr.is_solved, tr.created_date, q.question, q.correct_answer, q.option_a, q.option_b, q.option_c, q.option_d, q.category_type, q.question_type, q.description, q.constraints, q.difficulty, q.sample_input, q.sample_output 
-         FROM test_result tr 
-         JOIN questions q ON tr.question_id = q.id 
-         WHERE tr.history_id = ? AND tr.is_active = 1 
-         ORDER BY tr.id ASC`,
+        `SELECT
+            tr.id,
+            tr.history_id,
+            tr.question_id,
+            tr.submitted_code,
+            tr.language,
+            tr.selected_option,
+            tr.marks_scored,
+            tr.time_taken,
+            tr.is_solved,
+            tr.created_date,
+            q.question,
+            q.correct_answer,
+            q.option_a,
+            q.option_b,
+            q.option_c,
+            q.option_d,
+            q.category_id,
+            q.question_type,
+            q.description,
+            q.constraints,
+            q.difficulty,
+            q.sample_input,
+            q.sample_output
+        FROM test_result tr
+        JOIN questions q ON
+            tr.question_id = q.id
+        WHERE tr.history_id = ? AND tr.is_active = 1
+        ORDER BY tr.id ASC`,
         [history_id],
       );
 
