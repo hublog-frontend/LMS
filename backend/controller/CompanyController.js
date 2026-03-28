@@ -124,7 +124,7 @@ const addToFavorite = async (req, res) => {
 
 const removeFromFavorite = async (req, res) => {
   try {
-    const { company_id, user_id } = req.query;
+    const { company_id, user_id } = req.body;
     const result = await CompanyModel.removeFromFavorite(company_id, user_id);
     return res
       .status(200)

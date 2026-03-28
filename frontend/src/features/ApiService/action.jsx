@@ -459,9 +459,7 @@ export const getCompanySkills = async (payload) => {
 
 export const getCompanyQuestions = async (payload) => {
   try {
-    const response = await api.get(`/api/getCompanyQuestions`, {
-      params: payload,
-    });
+    const response = await api.post(`/api/userWiseCompanyQuestions`, payload);
     return response;
   } catch (error) {
     throw error;

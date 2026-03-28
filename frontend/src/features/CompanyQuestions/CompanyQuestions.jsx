@@ -13,6 +13,7 @@ import {
   deleteCompanyQuestion,
   getCompanyQuestions,
   getFavoriteCompanies,
+  removeCompanyQuestionToFavorite,
 } from "../ApiService/action";
 import { AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
 import { useSelector } from "react-redux";
@@ -39,8 +40,13 @@ export default function CompanyQuestions({ handleEdit }) {
   // }, []);
 
   const getCompanyQuestionsData = async () => {
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+    const payload = {
+      user_id: converAsJson?.id || null,
+    };
     try {
-      const response = await getCompanyQuestions();
+      const response = await getCompanyQuestions(payload);
       console.log("get company questions response", response);
       const company_questions_data = response?.data?.result || [];
       dispatch(storeCompanyQuestionList(company_questions_data));
@@ -50,7 +56,7 @@ export default function CompanyQuestions({ handleEdit }) {
     }
   };
 
-  const addToFavorite = async (company_id) => {
+  const addToFavorite = async (type, company_id) => {
     const getloginUserDetails = localStorage.getItem("loginUserDetails");
     const converAsJson = JSON.parse(getloginUserDetails);
     console.log(converAsJson);
@@ -60,9 +66,16 @@ export default function CompanyQuestions({ handleEdit }) {
       user_id: converAsJson?.id || null,
     };
     try {
-      await addCompanyQuestionToFavorite(payload);
+      if (type == "add") {
+        await addCompanyQuestionToFavorite(payload);
+      } else {
+        await removeCompanyQuestionToFavorite(payload);
+      }
       setTimeout(() => {
-        CommonMessage("success", `Added to favorites!`);
+        CommonMessage(
+          "success",
+          `${type == "add" ? "Added" : "Removed"} to favorites!`,
+        );
         getFavoriteCompaniesData();
       }, 300);
     } catch (error) {
@@ -85,6 +98,8 @@ export default function CompanyQuestions({ handleEdit }) {
     } catch (error) {
       dispatch(storeFavoriteCompanyQuestionList([]));
       console.log("get await company questions error", error);
+    } finally {
+      getCompanyQuestionsData();
     }
   };
 
@@ -149,14 +164,25 @@ export default function CompanyQuestions({ handleEdit }) {
                       </p>
                     </div>
 
-                    <PiHeartBold
-                      size={22}
-                      color="#2160ad"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addToFavorite(item?.id || null);
-                      }}
-                    />
+                    {item.is_favourite == 0 ? (
+                      <PiHeartBold
+                        size={22}
+                        color="#2160ad"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToFavorite("add", item?.id || null);
+                        }}
+                      />
+                    ) : (
+                      <PiHeartFill
+                        size={22}
+                        color="red"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToFavorite("remove", item?.id || null);
+                        }}
+                      />
+                    )}
                   </div>
 
                   <div className="company_questions_card_tag_container">

@@ -108,8 +108,13 @@ export default function CompanyQuestionsTab() {
   };
 
   const getCompanyQuestionsData = async () => {
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+    const payload = {
+      user_id: converAsJson?.id || null,
+    };
     try {
-      const response = await getCompanyQuestions();
+      const response = await getCompanyQuestions(payload);
       console.log("get company questions response", response);
       const company_questions_data = response?.data?.result || [];
       dispatch(storeCompanyQuestionList(company_questions_data));

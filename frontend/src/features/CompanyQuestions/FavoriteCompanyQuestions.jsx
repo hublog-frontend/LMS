@@ -7,10 +7,19 @@ import BDILogo from "../../assets/bdi_logo.jpeg";
 import { PiHeartBold, PiHeartFill } from "react-icons/pi";
 import { IoArrowForwardOutline } from "react-icons/io5";
 import "./styles.css";
-import { getFavoriteCompanies } from "../ApiService/action";
+import {
+  addCompanyQuestionToFavorite,
+  getCompanyQuestions,
+  getFavoriteCompanies,
+  removeCompanyQuestionToFavorite,
+} from "../ApiService/action";
 import { useDispatch, useSelector } from "react-redux";
-import { storeFavoriteCompanyQuestionList } from "../Redux/Slice";
+import {
+  storeCompanyQuestionList,
+  storeFavoriteCompanyQuestionList,
+} from "../Redux/Slice";
 import CommonNodataFound from "../Common/CommonNoDataFound";
+import { CommonMessage } from "../Common/CommonMessage";
 
 export default function FavoriteCompanyQuestions() {
   const dispatch = useDispatch();
@@ -24,7 +33,7 @@ export default function FavoriteCompanyQuestions() {
     getFavoriteCompaniesData();
   }, []);
 
-  const getFavoriteCompaniesData = async () => {
+  const getFavoriteCompaniesData = async (callCompanyQuestionsApi = false) => {
     const getloginUserDetails = localStorage.getItem("loginUserDetails");
     const converAsJson = JSON.parse(getloginUserDetails);
     try {
@@ -35,6 +44,58 @@ export default function FavoriteCompanyQuestions() {
     } catch (error) {
       dispatch(storeFavoriteCompanyQuestionList([]));
       console.log("get await company questions error", error);
+    } finally {
+      if (callCompanyQuestionsApi) {
+        getCompanyQuestionsData();
+      }
+    }
+  };
+
+  const addToFavorite = async (type, company_id) => {
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+    console.log(converAsJson);
+
+    const payload = {
+      company_id: company_id,
+      user_id: converAsJson?.id || null,
+    };
+    try {
+      if (type == "add") {
+        await addCompanyQuestionToFavorite(payload);
+      } else {
+        await removeCompanyQuestionToFavorite(payload);
+      }
+      setTimeout(() => {
+        CommonMessage(
+          "success",
+          `${type == "add" ? "Added" : "Removed"} to favorites!`,
+        );
+        getFavoriteCompaniesData(true);
+      }, 300);
+    } catch (error) {
+      CommonMessage(
+        "error",
+        error?.response?.data?.details ||
+          "Something went wrong. Try again later",
+      );
+    }
+  };
+
+  const getCompanyQuestionsData = async () => {
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+    const payload = {
+      user_id: converAsJson?.id || null,
+    };
+    try {
+      const response = await getCompanyQuestions(payload);
+      console.log("get company questions response", response);
+      const company_questions_data = response?.data?.result || [];
+      dispatch(storeCompanyQuestionList(company_questions_data));
+    } catch (error) {
+      dispatch(storeCompanyQuestionList([]));
+      console.log("get company questions error", error);
     }
   };
 
@@ -81,14 +142,25 @@ export default function FavoriteCompanyQuestions() {
                         </p>
                       </div>
 
-                      <PiHeartBold
-                        size={22}
-                        color="#2160ad"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          addToFavorite(item?.id || null);
-                        }}
-                      />
+                      {item.is_favourite == 0 ? (
+                        <PiHeartBold
+                          size={22}
+                          color="#2160ad"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToFavorite("add", item?.company_id || null);
+                          }}
+                        />
+                      ) : (
+                        <PiHeartFill
+                          size={22}
+                          color="red"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToFavorite("remove", item?.company_id || null);
+                          }}
+                        />
+                      )}
                     </div>
 
                     <div className="company_questions_card_tag_container">
