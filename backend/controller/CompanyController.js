@@ -72,7 +72,7 @@ const getCompanyQuestions = async (req, res) => {
 
 const userWiseCompanyQuestions = async (req, res) => {
   try {
-    const { company_name, skills, user_id } = req.query;
+    const { company_name, skills, user_id } = req.body;
     const result = await CompanyModel.userWiseCompanyQuestions(
       company_name,
       skills,
