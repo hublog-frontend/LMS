@@ -447,6 +447,25 @@ export const createAssignment = async (payload) => {
   }
 };
 
+export const createAssignmentModule = async (payload) => {
+  try {
+    const response = await api.post(`/api/createAssignmentModule`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getAssignmentModules = async (payload) => {
+  try {
+    const response = await api.get(`/api/getAssignmentModule`, {
+      params: payload,
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 // company question api's
 export const getCompanySkills = async (payload) => {
   try {

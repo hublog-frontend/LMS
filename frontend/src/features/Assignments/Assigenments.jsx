@@ -271,7 +271,9 @@ export default function Assignments() {
                 <div
                   className="assignments_cards"
                   onClick={() => {
-                    navigate("/assignments/MNC Interview Cracker/67374836247");
+                    navigate(`/assignments/${item?.id || null}`, {
+                      state: { assignment_name: item?.assignment_name } || "",
+                    });
                   }}
                 >
                   <div className="tests_topics_icon_container">
@@ -351,7 +353,7 @@ export default function Assignments() {
 
       {/* add assignment modal */}
       <Modal
-        title={editAssignmentId ? "Update Assignment" : "Add Assignment Topic"}
+        title={editAssignmentId ? "Update Assignment" : "Add Assignment"}
         open={isOpenAddAssignmentModal}
         onCancel={formReset}
         width="35%"

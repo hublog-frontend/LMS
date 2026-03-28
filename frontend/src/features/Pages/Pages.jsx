@@ -245,7 +245,7 @@ export default function Pages() {
             />
             <Route element={<Assignments />} path="/assignments" />
             <Route
-              path="/assignments/:testType/:id"
+              path="/assignments/:assignment_id"
               element={<ParticularAssignments />}
             />
             <Route
