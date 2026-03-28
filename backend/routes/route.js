@@ -66,6 +66,7 @@ router.post("/insertTestResult", verifyToken, TestController.insertTestResult);
 router.get("/getTestHistory", verifyToken, TestController.getTestHistory);
 router.get("/getTestResult", verifyToken, TestController.getTestResult);
 router.post("/addQuestions", verifyToken, TestController.addQuestions);
+router.post("/updateQuestion", verifyToken, TestController.updateQuestion);
 router.post("/getQuestions", verifyToken, TestController.getQuestions);
 router.post("/mapTestQuestions", verifyToken, TestController.mapTestQuestions);
 router.get("/getTestQuestions", verifyToken, TestController.getTestQuestions);
@@ -161,6 +162,32 @@ router.post(
   "/userWiseCompanyQuestions",
   verifyToken,
   CompanyController.userWiseCompanyQuestions,
+);
+
+router.post(
+  "/mapAssignmentQuestion",
+  verifyToken,
+  AssignmentController.mapAssignmentQuestion,
+);
+
+router.post("/addCompany", verifyToken, AssignmentController.addCompany);
+router.get("/getCompanies", verifyToken, AssignmentController.getCompanies);
+router.delete(
+  "/deleteCompany",
+  verifyToken,
+  AssignmentController.deleteCompany,
+);
+
+router.post(
+  "/insertAssignmentAttempt",
+  verifyToken,
+  AssignmentController.insertAssignmentAttempt,
+);
+
+router.post(
+  "/insertAssignmentAnswer",
+  verifyToken,
+  AssignmentController.insertAssignmentAnswer,
 );
 
 module.exports = router;

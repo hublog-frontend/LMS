@@ -431,6 +431,70 @@ const TestModel = {
     }
   },
 
+  updateQuestion: async (
+    category_id,
+    question,
+    correct_answer,
+    option_a,
+    option_b,
+    option_c,
+    option_d,
+    question_type,
+    description,
+    constraints,
+    difficulty,
+    sample_input,
+    sample_output,
+    id,
+  ) => {
+    try {
+      const [isExists] = await pool.query(
+        `SELECT id FROM questions WHERE category_id = ? AND question = ? AND correct_answer = ? AND option_a = ? AND option_b = ? AND option_c = ? AND option_d = ? AND question_type = ? AND description = ? AND constraints = ? AND difficulty = ? AND sample_input = ? AND sample_output = ? AND id != ? AND is_active = 1`,
+        [
+          category_id,
+          question,
+          correct_answer,
+          option_a,
+          option_b,
+          option_c,
+          option_d,
+          question_type,
+          description,
+          constraints,
+          difficulty,
+          sample_input,
+          sample_output,
+          id,
+        ],
+      );
+      if (isExists.length > 0) {
+        throw new Error("Question already exists");
+      }
+      const [updateResult] = await pool.query(
+        `UPDATE questions SET category_id = ?, question = ?, correct_answer = ?, option_a = ?, option_b = ?, option_c = ?, option_d = ?, question_type = ?, description = ?, constraints = ?, difficulty = ?, sample_input = ?, sample_output = ? WHERE id = ?`,
+        [
+          question.category_id,
+          question.question,
+          question.correct_answer,
+          question.option_a,
+          question.option_b,
+          question.option_c,
+          question.option_d,
+          question.question_type,
+          question.description,
+          question.constraints,
+          question.difficulty,
+          question.sample_input,
+          question.sample_output,
+          question.id,
+        ],
+      );
+      return updateResult.affectedRows;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  },
+
   getQuestions: async (page, pageSize, category_id, question_type) => {
     try {
       let query = `SELECT

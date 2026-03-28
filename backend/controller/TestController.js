@@ -176,6 +176,52 @@ const addQuestions = async (request, response) => {
   }
 };
 
+const updateQuestion = async (request, response) => {
+  const {
+    category_id,
+    question,
+    correct_answer,
+    option_a,
+    option_b,
+    option_c,
+    option_d,
+    question_type,
+    description,
+    constraints,
+    difficulty,
+    sample_input,
+    sample_output,
+    id,
+  } = request.body;
+  try {
+    const result = await TestModel.updateQuestion(
+      category_id,
+      question,
+      correct_answer,
+      option_a,
+      option_b,
+      option_c,
+      option_d,
+      question_type,
+      description,
+      constraints,
+      difficulty,
+      sample_input,
+      sample_output,
+      id,
+    );
+    return response.status(200).send({
+      message: "Question updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    response.status(500).send({
+      message: "Error while updating question",
+      details: error.message,
+    });
+  }
+};
+
 const getQuestions = async (request, response) => {
   const { page, pageSize, category_id, question_type } = request.body;
   try {
@@ -258,6 +304,7 @@ module.exports = {
   getTestHistory,
   getTestResult,
   addQuestions,
+  updateQuestion,
   getQuestions,
   mapTestQuestions,
   getTestQuestions,
