@@ -35,6 +35,7 @@ import {
   deleteQuestion,
   getCategories,
   getQuestions,
+  updateQuestion,
 } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
@@ -381,7 +382,32 @@ export default function Questions() {
       ],
     };
     try {
-      await createQuestion(payload);
+      if (isEdit) {
+        const updatePayload = {
+          id: editId,
+          question: question,
+          question_type: questionType,
+          category_id: questionCategoryId,
+          ...(questionType === "MCQ"
+            ? {
+                option_a: optionA,
+                option_b: optionB,
+                option_c: optionC,
+                option_d: optionD,
+                correct_answer: correctAnswerText,
+              }
+            : {
+                description: description,
+                constraints: constraints,
+                difficulty: difficulty,
+                sample_input: sampleInput,
+                sample_output: sampleOutput,
+              }),
+        };
+        await updateQuestion(updatePayload);
+      } else {
+        await createQuestion(payload);
+      }
       setTimeout(() => {
         CommonMessage(
           "success",
@@ -760,20 +786,20 @@ export default function Questions() {
   return (
     <div className="questions_main_container">
       <Row className="questions_header_row">
-        <Col xs={12} sm={12} md={12} lg={12}>
+        <Col xs={24} sm={24} md={12} lg={12}>
           <p className="common_heading questions_heading_margin">Questions</p>
         </Col>
 
         <Col
-          xs={12}
-          sm={12}
+          xs={24}
+          sm={24}
           md={12}
           lg={12}
           className="courses_createmodule_button_container"
         >
           {/* <div className="questions_create_button_col_inner"> */}
           <button
-            className="courses_createcourse_button"
+            className="questions_create_button"
             onClick={() => {
               setIsOpenCategoryModal(true);
             }}
@@ -781,13 +807,13 @@ export default function Questions() {
             Create Category
           </button>
           <button
-            className="courses_createcourse_button"
+            className="questions_create_button"
             onClick={handleBulkUploadClick}
           >
             Bulk Upload
           </button>
           <button
-            className="courses_createcourse_button"
+            className="questions_create_button"
             onClick={() => {
               setIsOpenAddDrawer(true);
             }}

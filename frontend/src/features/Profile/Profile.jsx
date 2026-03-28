@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Row, Col, Progress } from "antd";
 import ProfileCoverImage from "../../assets/profile_cover.jpeg";
 import "./styles.css";
-import { Tag } from "antd";
 import { Tabs } from "antd";
 import PersonalInfo from "./PersonalInfo";
 import Experience from "./Experience";

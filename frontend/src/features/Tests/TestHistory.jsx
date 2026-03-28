@@ -9,6 +9,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import CommonInputField from "../Common/CommonInputField";
 import Chart from "react-apexcharts";
 import { AiOutlineClockCircle, AiOutlineStar } from "react-icons/ai";
+import CommonSpinner from "../Common/CommonSpinner";
 
 export default function TestHistory({ testId, topicId }) {
   const navigate = useNavigate();
@@ -16,33 +17,80 @@ export default function TestHistory({ testId, topicId }) {
   const [isOpenResultModal, setIsOpenResultModal] = useState(false);
   const [selectedResultData, setSelectedResultData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [apiLoading, setApiLoading] = useState(false);
 
   useEffect(() => {
     if (testId) {
-      getTestHistoryData(testId);
+      setPage(1);
+      setHistoryData([]);
+      setHasMore(true);
+      getTestHistoryData(testId, 1, true);
     }
   }, [testId]);
 
-  const getTestHistoryData = async (id) => {
-    setLoading(true);
+  const handleScroll = () => {
+    if (
+      window.innerHeight + document.documentElement.scrollTop + 1 >=
+        document.documentElement.scrollHeight &&
+      !apiLoading &&
+      hasMore
+    ) {
+      setPage((prev) => prev + 1);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [apiLoading, hasMore]);
+
+  useEffect(() => {
+    if (page > 1 && testId) {
+      getTestHistoryData(testId, page);
+    }
+  }, [page]);
+
+  const getTestHistoryData = async (id, pageNum = 1, isFirst = false) => {
+    if (pageNum > 1) {
+      setApiLoading(true);
+    } else {
+      setLoading(true);
+    }
     const getloginUserDetails = localStorage.getItem("loginUserDetails");
     const user = JSON.parse(getloginUserDetails || "{}");
 
     const payload = {
       test_id: id,
       user_id: user?.id,
-      page: 1,
-      pageSize: 1000,
+      page: pageNum,
+      pageSize: 10,
     };
     try {
       const response = await getTestHistory(payload);
       const tests_data = response?.data?.testHistory || [];
-      setHistoryData(tests_data);
+
+      if (isFirst || pageNum === 1) {
+        setHistoryData(tests_data);
+      } else {
+        setHistoryData((prev) => [...prev, ...tests_data]);
+      }
+
+      if (tests_data.length < 10) {
+        setHasMore(false);
+      } else {
+        setHasMore(true);
+      }
     } catch (error) {
-      setHistoryData([]);
+      if (pageNum === 1) setHistoryData([]);
       console.log("get test history error", error);
     } finally {
-      setLoading(false);
+      if (pageNum > 1) {
+        setApiLoading(false);
+      } else {
+        setLoading(false);
+      }
     }
   };
 
@@ -152,6 +200,17 @@ export default function TestHistory({ testId, topicId }) {
           </div>
         )}
       </Row>
+      {apiLoading && (
+        <div
+          style={{
+            textAlign: "center",
+            padding: "20px",
+            width: "100%",
+          }}
+        >
+          <CommonSpinner />
+        </div>
+      )}
 
       {/* Result Overview Modal */}
       <Modal

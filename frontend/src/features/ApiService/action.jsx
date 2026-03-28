@@ -351,6 +351,15 @@ export const createQuestion = async (payload) => {
   }
 };
 
+export const updateQuestion = async (payload) => {
+  try {
+    const response = await api.post(`/api/updateQuestion`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getQuestions = async (payload) => {
   try {
     const response = await api.post(`/api/getQuestions`, payload);

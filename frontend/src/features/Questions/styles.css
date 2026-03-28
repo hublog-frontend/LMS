@@ -22,20 +22,29 @@
   border: none;
   border-radius: 8px;
   font-size: 16px;
+  font-weight: 600;
   line-height: 22px;
   text-align: left;
   height: 36px;
-  padding: 0 16px;
   color: #ffffff;
   background: #2160ad;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.3s ease;
 }
-
-.questions_create_button:hover {
-  background: #184a86;
+@media (min-width: 300px) and (max-width: 600px) {
+  .questions_create_button {
+    width: 120px;
+    line-height: 18px;
+    font-size: 9px !important;
+    height: 32px;
+  }
+}
+@media (min-width: 375px) and (max-width: 460px) {
+  .questions_create_button {
+    line-height: 18px;
+    font-size: 14px;
+  }
 }
 
 .questions_table_container {

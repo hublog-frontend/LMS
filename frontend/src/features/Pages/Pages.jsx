@@ -22,6 +22,8 @@ import CompanyDocuments from "../CompanyQuestions/CompanyDocuments";
 import Bookmarks from "../Bookmarks/Bookmarks";
 import TestAttempt from "../TestAttempt/TestAttempt";
 import TestResult from "../Tests/TestResult";
+import Jobs from "../Jobs/Jobs";
+import DriveDetails from "../Jobs/DriveDetails";
 
 const { Sider, Content, Header } = Layout;
 const { useBreakpoint } = Grid;
@@ -256,6 +258,8 @@ export default function Pages() {
             />
             <Route element={<Bookmarks />} path="/bookmarks" />
             <Route element={<Profile />} path="/profile" />
+            <Route element={<Jobs />} path="/jobs" />
+            <Route element={<DriveDetails />} path="/jobs/:job_id" />
           </Routes>
         </Content>
       </Layout>

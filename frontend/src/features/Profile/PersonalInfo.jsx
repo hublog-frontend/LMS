@@ -117,6 +117,19 @@ export default function PersonalInfo({ userFulldetails }) {
   const [resumeWarningModal, setResumeWarningModal] = useState(false);
   const [scale, setScale] = useState(1.0);
   const [docxHtml, setDocxHtml] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+
+  useEffect(() => {
+    if (uploadedResume instanceof File) {
+      const url = URL.createObjectURL(uploadedResume);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else if (typeof uploadedResume === "string") {
+      setPreviewUrl(uploadedResume);
+    } else {
+      setPreviewUrl(null);
+    }
+  }, [uploadedResume]);
 
   useEffect(() => {
     setPageNumber(1);
@@ -330,9 +343,8 @@ export default function PersonalInfo({ userFulldetails }) {
     }
   };
 
-  const onDocumentLoadSuccess = ({ numPages }) => {
-    setNumPages(numPages);
-    setPageNumber(1);
+  const onDocumentLoadSuccess = ({ numPages: nextNumPages }) => {
+    setNumPages(nextNumPages);
   };
 
   const extractTextFromPDF = async (file) => {
@@ -1173,11 +1185,7 @@ export default function PersonalInfo({ userFulldetails }) {
           >
             {uploadedResume && uploadedResume.type === "application/pdf" && (
               <Document
-                file={{
-                  url: uploadedResume instanceof File
-                    ? URL.createObjectURL(uploadedResume)
-                    : uploadedResume,
-                }}
+                file={previewUrl}
                 options={{
                   workerSrc: PDF_WORKER_URL,
                   cMapUrl: `https://unpkg.com/pdfjs-dist@5.4.296/cmaps/`,

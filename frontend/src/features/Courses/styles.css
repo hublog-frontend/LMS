@@ -41,7 +41,13 @@
   align-items: center;
   justify-content: center;
 }
-@media (min-width: 300px) and (max-width: 460px) {
+@media (min-width: 300px) and (max-width: 374px) {
+  .courses_createcourse_button {
+    line-height: 18px;
+    font-size: 12px;
+  }
+}
+@media (min-width: 375px) and (max-width: 460px) {
   .courses_createcourse_button {
     line-height: 18px;
     font-size: 14px;
@@ -529,14 +535,24 @@
   background: transparent;
   border: 1px solid #d0d5dd;
 }
-
+@media (min-width: 320px) and (max-width: 576px) {
+  .coursereviews_rating_modal_cancelbutton {
+    font-size: 10px;
+    line-height: normal;
+  }
+}
 .coursereviews_rating_modal_submitbutton {
   cursor: pointer;
   border: none;
   color: #fff;
   background: #2160ad;
 }
-
+@media (min-width: 320px) and (max-width: 576px) {
+  .coursereviews_rating_modal_submitbutton {
+    font-size: 10px;
+    line-height: normal;
+  }
+}
 .coursereviews_rating_modal_loading_submitbutton {
   cursor: default;
   border: none;
