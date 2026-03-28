@@ -459,14 +459,17 @@ const AssignmentModel = {
 
       let moduleMap = new Map();
       let totalResultsMap = new Map();
+      let userPerformanceMap = new Map();
 
       if (ids.length > 0) {
+        // Fetch total modules per assignment
         const [modules] = await pool.query(
           `SELECT COUNT(id) as total_modules, assignment_id FROM assignment_module WHERE assignment_id IN (?) AND is_active = 1 GROUP BY assignment_id`,
           [ids],
         );
 
-        const [totalResuls] = await pool.query(
+        // Fetch total questions and total marks per assignment
+        const [totalResults] = await pool.query(
           `SELECT
               COUNT(amq.question_id) AS total_questions,
               SUM(amq.marks) AS total_marks,
@@ -482,21 +485,237 @@ const AssignmentModel = {
           [ids],
         );
 
+        // Fetch user performance (solved, attempted, marks scored) per assignment
+        const [userPerformance] = await pool.query(
+          `SELECT
+              assignment_id,
+              COUNT(DISTINCT attempted_mq_id) AS attempted_questions,
+              COUNT(DISTINCT solved_mq_id) AS solved_questions,
+              IFNULL(SUM(max_score), 0) AS marks_scored
+          FROM (
+              SELECT
+                  a.id AS assignment_id,
+                  amq.id AS mq_id,
+                  aa.module_question_id AS attempted_mq_id,
+                  CASE WHEN ar.score_obtained > 0 THEN ar.module_question_id END AS solved_mq_id,
+                  MAX(ar.score_obtained) AS max_score
+              FROM
+                  assignments AS a
+              INNER JOIN assignment_module AS am ON
+                  a.id = am.assignment_id AND am.is_active = 1
+              INNER JOIN assignment_module_questions AS amq ON
+                  am.id = amq.assignment_module_id AND amq.is_active = 1
+              LEFT JOIN assignment_attempts AS aa ON
+                  amq.id = aa.module_question_id AND aa.user_id = ?
+              LEFT JOIN assignment_results AS ar ON
+                  amq.id = ar.module_question_id AND ar.user_id = ?
+              WHERE a.is_active = 1 AND a.id IN (?)
+              GROUP BY a.id, amq.id
+          ) AS performance_data
+          GROUP BY assignment_id`,
+          [user_id, user_id, ids],
+        );
+
         modules.forEach((r) => moduleMap.set(r.assignment_id, r));
-        totalResuls.forEach((r) => totalResultsMap.set(r.assignment_id, r));
+        totalResults.forEach((r) => totalResultsMap.set(r.assignment_id, r));
+        userPerformance.forEach((r) =>
+          userPerformanceMap.set(r.assignment_id, r),
+        );
       }
 
+      let overall_total_questions = 0;
+      let overall_solved = 0;
+      let overall_attempted = 0;
+      let overall_marks_obtained = 0;
+      let overall_total_marks = 0;
+
       assignments.forEach((assignment) => {
+        const totalData = totalResultsMap.get(assignment.id) || {};
+        const userData = userPerformanceMap.get(assignment.id) || {};
+
         assignment.total_modules =
-          moduleMap.get(assignment.id)?.total_modules || 0;
-        assignment.total_questions =
-          totalResultsMap.get(assignment.id)?.total_questions || 0;
-        assignment.total_marks =
-          totalResultsMap.get(assignment.id)?.total_marks || 0;
+          Number(moduleMap.get(assignment.id)?.total_modules) || 0;
+        assignment.total_questions = Number(totalData.total_questions) || 0;
+        assignment.total_marks = Number(totalData.total_marks) || 0;
+
+        assignment.attempted_questions =
+          Number(userData.attempted_questions) || 0;
+        assignment.solved_questions = Number(userData.solved_questions) || 0;
+        assignment.marks_scored = Number(userData.marks_scored) || 0;
+
+        // Progress percentage for the progress bar shown in the image
+        assignment.progress =
+          assignment.total_questions > 0
+            ? Math.round(
+                (assignment.solved_questions / assignment.total_questions) *
+                  100,
+              )
+            : 0;
+
+        overall_total_questions += assignment.total_questions;
+        overall_solved += assignment.solved_questions;
+        overall_attempted += assignment.attempted_questions;
+        overall_marks_obtained += assignment.marks_scored;
+        overall_total_marks += assignment.total_marks;
       });
 
       return {
         assignments,
+        overall_stats: {
+          total_questions: overall_total_questions,
+          solved: overall_solved,
+          attempted: overall_attempted,
+          marks_obtained: overall_marks_obtained,
+          total_marks: overall_total_marks,
+        },
+      };
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  },
+
+  userWiseModules: async (assignment_id, user_id) => {
+    try {
+      const [assignmentModules] = await pool.query(
+        `SELECT
+            id,
+            assignment_id,
+            module_number,
+            module_name
+        FROM assignment_module
+        WHERE assignment_id = ? AND is_active = 1
+        ORDER BY module_number ASC`,
+        [assignment_id],
+      );
+
+      const moduleIds = [
+        ...new Set(assignmentModules.map((module) => module.id)),
+      ];
+
+      let questionMap = new Map();
+      let userStatusMap = new Map();
+
+      if (moduleIds.length > 0) {
+        // Fetch questions for all modules
+        const [questions] = await pool.query(
+          `SELECT
+              mq.id AS mq_id,
+              mq.question_id,
+              mq.assignment_module_id,
+              mq.marks,
+              q.question,
+              q.question_type,
+              q.difficulty,
+              q.sample_input,
+              q.sample_output
+          FROM
+              assignment_module_questions AS mq
+          INNER JOIN questions AS q ON
+            mq.question_id = q.id
+              AND q.is_active = 1
+          WHERE mq.assignment_module_id IN (?) AND mq.is_active = 1`,
+          [moduleIds],
+        );
+
+        // Fetch user attempts and results for these questions
+        const [userStats] = await pool.query(
+          `SELECT
+              aa.module_question_id,
+              aa.num_of_attempt,
+              ar.score_obtained,
+              ar.submitted_code,
+              ar.result_output,
+              ar.language,
+              ar.submitted_at
+          FROM
+              assignment_attempts AS aa
+          LEFT JOIN assignment_results AS ar ON
+              aa.module_question_id = ar.module_question_id AND aa.user_id = ar.user_id
+          WHERE aa.user_id = ? AND aa.module_question_id IN (
+              SELECT id FROM assignment_module_questions WHERE assignment_module_id IN (?)
+          )`,
+          [user_id, moduleIds],
+        );
+
+        userStats.forEach((stat) =>
+          userStatusMap.set(stat.module_question_id, stat),
+        );
+
+        questions.forEach((q) => {
+          if (!questionMap.has(q.assignment_module_id)) {
+            questionMap.set(q.assignment_module_id, []);
+          }
+          const user_q_status = userStatusMap.get(q.mq_id) || {
+            num_of_attempt: 0,
+            score_obtained: 0,
+            submitted_code: "",
+            result_output: "",
+            language: "",
+            submitted_at: "",
+          };
+          questionMap.get(q.assignment_module_id).push({
+            ...q,
+            user_status: user_q_status,
+          });
+        });
+      }
+
+      let assignment_total_questions = 0;
+      let assignment_total_marks = 0;
+      let assignment_solved = 0;
+      let assignment_attempted = 0;
+      let assignment_marks_scored = 0;
+
+      const modulesData = assignmentModules.map((module) => {
+        const questionsInModule = questionMap.get(module.id) || [];
+        const total_questions_count = questionsInModule.length;
+        const total_marks_count = questionsInModule.reduce(
+          (sum, q) => sum + (q.marks || 0),
+          0,
+        );
+        const attempted_count = questionsInModule.filter(
+          (q) => q.user_status.num_of_attempt > 0,
+        ).length;
+        const solved_count = questionsInModule.filter(
+          (q) => q.user_status.score_obtained > 0,
+        ).length;
+        const marks_scored_count = questionsInModule.reduce(
+          (sum, q) => sum + (q.user_status.score_obtained || 0),
+          0,
+        );
+
+        assignment_total_questions += total_questions_count;
+        assignment_total_marks += total_marks_count;
+        assignment_solved += solved_count;
+        assignment_attempted += attempted_count;
+        assignment_marks_scored += marks_scored_count;
+
+        return {
+          ...module,
+          total_questions: total_questions_count,
+          total_marks: total_marks_count,
+          attempted_questions: attempted_count,
+          solved_questions: solved_count,
+          marks_scored: marks_scored_count,
+          questions: questionsInModule,
+        };
+      });
+
+      return {
+        modules: modulesData,
+        overall_assignment_results: {
+          total_questions: assignment_total_questions,
+          total_marks: assignment_total_marks,
+          solved: assignment_solved,
+          attempted: assignment_attempted,
+          marks_obtained: assignment_marks_scored,
+          progress:
+            assignment_total_questions > 0
+              ? Math.round(
+                  (assignment_solved / assignment_total_questions) * 100,
+                )
+              : 0,
+        },
       };
     } catch (error) {
       throw new Error(error.message);

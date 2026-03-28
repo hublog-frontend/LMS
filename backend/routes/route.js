@@ -190,4 +190,16 @@ router.post(
   AssignmentController.insertAssignmentAnswer,
 );
 
+router.post(
+  "/userWiseAssignments",
+  verifyToken,
+  AssignmentController.userWiseAssignments,
+);
+
+router.post(
+  "/userWiseModules",
+  verifyToken,
+  AssignmentController.userWiseModules,
+);
+
 module.exports = router;

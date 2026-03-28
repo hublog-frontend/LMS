@@ -194,6 +194,37 @@ const insertAssignmentAnswer = async (req, res) => {
   }
 };
 
+const userWiseAssignments = async (req, res) => {
+  try {
+    const { assignment_name, user_id } = req.body;
+    const result = await AssignmentModel.userWiseAssignments(
+      assignment_name,
+      user_id,
+    );
+    res.status(200).json({
+      success: true,
+      message: "User wise assignments fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const userWiseModules = async (req, res) => {
+  try {
+    const { assignment_id, user_id } = req.body;
+    const result = await AssignmentModel.userWiseModules(assignment_id, user_id);
+    res.status(200).json({
+      success: true,
+      message: "User wise modules fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createAssignment,
   getAssignments,
@@ -205,4 +236,6 @@ module.exports = {
   deleteCompany,
   insertAssignmentAttempt,
   insertAssignmentAnswer,
+  userWiseAssignments,
+  userWiseModules,
 };
