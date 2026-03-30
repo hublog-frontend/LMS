@@ -382,7 +382,7 @@ const TestModel = {
             question.sample_output,
           ],
         );
-        if (isExists.length > 0) {
+        if (isExistsResult.length > 0) {
           isExists = true;
           break;
         }
@@ -473,20 +473,20 @@ const TestModel = {
       const [updateResult] = await pool.query(
         `UPDATE questions SET category_id = ?, question = ?, correct_answer = ?, option_a = ?, option_b = ?, option_c = ?, option_d = ?, question_type = ?, description = ?, constraints = ?, difficulty = ?, sample_input = ?, sample_output = ? WHERE id = ?`,
         [
-          question.category_id,
-          question.question,
-          question.correct_answer,
-          question.option_a,
-          question.option_b,
-          question.option_c,
-          question.option_d,
-          question.question_type,
-          question.description,
-          question.constraints,
-          question.difficulty,
-          question.sample_input,
-          question.sample_output,
-          question.id,
+          category_id,
+          question,
+          correct_answer,
+          option_a,
+          option_b,
+          option_c,
+          option_d,
+          question_type,
+          description,
+          constraints,
+          difficulty,
+          sample_input,
+          sample_output,
+          id,
         ],
       );
       return updateResult.affectedRows;
