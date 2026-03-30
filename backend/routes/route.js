@@ -119,7 +119,7 @@ router.post(
   CompanyController.removeFromFavorite,
 );
 router.get(
-  "/getFavoriteCompanies/:user_id",
+  "/getFavoriteCompanies",
   verifyToken,
   CompanyController.getFavoriteCompanies,
 );
