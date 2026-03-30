@@ -645,6 +645,7 @@ const AssignmentModel = {
           `SELECT
               aa.module_question_id,
               aa.num_of_attempt,
+              aa.time_taken,
               ar.score_obtained,
               ar.submitted_code,
               ar.result_output,
@@ -688,6 +689,7 @@ const AssignmentModel = {
       let assignment_solved = 0;
       let assignment_attempted = 0;
       let assignment_marks_scored = 0;
+      let assignment_time_taken = 0;
 
       const modulesData = assignmentModules.map((module) => {
         const questionsInModule = questionMap.get(module.id) || [];
@@ -706,12 +708,17 @@ const AssignmentModel = {
           (sum, q) => sum + (q.user_status.score_obtained || 0),
           0,
         );
+        const time_taken_count = questionsInModule.reduce(
+          (sum, q) => sum + (q.user_status.time_taken || 0),
+          0,
+        );
 
         assignment_total_questions += total_questions_count;
         assignment_total_marks += total_marks_count;
         assignment_solved += solved_count;
         assignment_attempted += attempted_count;
         assignment_marks_scored += marks_scored_count;
+        assignment_time_taken += time_taken_count;
 
         return {
           ...module,
@@ -721,6 +728,7 @@ const AssignmentModel = {
           solved_questions: solved_count,
           marks_scored: marks_scored_count,
           questions: questionsInModule,
+          time_taken: time_taken_count,
         };
       });
 
@@ -732,6 +740,7 @@ const AssignmentModel = {
           solved: assignment_solved,
           attempted: assignment_attempted,
           marks_obtained: assignment_marks_scored,
+          time_taken: assignment_time_taken,
           progress:
             assignment_total_questions > 0
               ? Math.round(
