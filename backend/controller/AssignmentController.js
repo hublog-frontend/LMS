@@ -173,6 +173,7 @@ const insertAssignmentAnswer = async (req, res) => {
       language,
       score_obtained,
       submitted_at,
+      time_taken,
     } = req.body;
     const result = await AssignmentModel.insertAssignmentAnswer(
       attempt_id,
@@ -183,6 +184,7 @@ const insertAssignmentAnswer = async (req, res) => {
       language,
       score_obtained,
       submitted_at,
+      time_taken,
     );
     res.status(201).json({
       success: true,
@@ -214,7 +216,10 @@ const userWiseAssignments = async (req, res) => {
 const userWiseModules = async (req, res) => {
   try {
     const { assignment_id, user_id } = req.body;
-    const result = await AssignmentModel.userWiseModules(assignment_id, user_id);
+    const result = await AssignmentModel.userWiseModules(
+      assignment_id,
+      user_id,
+    );
     res.status(200).json({
       success: true,
       message: "User wise modules fetched successfully",

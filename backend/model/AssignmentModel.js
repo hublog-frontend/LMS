@@ -398,6 +398,7 @@ const AssignmentModel = {
     language,
     score_obtained,
     submitted_at,
+    time_taken,
   ) => {
     try {
       let affectedRow = 0;
@@ -434,23 +435,24 @@ const AssignmentModel = {
       }
 
       const [getAttempts] = await pool.query(
-        `SELECT number_of_attempt FROM assignment_attempts WHERE user_id = ? AND module_question_id = ?`,
+        `SELECT num_of_attempt, time_taken FROM assignment_attempts WHERE user_id = ? AND module_question_id = ?`,
         [user_id, module_question_id],
       );
 
       if (getAttempts.length > 0) {
-        const number_of_attempt = Number(getAttempts[0].number_of_attempt) + 1;
+        const number_of_attempt = Number(getAttempts[0].num_of_attempt) + 1;
+        const time_taken = Number(getAttempts[0].time_taken) + time_taken;
 
         const [updateAttempts] = await pool.query(
-          `UPDATE assignment_attempts SET number_of_attempt = ? WHERE user_id = ? AND module_question_id = ?`,
-          [number_of_attempt, user_id, module_question_id],
+          `UPDATE assignment_attempts SET num_of_attempt = ?, time_taken = ? WHERE user_id = ? AND module_question_id = ?`,
+          [number_of_attempt, time_taken, user_id, module_question_id],
         );
 
         affectedRow += updateAttempts.affectedRows;
       } else {
         const [insertAttempts] = await pool.query(
-          `INSERT INTO assignment_attempts(user_id, module_question_id, number_of_attempt, created_date) VALUES(?, ?, ?, ?)`,
-          [user_id, module_question_id, 1, submitted_at],
+          `INSERT INTO assignment_attempts(user_id, module_question_id, num_of_attempt, time_taken, created_date) VALUES(?, ?, ?, ?, ?)`,
+          [user_id, module_question_id, 1, time_taken, submitted_at],
         );
 
         affectedRow += insertAttempts.affectedRows;
