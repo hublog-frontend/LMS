@@ -440,12 +440,12 @@ const AssignmentModel = {
       );
 
       if (getAttempts.length > 0) {
-        const number_of_attempt = Number(getAttempts[0].num_of_attempt) + 1;
-        const time_taken = Number(getAttempts[0].time_taken) + time_taken;
+        const numberOfAttempt = Number(getAttempts[0].num_of_attempt) + 1;
+        const timeTaken = Number(getAttempts[0].time_taken) + time_taken;
 
         const [updateAttempts] = await pool.query(
           `UPDATE assignment_attempts SET num_of_attempt = ?, time_taken = ? WHERE user_id = ? AND module_question_id = ?`,
-          [number_of_attempt, time_taken, user_id, module_question_id],
+          [numberOfAttempt, timeTaken, user_id, module_question_id],
         );
 
         affectedRow += updateAttempts.affectedRows;
