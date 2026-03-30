@@ -630,12 +630,23 @@ const AssignmentModel = {
               q.question_type,
               q.difficulty,
               q.sample_input,
-              q.sample_output
+              q.sample_output,
+              qc.category_name,
+              q.correct_answer,
+              q.option_a,
+              q.option_b,
+              q.option_c,
+              q.option_d,
+              q.description,
+              q.constraints
           FROM
               assignment_module_questions AS mq
           INNER JOIN questions AS q ON
             mq.question_id = q.id
               AND q.is_active = 1
+          LEFT JOIN question_category AS qc ON
+            q.category_id = qc.id
+              AND qc.is_active = 1
           WHERE mq.assignment_module_id IN (?) AND mq.is_active = 1`,
           [moduleIds],
         );
