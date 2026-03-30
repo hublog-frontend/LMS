@@ -21,8 +21,13 @@ const addBookmark = async (request, response) => {
 
 const removeBookmark = async (request, response) => {
   try {
-    const { bookmark_id } = request.body;
-    const result = await BookmarkModel.removeBookmark(bookmark_id);
+    const { bookmark_id, user_id, category_type, key_column } = request.body;
+    const result = await BookmarkModel.removeBookmark(
+      bookmark_id,
+      user_id,
+      category_type,
+      key_column,
+    );
     response
       .status(200)
       .json({ message: "Bookmark removed successfully", result });

@@ -136,8 +136,9 @@ export default function Pages() {
             zIndex: 1000,
             background: "#ffffff",
             borderRight: "1px solid #eaecf0",
-            transition: "all 0.3s ease-in-out",
+            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
             overflowX: "hidden",
+            whiteSpace: "nowrap",
           }}
           theme="light"
         >
@@ -233,7 +234,7 @@ export default function Pages() {
       <Layout
         style={{
           marginLeft: isMobile ? 0 : 72,
-          transition: "all 0.3s ease-in-out",
+          transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       >
         <Content

@@ -6,6 +6,7 @@ import { LuClock4 } from "react-icons/lu";
 import { IoIosArrowDown } from "react-icons/io";
 import { FiVideo } from "react-icons/fi";
 import { FiBookmark } from "react-icons/fi";
+import { FaBookmark } from "react-icons/fa6";
 import { AiTwotoneCheckCircle } from "react-icons/ai";
 import { RiCheckboxCircleFill } from "react-icons/ri";
 import { IoCloudUploadOutline } from "react-icons/io5";
@@ -26,6 +27,8 @@ import {
   getModules,
   getReviews,
   getVideos,
+  addBookmark,
+  removeBookmark,
 } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import NodataImage from "../../assets/nodata.png";
@@ -72,6 +75,9 @@ export default function CourseVideos({
   const [moduleVideosMap, setModuleVideosMap] = useState({});
   const [moduleVideosLoadingMap, setModuleVideosLoadingMap] = useState({});
   const [activeVideo, setActiveVideo] = useState(null);
+
+  const loginUserDetails = JSON.parse(localStorage.getItem("loginUserDetails"));
+  const loginUserId = loginUserDetails?.id;
   const [hours, minutes] = clickedCourseDetails.duration_period.split(":");
 
   useEffect(() => {
@@ -249,6 +255,7 @@ export default function CourseVideos({
     const payload = {
       course_id: clickedCourseDetails?.id,
       module_id: id,
+      user_id: loginUserId,
     };
     try {
       const response = await getVideos(payload);
@@ -286,6 +293,43 @@ export default function CourseVideos({
 
     const totalMinutes = hours * 60 + minutes;
     return `${totalMinutes} mins`;
+  };
+
+  const handleAddOrRemoveBookmark = async (lesson) => {
+    try {
+      if (lesson.is_bookmarked) {
+        // Prepare remove payload for the enhanced removeBookmark API
+        const removePayload = {
+          user_id: loginUserId,
+          category_type: "Video",
+          key_column: lesson.id,
+        };
+        await removeBookmark(removePayload);
+        CommonMessage("success", "Bookmark removed!");
+      } else {
+        const payload = {
+          user_id: loginUserId,
+          category_type: "Video",
+          key_column: lesson.id,
+          created_date: new Date(),
+        };
+        await addBookmark(payload);
+        CommonMessage("success", "Bookmark added!");
+      }
+
+      // Refresh the specific module's videos to update UI
+      getModuleVideos(lesson.module_id);
+
+      // Update active video state if currently bookmarked video is being played
+      if (activeVideo && activeVideo.id === lesson.id) {
+        setActiveVideo((prev) => ({
+          ...prev,
+          is_bookmarked: lesson.is_bookmarked ? 0 : 1,
+        }));
+      }
+    } catch (error) {
+      console.error("Bookmark Error:", error);
+    }
   };
 
   const formReset = () => {
@@ -456,7 +500,10 @@ export default function CourseVideos({
             const isVideosLoading = moduleVideosLoadingMap[item.id];
 
             return (
-              <div className="coursevideos_accordion_maincontainer" key={item.id}>
+              <div
+                className="coursevideos_accordion_maincontainer"
+                key={item.id}
+              >
                 <div
                   className={
                     isOpen
@@ -595,11 +642,33 @@ export default function CourseVideos({
                                       }}
                                     >
                                       {lesson.title}
-                                      <FiBookmark
-                                        size={18}
-                                        color="#2160ad"
-                                        style={{ flexShrink: 0 }}
-                                      />
+                                      {lesson.is_bookmarked ? (
+                                        <FaBookmark
+                                          size={17}
+                                          color="#2160ad"
+                                          style={{
+                                            flexShrink: 0,
+                                            cursor: "pointer",
+                                          }}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAddOrRemoveBookmark(lesson);
+                                          }}
+                                        />
+                                      ) : (
+                                        <FiBookmark
+                                          size={18}
+                                          color="#2160ad"
+                                          style={{
+                                            flexShrink: 0,
+                                            cursor: "pointer",
+                                          }}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAddOrRemoveBookmark(lesson);
+                                          }}
+                                        />
+                                      )}
                                     </p>
                                     <p className="coursevideos_videotiming">
                                       {getMinutes(lesson.duration)}

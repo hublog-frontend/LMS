@@ -567,3 +567,22 @@ export const submitCode = async (payload) => {
     throw error;
   }
 };
+
+// bookmark api's
+export const addBookmark = async (payload) => {
+  try {
+    const response = await api.post(`/api/addBookmark`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const removeBookmark = async (payload) => {
+  try {
+    const response = await api.post(`/api/removeBookmark`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

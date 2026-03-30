@@ -23,10 +23,18 @@ const BookmarkModel = {
     }
   },
 
-  removeBookmark: async (bookmark_id) => {
+  removeBookmark: async (bookmark_id, user_id, category_type, key_column) => {
     try {
-      const query = `DELETE FROM bookmarks WHERE id = ?`;
-      const result = await pool.query(query, [bookmark_id]);
+      let query;
+      let params;
+      if (bookmark_id) {
+        query = `DELETE FROM bookmarks WHERE id = ?`;
+        params = [bookmark_id];
+      } else {
+        query = `DELETE FROM bookmarks WHERE user_id = ? AND category_type = ? AND key_column = ?`;
+        params = [user_id, category_type, key_column];
+      }
+      const [result] = await pool.query(query, params);
       return result.affectedRows;
     } catch (error) {
       throw new Error(error.message);

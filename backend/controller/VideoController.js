@@ -138,9 +138,13 @@ class VideoController {
   }
 
   static async getCourseVideos(request, response) {
-    const { course_id, module_id } = request.query;
+    const { course_id, module_id, user_id } = request.query;
     try {
-      const videos = await VideoModel.getVideosByCourse(course_id, module_id);
+      const videos = await VideoModel.getVideosByCourse(
+        course_id,
+        module_id,
+        user_id,
+      );
 
       return response.status(200).send({
         message: "Videos fetched successfully",

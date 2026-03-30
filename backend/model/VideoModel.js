@@ -46,7 +46,7 @@ const VideoModel = {
     }
   },
 
-  async getVideosByCourse(courseId, module_id) {
+  async getVideosByCourse(courseId, module_id, user_id) {
     try {
       const [videos] = await pool.query(
         `SELECT
@@ -62,21 +62,25 @@ const VideoModel = {
             cv.content_type,
             cv.title,
             cv.duration,
+            cv.module_id,
             m.module_name,
-            m.title AS module_title
+            m.title AS module_title,
+            CASE WHEN b.id IS NOT NULL THEN 1 ELSE 0 END AS is_bookmarked
         FROM
             course_videos cv
         INNER JOIN module AS m ON
             m.id = cv.module_id
         INNER JOIN course c ON
             m.course_id = c.id
+        LEFT JOIN bookmarks b ON
+            b.user_id = ? AND b.category_type = 'Video' AND b.key_column = cv.id
         WHERE
             c.id = ? AND cv.is_deleted = 0 AND m.id = ?
         ORDER BY
             cv.created_at
         DESC
     `,
-        [courseId, module_id],
+        [user_id || 0, courseId, module_id],
       );
 
       const formattedResult = videos.map((item) => {
