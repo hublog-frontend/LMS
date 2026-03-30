@@ -326,7 +326,7 @@
 }
 
 .column_question {
-  flex: 5;
+  flex: 3;
 }
 
 .column_company {
@@ -340,8 +340,10 @@
 }
 
 .column_action {
-  flex: 1;
+  flex: 1.3;
   text-align: right;
+  display: flex;
+  gap: 10px;
 }
 
 .questions_table_row {
@@ -500,12 +502,15 @@
   .particular_assignment_collapse_stats_container {
     gap: 12px;
     flex-wrap: wrap;
-    justify-content: flex-start;
+    align-items: center;
   }
-
+  .stats_left {
+    display: flex;
+    gap: 12px;
+  }
   .collapse_stat_item {
     font-size: 13px;
-    width: 100%;
+    width: auto;
   }
 
   .questions_table_header {

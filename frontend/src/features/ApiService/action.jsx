@@ -458,9 +458,16 @@ export const createAssignmentModule = async (payload) => {
 
 export const getAssignmentModules = async (payload) => {
   try {
-    const response = await api.get(`/api/getAssignmentModule`, {
-      params: payload,
-    });
+    const response = await api.post(`/api/userWiseModules`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const mapQuestionsToAssignment = async (payload) => {
+  try {
+    const response = await api.post(`/api/mapAssignmentQuestion`, payload);
     return response;
   } catch (error) {
     throw error;
