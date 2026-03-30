@@ -353,9 +353,10 @@ const CompanyModel = {
     }
   },
 
-  getFavoriteCompanies: async (user_id) => {
+  getFavoriteCompanies: async (user_id, company_name) => {
     try {
-      const query = `SELECT
+      const queryParams = [];
+      let query = `SELECT
                         cf.id AS favorite_id,
                         cf.company_id,
                         cf.user_id,
@@ -366,9 +367,15 @@ const CompanyModel = {
                     FROM company_favorites AS cf
                     INNER JOIN company_questions AS cq ON
                         cf.company_id = cq.id
-                    WHERE
-                        cf.user_id = ?`;
-      const [result] = await pool.query(query, [user_id]);
+                    WHERE 1 = 1
+                        AND cf.user_id = ?`;
+      queryParams.push(user_id);
+      if (company_name) {
+        query += ` AND cq.company_name LIKE ?`;
+        queryParams.push(`%${company_name}%`);
+      }
+      query += ` ORDER BY cq.created_date DESC`;
+      const [result] = await pool.query(query, queryParams);
 
       const companyIds = [...new Set(result.map((item) => item.company_id))];
 

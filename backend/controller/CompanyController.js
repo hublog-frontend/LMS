@@ -136,8 +136,11 @@ const removeFromFavorite = async (req, res) => {
 
 const getFavoriteCompanies = async (req, res) => {
   try {
-    const { user_id } = req.params;
-    const result = await CompanyModel.getFavoriteCompanies(user_id);
+    const { user_id, company_name } = req.query;
+    const result = await CompanyModel.getFavoriteCompanies(
+      user_id,
+      company_name,
+    );
     return res
       .status(200)
       .json({ message: "Favorite companies fetched successfully", result });
