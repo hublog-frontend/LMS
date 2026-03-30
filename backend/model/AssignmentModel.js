@@ -676,6 +676,7 @@ const AssignmentModel = {
             result_output: "",
             language: "",
             submitted_at: "",
+            time_taken: 0,
           };
           questionMap.get(q.assignment_module_id).push({
             ...q,
