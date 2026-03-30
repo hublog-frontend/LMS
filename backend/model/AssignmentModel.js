@@ -237,7 +237,10 @@ const AssignmentModel = {
   },
 
   mapAssignmentQuestion: async (questions, assignment_module_id) => {
+    const connection = await pool.getConnection();
     try {
+      await connection.beginTransaction();
+
       const questionIds = questions.map((q) => q.question_id);
 
       const uniqueIds = new Set(questionIds);
@@ -246,26 +249,44 @@ const AssignmentModel = {
         throw new Error("Duplicate question_id found in request");
       }
 
-      const [isExists] = await pool.query(
-        `SELECT id FROM assignment_module_questions 
-       WHERE assignment_module_id = ? 
-       AND question_id IN (?) 
-       AND is_active = 1`,
-        [assignment_module_id, questionIds],
+      // Step 1: Deactivate existing questions for this module to handle removals
+      await connection.query(
+        `UPDATE assignment_module_questions SET is_active = 0 WHERE assignment_module_id = ?`,
+        [assignment_module_id],
       );
 
-      if (isExists.length > 0) {
-        throw new Error("Assignment question already exists in DB");
+      for (const q of questions) {
+        const { question_id, marks } = q;
+
+        // Step 2: Check if mapping already exists (even if inactive)
+        const [isExists] = await connection.query(
+          `SELECT id FROM assignment_module_questions 
+           WHERE assignment_module_id = ? AND question_id = ?`,
+          [assignment_module_id, question_id],
+        );
+
+        if (isExists.length > 0) {
+          // Step 3: Mapping exists, re-activate and update marks
+          await connection.query(
+            `UPDATE assignment_module_questions SET is_active = 1, marks = ? WHERE id = ?`,
+            [marks, isExists[0].id],
+          );
+        } else {
+          // Step 4: Mapping doesn't exist, insert new
+          await connection.query(
+            `INSERT INTO assignment_module_questions (assignment_module_id, question_id, marks, is_active) VALUES (?, ?, ?, 1)`,
+            [assignment_module_id, question_id, marks],
+          );
+        }
       }
 
-      const [insertAssignmentQuestion] = await pool.query(
-        `INSERT INTO assignment_module_questions(assignment_module_id, question_id, marks) VALUES ?`,
-        [questions.map((q) => [assignment_module_id, q.question_id, q.marks])],
-      );
-
-      return insertAssignmentQuestion.affectedRows;
+      await connection.commit();
+      return questions.length;
     } catch (error) {
+      await connection.rollback();
       throw new Error(error.message);
+    } finally {
+      connection.release();
     }
   },
 
@@ -621,7 +642,7 @@ const AssignmentModel = {
         const [userStats] = await pool.query(
           `SELECT
               aa.module_question_id,
-              aa.num_of_attempt,
+              aa.number_of_attempt,
               ar.score_obtained,
               ar.submitted_code,
               ar.result_output,
@@ -646,7 +667,7 @@ const AssignmentModel = {
             questionMap.set(q.assignment_module_id, []);
           }
           const user_q_status = userStatusMap.get(q.mq_id) || {
-            num_of_attempt: 0,
+            number_of_attempt: 0,
             score_obtained: 0,
             submitted_code: "",
             result_output: "",
@@ -674,7 +695,7 @@ const AssignmentModel = {
           0,
         );
         const attempted_count = questionsInModule.filter(
-          (q) => q.user_status.num_of_attempt > 0,
+          (q) => q.user_status.number_of_attempt > 0,
         ).length;
         const solved_count = questionsInModule.filter(
           (q) => q.user_status.score_obtained > 0,
