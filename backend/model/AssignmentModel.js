@@ -377,7 +377,7 @@ const AssignmentModel = {
       }
 
       const [insertAssignmentAttempt] = await pool.query(
-        `INSERT INTO assignment_attempts(user_id, module_question_id, number_of_attempt, created_date) VALUES(?, ?, ?, ?)`,
+        `INSERT INTO assignment_attempts(user_id, module_question_id, num_of_attempt, created_date) VALUES(?, ?, ?, ?)`,
         [user_id, module_question_id, 0, created_date],
       );
 
@@ -642,7 +642,7 @@ const AssignmentModel = {
         const [userStats] = await pool.query(
           `SELECT
               aa.module_question_id,
-              aa.number_of_attempt,
+              aa.num_of_attempt,
               ar.score_obtained,
               ar.submitted_code,
               ar.result_output,
@@ -667,7 +667,7 @@ const AssignmentModel = {
             questionMap.set(q.assignment_module_id, []);
           }
           const user_q_status = userStatusMap.get(q.mq_id) || {
-            number_of_attempt: 0,
+            num_of_attempt: 0,
             score_obtained: 0,
             submitted_code: "",
             result_output: "",
@@ -695,7 +695,7 @@ const AssignmentModel = {
           0,
         );
         const attempted_count = questionsInModule.filter(
-          (q) => q.user_status.number_of_attempt > 0,
+          (q) => q.user_status.num_of_attempt > 0,
         ).length;
         const solved_count = questionsInModule.filter(
           (q) => q.user_status.score_obtained > 0,
