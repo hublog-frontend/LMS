@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { Row, Col, Flex, Progress, Modal, Button } from "antd";
+import { Row, Col, Flex, Progress, Modal, Button, Drawer } from "antd";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { FiLayers } from "react-icons/fi";
 import { FiCheckCircle } from "react-icons/fi";
@@ -15,8 +15,14 @@ import CommonInputField from "../Common/CommonInputField";
 import {
   createAssignmentModule,
   getAssignmentModules,
+  getCategories,
+  getQuestions,
+  mapQuestionsToAssignment,
 } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
+import CommonSelectField from "../Common/CommonSelectField";
+import CommonTable from "../Common/CommonTable";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 export default function ParticularAssignments() {
   const navigate = useNavigate();
@@ -29,13 +35,32 @@ export default function ParticularAssignments() {
   const [validationTrigger, setValidationTrigger] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [modulesData, setModulesData] = useState([]);
+  const [overallAssignmentResult, setOverallAssignmentResult] = useState(null);
   const [viewParticularAssignment, setViewParticularAssignment] = useState("");
   const [isCollapseOpen, setIsCollapseOpen] = useState(true);
+  //questions usestates
+  const [isOpenMapQuestionDrawer, setIsOpenMapQuestionDrawer] = useState(false);
+  const [assignmentModuleId, setAssignmentModuleId] = useState(null);
+  const [allQuestions, setAllQuestions] = useState([]);
+  const [selectedQuestionIds, setSelectedQuestionIds] = useState([]);
+  const [selectedQuestions, setSelectedQuestions] = useState([]);
+  const [drawerLoading, setDrawerLoading] = useState(false);
+  const [questionsPagination, setQuestionsPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
+  const [categoriesData, setCategoriesData] = useState([]);
+  const [categoryIdFilter, setCategoryIdFilter] = useState(null);
+  const [questionTypeFilter, setQuestionTypeFilter] = useState(null);
+  const [selectedHistoryTestId, setSelectedHistoryTestId] = useState(null);
+
   const countCardsData = [
     {
       id: 1,
       name: "Total Questions",
-      count: "374",
+      count: overallAssignmentResult?.total_questions || 0,
       icon: (
         <FiLayers className="assignments_count_cards_icon" color="#6941c6" />
       ),
@@ -44,7 +69,7 @@ export default function ParticularAssignments() {
     {
       id: 2,
       name: "Solved",
-      count: "4",
+      count: overallAssignmentResult?.solved || 0,
       icon: (
         <FiCheckCircle
           className="assignments_count_cards_icon"
@@ -56,7 +81,7 @@ export default function ParticularAssignments() {
     {
       id: 3,
       name: "Attempted",
-      count: "9",
+      count: overallAssignmentResult?.attempted || 0,
       icon: (
         <IoMdCheckmark
           className="assignments_count_cards_icon"
@@ -68,7 +93,7 @@ export default function ParticularAssignments() {
     {
       id: 4,
       name: "Marks Obtained",
-      count: "3.3 / 5.5k",
+      count: `${overallAssignmentResult?.marks_obtained || 0}/${overallAssignmentResult?.total_marks || 0}`,
       icon: (
         <FaRegStar className="assignments_count_cards_icon" color="#039855" />
       ),
@@ -77,20 +102,39 @@ export default function ParticularAssignments() {
   ];
 
   useEffect(() => {
+    getCategoriesData();
     getAssignmentModulesData();
   }, []);
 
+  const getCategoriesData = async () => {
+    try {
+      const response = await getCategories();
+      setCategoriesData(response?.data?.result || []);
+    } catch (error) {
+      console.log("get categories error", error);
+    }
+  };
+
   const getAssignmentModulesData = async () => {
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+    console.log(converAsJson);
+
     const payload = {
       assignment_id: assignment_id,
+      user_id: converAsJson?.id,
     };
     try {
       const response = await getAssignmentModules(payload);
       console.log("get modules response", response);
-      const modules_data = response?.data?.data?.questionsData || [];
+      const modules_data = response?.data?.data?.modules || [];
+      setOverallAssignmentResult(
+        response?.data?.data?.overall_assignment_results || null,
+      );
       setModulesData(modules_data);
     } catch (error) {
       setModulesData([]);
+      setOverallAssignmentResult(null);
       console.log("get modules error", error);
     }
   };
@@ -133,6 +177,172 @@ export default function ParticularAssignments() {
         error?.response?.data?.details ||
           "Something went wrong. Try again later",
       );
+    }
+  };
+
+  const handleOpenMapDrawer = (item) => {
+    console.log(item);
+
+    setAssignmentModuleId(item.id);
+    setIsOpenMapQuestionDrawer(true);
+    setCategoryIdFilter(null);
+    setQuestionTypeFilter(null);
+
+    // Parse comma-separated question_ids already available in the item object from getTests API
+    const ids = item.questions.map((q) => {
+      return q.question_id;
+    });
+    console.log("ids", ids);
+
+    setSelectedQuestions(item.questions);
+    setSelectedQuestionIds(ids);
+
+    getAllQuestions(1, 10, null, null);
+  };
+
+  const getAllQuestions = async (
+    page,
+    limit,
+    catId = categoryIdFilter,
+    type = questionTypeFilter,
+  ) => {
+    setDrawerLoading(true);
+    const payload = {
+      page: page,
+      pageSize: limit,
+      category_id: catId,
+      question_type: type,
+    };
+    try {
+      const response = await getQuestions(payload);
+      console.log("get questions response", response);
+      const questions_data = response?.data?.data?.questions || [];
+      const pagination_data = response?.data?.data?.pagination || null;
+      setAllQuestions(questions_data);
+      setQuestionsPagination({
+        page: pagination_data?.page || 1,
+        limit: pagination_data?.limit || 10,
+        total: pagination_data?.total || 0,
+        totalPages: pagination_data?.totalPages || 1,
+      });
+    } catch (error) {
+      setAllQuestions([]);
+      console.log("get questions error", error);
+    } finally {
+      setDrawerLoading(false);
+    }
+  };
+
+  const getQuestionColumns = () => {
+    const common = [
+      {
+        title: "Question",
+        dataIndex: "question",
+        key: "question",
+        render: (text) => <EllipsisTooltip text={text || "-"} />,
+      },
+      {
+        title: "Type",
+        dataIndex: "question_type",
+        key: "question_type",
+        width: 100,
+        render: (text) => (
+          <span
+            style={{
+              padding: "2px 8px",
+              borderRadius: "4px",
+              fontSize: "12px",
+              background: text === "CODING" ? "#e6f7ff" : "#f6ffed",
+              color: text === "CODING" ? "#1890ff" : "#52c41a",
+              border: `1px solid ${text === "CODING" ? "#91d5ff" : "#b7eb8f"}`,
+            }}
+          >
+            {text}
+          </span>
+        ),
+      },
+    ];
+
+    if (questionTypeFilter === "CODING") {
+      return [
+        ...common,
+        {
+          title: "Difficulty",
+          dataIndex: "difficulty",
+          key: "difficulty",
+          width: 100,
+        },
+        {
+          title: "Sample Input",
+          dataIndex: "sample_input",
+          key: "sample_input",
+        },
+      ];
+    }
+
+    return [
+      ...common,
+      {
+        title: "Option A",
+        dataIndex: "option_a",
+        key: "option_a",
+        render: (text) => <EllipsisTooltip text={text || "-"} />,
+      },
+      {
+        title: "Option B",
+        dataIndex: "option_b",
+        key: "option_b",
+        render: (text) => <EllipsisTooltip text={text || "-"} />,
+      },
+      {
+        title: "Correct Answer",
+        dataIndex: "correct_answer",
+        key: "correct_answer",
+        width: 150,
+        render: (text) => <EllipsisTooltip text={text || "-"} />,
+      },
+    ];
+  };
+
+  const handleMapQuestionsSubmit = async () => {
+    if (selectedQuestionIds.length === 0) {
+      CommonMessage("warning", "Please select at least one question");
+      return;
+    }
+
+    setButtonLoading(true);
+    console.log("selectedQuestions", selectedQuestions);
+
+    const formatQuestions = selectedQuestions.map((q) => {
+      if (q.question_type == "MCQ") {
+        return { question_id: q?.question_id ?? q?.id, marks: 2 };
+      } else {
+        return { question_id: q?.question_id ?? q?.id, marks: 10 };
+      }
+    });
+    console.log("formatQuestions", formatQuestions);
+
+    const today = new Date();
+    const payload = {
+      assignment_module_id: assignmentModuleId,
+      questions: formatQuestions,
+      created_date: formatToBackendIST(today),
+    };
+    console.log("payload", payload);
+
+    try {
+      await mapQuestionsToAssignment(payload);
+      CommonMessage("success", "Questions mapped successfully!");
+      getAssignmentModulesData();
+      setIsOpenMapQuestionDrawer(false);
+      setButtonLoading(false);
+    } catch (error) {
+      CommonMessage(
+        "error",
+        error?.response?.data?.details || "Failed to map questions",
+      );
+    } finally {
+      setButtonLoading(false);
     }
   };
 
@@ -228,9 +438,8 @@ export default function ParticularAssignments() {
           <div className="particularassignments_progressbar_card">
             <Progress
               type="circle"
-              percent={0}
+              percent={overallAssignmentResult?.progress || 0}
               strokeWidth={10}
-              trailColor="#F2F2F2"
               strokeColor="#101828"
               format={(percent) => (
                 <div className="progress_text_container">
@@ -238,7 +447,7 @@ export default function ParticularAssignments() {
                   <p className="progress_percent">{percent}%</p>
                 </div>
               )}
-              width={160}
+              size={160}
             />
           </div>
         </Col>
@@ -292,37 +501,60 @@ export default function ParticularAssignments() {
 
             {isCollapseOpen && (
               <div className="particular_assignment_collapse_content">
-                <div className="particular_assignment_collapse_stats_container">
-                  <p className="collapse_stat_item">
-                    Attempted <span>1 / 3</span>
-                  </p>
-                  <p className="collapse_stat_item">
-                    Solved <span>0 / 3</span>
-                  </p>
-                  <p className="collapse_stat_item">
-                    Marks Scored <span>0 / 210</span>
-                  </p>
-                </div>
+                <Row>
+                  <Col xs={24} sm={24} md={12} lg={12}>
+                    <div className="particular_assignment_collapse_stats_container">
+                      <p className="collapse_stat_item">
+                        Attempted{" "}
+                        <span>{`${item.attempted_questions} / ${item.questions.length}`}</span>
+                      </p>
+                      <p className="collapse_stat_item">
+                        Solved{" "}
+                        <span>{`${item.solved_questions} / ${item.questions.length}`}</span>
+                      </p>
+                      <p className="collapse_stat_item">
+                        Marks Scored{" "}
+                        <span>{`${item.marks_scored} / ${item.total_marks}`}</span>
+                      </p>
+                    </div>
+                  </Col>
+                  <Col
+                    xs={24}
+                    sm={24}
+                    md={12}
+                    lg={12}
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      marginTop: "-8px",
+                    }}
+                  >
+                    <div>
+                      <button
+                        className="solve_button"
+                        onClick={() => {
+                          handleOpenMapDrawer(item);
+                        }}
+                      >
+                        Map Questions
+                      </button>
+                    </div>
+                  </Col>
+                </Row>
 
                 <div className="particular_assignment_questions_table_container">
                   <div className="questions_table_header">
                     <p className="column_question">Question</p>
                     <p className="column_company">Company</p>
-                    <p className="column_difficulty">Difficulty</p>
+                    {/* <p className="column_difficulty">Difficulty</p> */}
                     <p className="column_action">Action</p>
                   </div>
 
-                  {[1, 2, 3].map((item, index) => (
+                  {item.questions.map((q, index) => (
                     <div className="questions_table_row" key={index}>
                       <div className="column_question">
                         <div className="question_title_container">
-                          <p className="question_title">
-                            {index === 0
-                              ? "Count Sundays"
-                              : index === 1
-                                ? "Find Remainder"
-                                : "Swap Numbers Without Temporary Variable"}
-                          </p>
+                          <p className="question_title">{q.question}</p>
                           {/* Placeholder icons for orange clock/checkmark */}
                           <span className="question_status_icon">
                             {index === 0 ? (
@@ -340,10 +572,15 @@ export default function ParticularAssignments() {
                           </span>
                         </div>
                         <div className="question_badges_container">
-                          <span className="badge_type code">Code</span>
-                          <span className="badge_score">Score: 0 / 100</span>
+                          <span className="badge_type code">
+                            {q.question_type}
+                          </span>
+                          <span className="badge_score">
+                            Score:{" "}
+                            {`${q?.user_status?.score_obtained || 0} / ${q.question_type == "MCQ" ? 2 : 10}`}
+                          </span>
                           <span className="badge_attempts">
-                            Attempts: {index === 0 ? "0" : "--"}
+                            Attempts: {q?.user_status?.num_of_attempt || 0}
                           </span>
                         </div>
                       </div>
@@ -357,9 +594,9 @@ export default function ParticularAssignments() {
                               : "G B TCS I"}
                         </div>
                       </div>
-                      <div className="column_difficulty">
+                      {/* <div className="column_difficulty">
                         <span className="difficulty_badge easy">Easy</span>
-                      </div>
+                      </div> */}
                       <div className="column_action">
                         <button className="solve_button">Solve</button>
                       </div>
@@ -422,6 +659,88 @@ export default function ParticularAssignments() {
           />
         </div>
       </Modal>
+
+      <Drawer
+        title="Map Questions to Test"
+        onClose={() => {
+          setIsOpenMapQuestionDrawer(false);
+          setSelectedQuestionIds([]);
+          setSelectedQuestions([]);
+          setAssignmentModuleId(null);
+        }}
+        open={isOpenMapQuestionDrawer}
+        size="60%"
+      >
+        <Row gutter={16} style={{ marginBottom: "16px" }}>
+          <Col span={7}>
+            <CommonSelectField
+              label="Category"
+              isFilterField={true}
+              options={categoriesData}
+              onChange={(e) => {
+                setCategoryIdFilter(e.target.value);
+                getAllQuestions(1, 10, e.target.value, questionTypeFilter);
+              }}
+              value={categoryIdFilter}
+            />
+          </Col>
+          <Col span={7}>
+            <CommonSelectField
+              label="Question Type"
+              isFilterField={true}
+              options={[
+                { id: "MCQ", name: "Multiple Choice Question" },
+                { id: "CODING", name: "Coding Question" },
+              ]}
+              onChange={(e) => {
+                setQuestionTypeFilter(e.target.value);
+                getAllQuestions(1, 10, categoryIdFilter, e.target.value);
+              }}
+              value={questionTypeFilter}
+            />
+          </Col>
+        </Row>
+        <CommonTable
+          columns={getQuestionColumns()}
+          dataSource={allQuestions}
+          loading={drawerLoading}
+          checkBox="true"
+          size={"small"}
+          selectedRowKeys={selectedQuestionIds}
+          selectedDatas={(rows) => {
+            setSelectedQuestions(rows);
+            setSelectedQuestionIds(rows.map((r) => r.id));
+          }}
+          onPaginationChange={({ page, limit }) =>
+            getAllQuestions(page, limit, categoryIdFilter, questionTypeFilter)
+          }
+          limit={questionsPagination.limit}
+          page_number={questionsPagination.page}
+          totalPageNumber={questionsPagination.total}
+        />
+        <div
+          style={{
+            marginTop: "20px",
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <Button
+            onClick={() => setIsOpenMapQuestionDrawer(false)}
+            style={{ marginRight: "10px" }}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="primary"
+            loading={buttonLoading}
+            onClick={handleMapQuestionsSubmit}
+            className="courses_addmodule_modal_createbutton"
+          >
+            Submit
+          </Button>
+        </div>
+      </Drawer>
     </div>
   );
 }
