@@ -27,6 +27,8 @@ export default function Assignments() {
   const [isOpenAddAssignmentModal, setIsOpenAddAssignmentModal] =
     useState(false);
   const [editAssignmentId, setEditAssignmentId] = useState(null);
+  const [searchValue, setSearchValue] = useState("");
+  const [overAllStats, setOverAllStats] = useState(null);
   const [assignmentName, setAssignmentName] = useState("");
   const [assignmentNameError, setAssignmentNameError] = useState("");
   const [assignmentLogoBase64, setAssignmentLogoBase64] = useState("");
@@ -38,7 +40,7 @@ export default function Assignments() {
     {
       id: 1,
       name: "Total Questions",
-      count: "374",
+      count: overAllStats?.total_questions || 0,
       icon: (
         <FiLayers className="assignments_count_cards_icon" color="#6941c6" />
       ),
@@ -47,7 +49,7 @@ export default function Assignments() {
     {
       id: 2,
       name: "Solved",
-      count: "4",
+      count: overAllStats?.solved || 0,
       icon: (
         <FiCheckCircle
           className="assignments_count_cards_icon"
@@ -59,7 +61,7 @@ export default function Assignments() {
     {
       id: 3,
       name: "Attempted",
-      count: "9",
+      count: overAllStats?.attempted || 0,
       icon: (
         <IoMdCheckmark
           className="assignments_count_cards_icon"
@@ -71,7 +73,7 @@ export default function Assignments() {
     {
       id: 4,
       name: "Marks Obtained",
-      count: "3.3 / 5.5k",
+      count: `${overAllStats?.marks_obtained || 0} / ${overAllStats?.total_marks || 0}`,
       icon: (
         <FaRegStar className="assignments_count_cards_icon" color="#039855" />
       ),
@@ -79,53 +81,28 @@ export default function Assignments() {
     },
   ];
 
-  const assignmentCardsData = [
-    {
-      id: 1,
-      name: "MNC Interview Cracker",
-      image: <img src={MNCImage} className="assignment_cards_mnc_image" />,
-      modules: "5",
-      questions: "86",
-      mark_scored: "0/3085",
-    },
-    {
-      id: 2,
-      name: "Infosys Interview Cracker",
-      image: <img src={InfosysImage} className="assignment_cards_mnc_image" />,
-      modules: "1",
-      questions: "19",
-      mark_scored: "0/190",
-    },
-    {
-      id: 3,
-      name: "TCS Interview Cracker",
-      image: <img src={TcsImage} className="assignment_cards_mnc_image" />,
-      modules: "3",
-      questions: "78",
-      mark_scored: "0/1934",
-    },
-    {
-      id: 4,
-      name: "Aptitude Interview Cracker",
-      image: <img src={AptitudeImage} className="assignment_cards_mnc_image" />,
-      modules: "3",
-      questions: "78",
-      mark_scored: "0/1934",
-    },
-  ];
-
   useEffect(() => {
-    getAssignmentsData();
+    getAssignmentsData(null);
   }, []);
 
-  const getAssignmentsData = async () => {
+  const getAssignmentsData = async (assignment_name) => {
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+    console.log(converAsJson);
+
+    const payload = {
+      assignment_name: assignment_name,
+      user_id: converAsJson?.id,
+    };
     try {
-      const response = await getAssignments();
+      const response = await getAssignments(payload);
       console.log("get assignments response", response);
       const assignments_data = response?.data?.data?.assignments || [];
       setAssignmentData(assignments_data);
+      setOverAllStats(response?.data?.data?.overall_stats || null);
     } catch (error) {
       setAssignmentData([]);
+      setOverAllStats(null);
       console.log("get assignments error", error);
     }
   };
@@ -248,6 +225,13 @@ export default function Assignments() {
           <CommonInputField
             placeholder="Search for assignment"
             prefix={<CiSearch size={16} />}
+            onChange={(e) => {
+              setSearchValue(e.target.value);
+              setTimeout(() => {
+                getAssignmentsData(e.target.value);
+              }, 300);
+            }}
+            value={searchValue}
           />
         </Col>
       </Row>
@@ -326,17 +310,17 @@ export default function Assignments() {
                   <div className="assignment_cards_score_container">
                     <div className="assignment_cards_score_name_container">
                       <p>Modules</p>
-                      <p>{item.total_modules}</p>
+                      <p>{item?.total_modules || 0}</p>
                     </div>
 
                     <div className="assignment_cards_score_name_container">
                       <p>Questions</p>
-                      <p>86</p>
+                      <p>{item?.total_questions || 0}</p>
                     </div>
 
                     <div className="assignment_cards_score_name_container">
                       <p>Mark Scored</p>
-                      <p>0/190</p>
+                      <p>{`${item?.marks_scored} / ${item?.total_marks}`}</p>
                     </div>
                   </div>
 

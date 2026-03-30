@@ -9,18 +9,21 @@ import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 import { FiBriefcase } from "react-icons/fi";
 import { FiBookmark } from "react-icons/fi";
 import { PiSealQuestionBold } from "react-icons/pi";
+import { useDispatch } from "react-redux";
+import { storeCompanyQuestionSearchValue } from "../Redux/Slice";
 
 export default function SideMenu() {
   const navigate = useNavigate();
   const location = useLocation("");
+  const dispatch = useDispatch();
 
   const [selectedKey, setSelectedKey] = useState("");
   const [sideMenuOptions, setSideMenuOptions] = useState({
-    1: {
-      title: "Dashboard",
-      icon: <GoHome size={19} />,
-      path: "dashboard",
-    },
+    // 1: {
+    //   title: "Dashboard",
+    //   icon: <GoHome size={19} />,
+    //   path: "dashboard",
+    // },
     2: {
       title: "Courses",
       icon: <LuBookOpen size={19} />,
@@ -86,6 +89,7 @@ export default function SideMenu() {
 
   const handleMenuClick = (e) => {
     navigate(`/${e.key}`);
+    dispatch(storeCompanyQuestionSearchValue(""));
   };
 
   return (

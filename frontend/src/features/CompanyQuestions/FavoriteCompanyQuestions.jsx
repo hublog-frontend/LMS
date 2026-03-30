@@ -17,6 +17,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   storeCompanyQuestionList,
   storeFavoriteCompanyQuestionList,
+  storefavoriteCompanyQuestionSearchValue,
 } from "../Redux/Slice";
 import CommonNodataFound from "../Common/CommonNoDataFound";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -27,17 +28,28 @@ export default function FavoriteCompanyQuestions() {
   const favoriteComapanyQuestionsData = useSelector(
     (state) => state.favoritecompanyquestionlist,
   );
+  const searchValue = useSelector(
+    (state) => state.favoritecompanyquestionsearchvalue,
+  );
+
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    getFavoriteCompaniesData();
+    getFavoriteCompaniesData(searchValue);
   }, []);
 
-  const getFavoriteCompaniesData = async (callCompanyQuestionsApi = false) => {
+  const getFavoriteCompaniesData = async (
+    company_name,
+    callCompanyQuestionsApi = false,
+  ) => {
     const getloginUserDetails = localStorage.getItem("loginUserDetails");
     const converAsJson = JSON.parse(getloginUserDetails);
+    const payload = {
+      user_id: converAsJson?.id || null,
+      company_name: company_name,
+    };
     try {
-      const response = await getFavoriteCompanies(converAsJson?.id || null);
+      const response = await getFavoriteCompanies(payload);
       console.log("get favorite company questions response", response);
       const favorites_questions_data = response?.data?.result || [];
       dispatch(storeFavoriteCompanyQuestionList(favorites_questions_data));
@@ -71,7 +83,7 @@ export default function FavoriteCompanyQuestions() {
           "success",
           `${type == "add" ? "Added" : "Removed"} to favorites!`,
         );
-        getFavoriteCompaniesData(true);
+        getFavoriteCompaniesData(searchValue, true);
       }, 300);
     } catch (error) {
       CommonMessage(
@@ -105,6 +117,13 @@ export default function FavoriteCompanyQuestions() {
         <CommonInputField
           placeholder="Search by company name"
           prefix={<CiSearch size={16} />}
+          onChange={(e) => {
+            dispatch(storefavoriteCompanyQuestionSearchValue(e.target.value));
+            setTimeout(() => {
+              getFavoriteCompaniesData(e.target.value);
+            }, 300);
+          }}
+          value={searchValue}
         />
       </div>
 

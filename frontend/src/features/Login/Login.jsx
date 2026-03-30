@@ -57,7 +57,7 @@ export default function Login() {
       );
       setTimeout(() => {
         setLoading(false);
-        navigate("/dashboard");
+        navigate("/courses");
       }, 300);
     } catch (error) {
       console.log("login error");

@@ -470,7 +470,19 @@
 .solve_button:hover {
   background-color: #1a4d8c;
 }
-
+.solve_button_loading {
+  background-color: #2160ad;
+  color: #ffffff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 400;
+  cursor: default;
+  transition: background-color 0.3s;
+  min-width: 90px;
+  opacity: 0.7;
+}
 .company_logos_placeholder {
   display: flex;
   align-items: center;

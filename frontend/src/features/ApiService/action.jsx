@@ -431,7 +431,7 @@ export const deleteCategory = async (category_id) => {
 //assignment api's
 export const getAssignments = async (payload) => {
   try {
-    const response = await api.get(`/api/getAssignments`, { params: payload });
+    const response = await api.post(`/api/userWiseAssignments`, payload);
     return response;
   } catch (error) {
     throw error;
@@ -468,6 +468,24 @@ export const getAssignmentModules = async (payload) => {
 export const mapQuestionsToAssignment = async (payload) => {
   try {
     const response = await api.post(`/api/mapAssignmentQuestion`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const insertAssignmentAttempt = async (payload) => {
+  try {
+    const response = await api.post(`/api/insertAssignmentAttempt`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const insertAssignmentAnswer = async (payload) => {
+  try {
+    const response = await api.post(`/api/insertAssignmentAnswer`, payload);
     return response;
   } catch (error) {
     throw error;
@@ -521,9 +539,11 @@ export const removeCompanyQuestionToFavorite = async (payload) => {
   }
 };
 
-export const getFavoriteCompanies = async (user_id) => {
+export const getFavoriteCompanies = async (payload) => {
   try {
-    const response = await api.get(`/api/getFavoriteCompanies/${user_id}`);
+    const response = await api.get(`/api/getFavoriteCompanies`, {
+      params: payload,
+    });
     return response;
   } catch (error) {
     throw error;

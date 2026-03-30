@@ -22,6 +22,7 @@ import { CommonMessage } from "../Common/CommonMessage";
 import { useDispatch } from "react-redux";
 import {
   storeCompanyQuestionList,
+  storeCompanyQuestionSearchValue,
   storeFavoriteCompanyQuestionList,
 } from "../Redux/Slice";
 
@@ -31,6 +32,11 @@ export default function CompanyQuestions({ handleEdit }) {
   const comapanyQuestionsData = useSelector(
     (state) => state.companyquestionlist,
   );
+  const searchValue = useSelector((state) => state.companyquestionsearchvalue);
+  const favoriteSearchValue = useSelector(
+    (state) => state.favoritecompanyquestionsearchvalue,
+  );
+
   const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
   const [companyId, setCompanyId] = useState(null);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -39,10 +45,11 @@ export default function CompanyQuestions({ handleEdit }) {
   //   getCompanyQuestionsData();
   // }, []);
 
-  const getCompanyQuestionsData = async () => {
+  const getCompanyQuestionsData = async (company_name) => {
     const getloginUserDetails = localStorage.getItem("loginUserDetails");
     const converAsJson = JSON.parse(getloginUserDetails);
     const payload = {
+      company_name: company_name,
       user_id: converAsJson?.id || null,
     };
     try {
@@ -74,7 +81,7 @@ export default function CompanyQuestions({ handleEdit }) {
       setTimeout(() => {
         CommonMessage(
           "success",
-          `${type == "add" ? "Added" : "Removed"} to favorites!`,
+          `${type === "add" ? "Added to favorites!" : "Removed from favorites!"}`,
         );
         getFavoriteCompaniesData();
       }, 300);
@@ -90,8 +97,12 @@ export default function CompanyQuestions({ handleEdit }) {
   const getFavoriteCompaniesData = async () => {
     const getloginUserDetails = localStorage.getItem("loginUserDetails");
     const converAsJson = JSON.parse(getloginUserDetails);
+    const payload = {
+      user_id: converAsJson?.id || null,
+      company_name: favoriteSearchValue,
+    };
     try {
-      const response = await getFavoriteCompanies(converAsJson?.id || null);
+      const response = await getFavoriteCompanies(payload);
       console.log("get favorite company questions response", response);
       const favorites_questions_data = response?.data?.result || [];
       dispatch(storeFavoriteCompanyQuestionList(favorites_questions_data));
@@ -99,7 +110,7 @@ export default function CompanyQuestions({ handleEdit }) {
       dispatch(storeFavoriteCompanyQuestionList([]));
       console.log("get await company questions error", error);
     } finally {
-      getCompanyQuestionsData();
+      getCompanyQuestionsData(searchValue);
     }
   };
 
@@ -109,7 +120,7 @@ export default function CompanyQuestions({ handleEdit }) {
       setTimeout(() => {
         setButtonLoading(false);
         setIsOpenDeleteModal(false);
-        getCompanyQuestionsData();
+        getCompanyQuestionsData(searchValue);
         CommonMessage("success", `Company Deleted Successfully!`);
       }, 300);
     } catch (error) {
@@ -128,6 +139,13 @@ export default function CompanyQuestions({ handleEdit }) {
         <CommonInputField
           placeholder="Search by company name"
           prefix={<CiSearch size={16} />}
+          onChange={(e) => {
+            dispatch(storeCompanyQuestionSearchValue(e.target.value));
+            setTimeout(() => {
+              getCompanyQuestionsData(e.target.value);
+            }, 300);
+          }}
+          value={searchValue}
         />
       </div>
 

@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
+import {
+  Route,
+  Routes,
+  useNavigate,
+  useLocation,
+  Navigate,
+} from "react-router-dom";
 import { Layout, Drawer, Button, Grid, Divider } from "antd";
 import { MenuOutlined } from "@ant-design/icons";
 import ActeLogo from "../../assets/acte-logo.png";
@@ -24,6 +30,7 @@ import TestAttempt from "../TestAttempt/TestAttempt";
 import TestResult from "../Tests/TestResult";
 import Jobs from "../Jobs/Jobs";
 import DriveDetails from "../Jobs/DriveDetails";
+import AssignmentPractice from "../Assignments/AssignmentPractice";
 
 const { Sider, Content, Header } = Layout;
 const { useBreakpoint } = Grid;
@@ -48,7 +55,8 @@ export default function Pages() {
       path.startsWith("/customer-registration") ||
       path === "/success" ||
       path === "/helpdesk" ||
-      path.startsWith("/test-attempt")
+      path.startsWith("/test-attempt") ||
+      path.startsWith("/assignment-practice")
     );
   };
 
@@ -99,6 +107,8 @@ export default function Pages() {
           path="/test-attempt/:testName/:testId"
           element={<TestAttempt />}
         />
+
+        <Route path="/assignment-practice" element={<AssignmentPractice />} />
       </Routes>
     );
   }
@@ -260,6 +270,7 @@ export default function Pages() {
             <Route element={<Profile />} path="/profile" />
             <Route element={<Jobs />} path="/jobs" />
             <Route element={<DriveDetails />} path="/jobs/:job_id" />
+            <Route element={<Navigate to={"/courses"} />} path="*" />
           </Routes>
         </Content>
       </Layout>

@@ -17,11 +17,15 @@ import CommonPdfUpload from "../Common/CommonPdfUpload";
 import { getCompanyQuestions, getCompanySkills } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import { addCompany } from "../ApiService/MultipartApi";
-import { useDispatch } from "react-redux";
-import { storeCompanyQuestionList } from "../Redux/Slice";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  storeCompanyQuestionList,
+  storefavoriteCompanyQuestionSearchValue,
+} from "../Redux/Slice";
 
 export default function CompanyQuestionsTab() {
   const dispatch = useDispatch();
+  const searchValue = useSelector((state) => state.companyquestionsearchvalue);
   //usestates
   const [isOpenAddCompanyDrawer, setIsOpenAddCompanyDrawer] = useState(false);
   const [editCompanyId, setEditCompanyId] = useState(null);
@@ -90,6 +94,7 @@ export default function CompanyQuestionsTab() {
   }, [handleEdit]);
 
   useEffect(() => {
+    dispatch(storefavoriteCompanyQuestionSearchValue(""));
     getCompanySkillsData();
   }, []);
 
@@ -111,6 +116,7 @@ export default function CompanyQuestionsTab() {
     const getloginUserDetails = localStorage.getItem("loginUserDetails");
     const converAsJson = JSON.parse(getloginUserDetails);
     const payload = {
+      company_name: searchValue,
       user_id: converAsJson?.id || null,
     };
     try {

@@ -17,6 +17,7 @@ import {
   getAssignmentModules,
   getCategories,
   getQuestions,
+  insertAssignmentAttempt,
   mapQuestionsToAssignment,
 } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -93,7 +94,7 @@ export default function ParticularAssignments() {
     {
       id: 4,
       name: "Marks Obtained",
-      count: `${overallAssignmentResult?.marks_obtained || 0}/${overallAssignmentResult?.total_marks || 0}`,
+      count: `${overallAssignmentResult?.marks_obtained || 0} / ${overallAssignmentResult?.total_marks || 0}`,
       icon: (
         <FaRegStar className="assignments_count_cards_icon" color="#039855" />
       ),
@@ -346,6 +347,45 @@ export default function ParticularAssignments() {
     }
   };
 
+  const handleSolve = async (question_item, module_item) => {
+    console.log("question_item", question_item, "module_item", module_item);
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+    console.log(converAsJson);
+    navigate("/assignment-practice", {
+      state: {
+        question_item: question_item,
+        module_item: module_item,
+      },
+    });
+
+    // setButtonLoading(true);
+
+    // const payload = {
+    //   user_id: converAsJson?.id,
+    //   module_question_id: question_item?.mq_id || null,
+    //   created_date: formatToBackendIST(new Date()),
+    // };
+
+    // try {
+    //   await insertAssignmentAttempt(payload);
+    //   setButtonLoading(false);
+    //   navigate("/assignment-practice", {
+    //     state: {
+    //       question_item: question_item,
+    //       module_item: module_item,
+    //     },
+    //   });
+    // } catch (error) {
+    //   CommonMessage(
+    //     "error",
+    //     error?.response?.data?.details || "Failed to map questions",
+    //   );
+    // } finally {
+    //   setButtonLoading(false);
+    // }
+  };
+
   const formReset = () => {
     setIsOpenAddModuleModal(false);
     setEditModuleId(null);
@@ -440,7 +480,7 @@ export default function ParticularAssignments() {
               type="circle"
               percent={overallAssignmentResult?.progress || 0}
               strokeWidth={10}
-              strokeColor="#101828"
+              strokeColor="#2160ad"
               format={(percent) => (
                 <div className="progress_text_container">
                   <p className="progress_label">Progress</p>
@@ -598,7 +638,14 @@ export default function ParticularAssignments() {
                         <span className="difficulty_badge easy">Easy</span>
                       </div> */}
                       <div className="column_action">
-                        <button className="solve_button">Solve</button>
+                        <button
+                          className="solve_button"
+                          onClick={() => {
+                            handleSolve(q, item);
+                          }}
+                        >
+                          Solve
+                        </button>
                       </div>
                     </div>
                   ))}
