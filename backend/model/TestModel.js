@@ -361,10 +361,13 @@ const TestModel = {
   },
 
   addQuestions: async (questions) => {
+    const connection = await pool.getConnection();
     try {
-      let isExists = false;
+      await connection.beginTransaction();
+
+      // Check if any question already exists (preserving behavior)
       for (const question of questions) {
-        const [isExistsResult] = await pool.query(
+        const [isExistsResult] = await connection.query(
           `SELECT id FROM questions WHERE category_id = ? AND question = ? AND correct_answer = ? AND option_a = ? AND option_b = ? AND option_c = ? AND option_d = ? AND question_type = ? AND description = ? AND constraints = ? AND difficulty = ? AND sample_input = ? AND sample_output = ? AND is_active = 1`,
           [
             question.category_id,
@@ -383,30 +386,14 @@ const TestModel = {
           ],
         );
         if (isExistsResult.length > 0) {
-          isExists = true;
-          break;
+          throw new Error("Question already exists");
         }
       }
-      if (isExists) {
-        throw new Error("Question already exists");
-      }
-      const values = questions.map((item) => [
-        item.category_id,
-        item.question,
-        item.correct_answer || null,
-        item.option_a || null,
-        item.option_b || null,
-        item.option_c || null,
-        item.option_d || null,
-        item.question_type || "MCQ",
-        item.description || null,
-        item.constraints || null,
-        item.difficulty || "EASY",
-        item.sample_input || null,
-        item.sample_output || null,
-      ]);
 
-      const insertQuery = `INSERT INTO questions(
+      let totalAffectedRows = 0;
+      for (const question of questions) {
+        const [insertResult] = await connection.query(
+          `INSERT INTO questions(
                                 category_id,
                                 question,
                                 correct_answer,
@@ -421,13 +408,51 @@ const TestModel = {
                                 sample_input,
                                 sample_output
                             )
-                            VALUES ?`;
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            question.category_id,
+            question.question,
+            question.correct_answer || null,
+            question.option_a || null,
+            question.option_b || null,
+            question.option_c || null,
+            question.option_d || null,
+            question.question_type || "MCQ",
+            question.description || null,
+            question.constraints || null,
+            question.difficulty || "EASY",
+            question.sample_input || null,
+            question.sample_output || null,
+          ],
+        );
 
-      const [insertResult] = await pool.query(insertQuery, [values]);
+        const questionId = insertResult.insertId;
+        totalAffectedRows += insertResult.affectedRows;
 
-      return insertResult.affectedRows;
+        // Handle companies array if present
+        if (
+          question.companies &&
+          Array.isArray(question.companies) &&
+          question.companies.length > 0
+        ) {
+          const companyValues = question.companies.map((companyId) => [
+            questionId,
+            companyId,
+          ]);
+          await connection.query(
+            `INSERT INTO question_companies (question_id, company_id) VALUES ?`,
+            [companyValues],
+          );
+        }
+      }
+
+      await connection.commit();
+      return totalAffectedRows;
     } catch (error) {
+      await connection.rollback();
       throw new Error(error.message);
+    } finally {
+      connection.release();
     }
   },
 
@@ -445,10 +470,14 @@ const TestModel = {
     difficulty,
     sample_input,
     sample_output,
+    companies,
     id,
   ) => {
+    const connection = await pool.getConnection();
     try {
-      const [isExists] = await pool.query(
+      await connection.beginTransaction();
+
+      const [isExists] = await connection.query(
         `SELECT id FROM questions WHERE category_id = ? AND question = ? AND correct_answer = ? AND option_a = ? AND option_b = ? AND option_c = ? AND option_d = ? AND question_type = ? AND description = ? AND constraints = ? AND difficulty = ? AND sample_input = ? AND sample_output = ? AND id != ? AND is_active = 1`,
         [
           category_id,
@@ -467,10 +496,12 @@ const TestModel = {
           id,
         ],
       );
+
       if (isExists.length > 0) {
         throw new Error("Question already exists");
       }
-      const [updateResult] = await pool.query(
+
+      const [updateResult] = await connection.query(
         `UPDATE questions SET category_id = ?, question = ?, correct_answer = ?, option_a = ?, option_b = ?, option_c = ?, option_d = ?, question_type = ?, description = ?, constraints = ?, difficulty = ?, sample_input = ?, sample_output = ? WHERE id = ?`,
         [
           category_id,
@@ -489,9 +520,50 @@ const TestModel = {
           id,
         ],
       );
+
+      if (companies && Array.isArray(companies)) {
+        // Fetch current mappings
+        const [currentCompanies] = await connection.query(
+          `SELECT company_id FROM question_companies WHERE question_id = ?`,
+          [id],
+        );
+
+        const currentCompanyIds = currentCompanies.map((c) => c.company_id);
+        const newCompanyIds = companies.map((id) => parseInt(id));
+
+        const companiesToRemove = currentCompanyIds.filter(
+          (cid) => !newCompanyIds.includes(cid),
+        );
+        const companiesToAdd = newCompanyIds.filter(
+          (cid) => !currentCompanyIds.includes(cid),
+        );
+
+        if (companiesToRemove.length > 0) {
+          await connection.query(
+            `DELETE FROM question_companies WHERE question_id = ? AND company_id IN (?)`,
+            [id, companiesToRemove],
+          );
+        }
+
+        if (companiesToAdd.length > 0) {
+          const companyValues = companiesToAdd.map((companyId) => [
+            id,
+            companyId,
+          ]);
+          await connection.query(
+            `INSERT INTO question_companies (question_id, company_id) VALUES ?`,
+            [companyValues],
+          );
+        }
+      }
+
+      await connection.commit();
       return updateResult.affectedRows;
     } catch (error) {
+      await connection.rollback();
       throw new Error(error.message);
+    } finally {
+      connection.release();
     }
   },
 
@@ -546,8 +618,48 @@ const TestModel = {
       query += ` ORDER BY q.id ASC LIMIT ? OFFSET ?`;
       queryParams.push(limitNumber, offset);
 
-      const [questions] = await pool.query(query, queryParams);
-      const [totalCount] = await pool.query(countQuery, countQueryParams);
+      const [[questions], [totalCount]] = await Promise.all([
+        pool.query(query, queryParams),
+        pool.query(countQuery, countQueryParams),
+      ]);
+
+      const questionIds = questions.map((question) => question.id);
+
+      let companyMap = new Map();
+
+      if (questionIds.length > 0) {
+        const [companyQuestions] = await pool.query(
+          `SELECT
+              qc.id,
+              qc.question_id,
+              qc.company_id,
+              c.name,
+              c.logo_image
+          FROM
+              question_companies AS qc
+          INNER JOIN companies AS c ON
+              qc.company_id = c.company_id AND c.is_active = 1
+          WHERE qc.question_id IN(?)`,
+          [questionIds],
+        );
+
+        companyQuestions.forEach((companyQuestion) => {
+          if (!companyMap.has(companyQuestion.question_id)) {
+            companyMap.set(companyQuestion.question_id, []);
+          }
+          companyMap.get(companyQuestion.question_id).push({
+            id: companyQuestion.id,
+            question_id: companyQuestion.question_id,
+            company_id: companyQuestion.company_id,
+            company_name: companyQuestion.name,
+            logo_image: companyQuestion.logo_image,
+          });
+        });
+      }
+
+      questions.forEach((question) => {
+        question.companies = companyMap.get(question.id) || [];
+      });
 
       return {
         questions,

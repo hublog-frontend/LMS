@@ -296,7 +296,7 @@ const AssignmentModel = {
 
       if (!company_id) {
         const [isExists] = await pool.query(
-          `SELECT company_id FROM companies WHERE company_name = ? AND is_active = 1`,
+          `SELECT company_id FROM companies WHERE name = ? AND is_active = 1`,
           [company_name],
         );
 
@@ -305,14 +305,14 @@ const AssignmentModel = {
         }
 
         const [insertCompany] = await pool.query(
-          `INSERT INTO companies(company_name, logo_image) VALUES(?, ?)`,
+          `INSERT INTO companies(name, logo_image) VALUES(?, ?)`,
           [company_name, logo_image],
         );
 
         affectedRow += insertCompany.affectedRows;
       } else {
         const [isExists] = await pool.query(
-          `SELECT id FROM companies WHERE company_name = ? AND id != ? AND is_active = 1`,
+          `SELECT id FROM companies WHERE name = ? AND id != ? AND is_active = 1`,
           [company_name, company_id],
         );
 
@@ -321,7 +321,7 @@ const AssignmentModel = {
         }
 
         const [updateCompany] = await pool.query(
-          `UPDATE companies SET company_name = ?, logo_image = ? WHERE id = ?`,
+          `UPDATE companies SET name = ?, logo_image = ? WHERE id = ?`,
           [company_name, logo_image, company_id],
         );
 
@@ -337,7 +337,7 @@ const AssignmentModel = {
   getCompanies: async () => {
     try {
       const [companies] = await pool.query(
-        `SELECT company_id, company_name, logo_image FROM companies WHERE is_active = 1`,
+        `SELECT company_id, name, logo_image FROM companies WHERE is_active = 1`,
       );
 
       return companies;
