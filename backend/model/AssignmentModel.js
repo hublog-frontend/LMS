@@ -672,6 +672,33 @@ const AssignmentModel = {
           [user_id, moduleIds],
         );
 
+        // Fetch companies for these questions
+        const questionIds = questions.map((q) => q.question_id);
+        let companyMap = new Map();
+
+        if (questionIds.length > 0) {
+          const [companyQuestions] = await pool.query(
+            `SELECT
+                qc.question_id,
+                qc.company_id,
+                c.name AS company_name,
+                c.logo_image
+            FROM
+                question_companies AS qc
+            INNER JOIN companies AS c ON
+                qc.company_id = c.company_id AND c.is_active = 1
+            WHERE qc.question_id IN (?)`,
+            [questionIds],
+          );
+
+          companyQuestions.forEach((cq) => {
+            if (!companyMap.has(cq.question_id)) {
+              companyMap.set(cq.question_id, []);
+            }
+            companyMap.get(cq.question_id).push(cq);
+          });
+        }
+
         userStats.forEach((stat) =>
           userStatusMap.set(stat.module_question_id, stat),
         );
@@ -691,6 +718,7 @@ const AssignmentModel = {
           };
           questionMap.get(q.assignment_module_id).push({
             ...q,
+            companies: companyMap.get(q.question_id) || [],
             user_status: user_q_status,
           });
         });

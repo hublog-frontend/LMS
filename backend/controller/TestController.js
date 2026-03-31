@@ -191,6 +191,7 @@ const updateQuestion = async (request, response) => {
     difficulty,
     sample_input,
     sample_output,
+    companies,
     id,
   } = request.body;
   try {
@@ -208,6 +209,7 @@ const updateQuestion = async (request, response) => {
       difficulty,
       sample_input,
       sample_output,
+      companies,
       id,
     );
     return response.status(200).send({
