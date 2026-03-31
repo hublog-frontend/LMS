@@ -586,3 +586,31 @@ export const removeBookmark = async (payload) => {
     throw error;
   }
 };
+
+// job api's
+export const getJobs = async (payload) => {
+  try {
+    const response = await api.get(`/api/getJobs`, { params: payload });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getJobById = async (id) => {
+  try {
+    const response = await api.get(`/api/getJobById/${id}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getStreams = async (payload) => {
+  try {
+    const response = await api.get(`/api/getStreams`, { params: payload });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

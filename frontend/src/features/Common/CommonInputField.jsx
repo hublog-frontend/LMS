@@ -41,7 +41,10 @@ export default function CommonInputField({
       label === "Portfolio Link" ||
       label === "Project Link" ||
       label === "Youtube Url" ||
-      label === "Attendance Sheet Link"
+      label === "Attendance Sheet Link" ||
+      label === "Job ID / Code" ||
+      label === "Offered Salary / CTC" ||
+      label === "Shift / Timings"
     ) {
       onChange?.({ target: { value } });
     } else {

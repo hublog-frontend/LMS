@@ -11,6 +11,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  height: 100%;
 }
 .jobs_cards_header {
   display: flex;
@@ -66,6 +67,7 @@
   display: flex;
   flex-flow: row wrap;
   min-width: 0;
+  flex-grow: 1;
 }
 .jobs_cards_details_container {
   padding: 14px 0;
@@ -213,4 +215,239 @@
   .drive_content_other_criterias_div li {
     font-size: 10px;
   }
+}
+
+.edit_job_icon {
+  font-size: 18px;
+  color: #667085;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.edit_job_icon:hover {
+  color: #12355f;
+  background: #f2f4f7;
+  transform: scale(1.1);
+}
+
+.post_job_btn {
+  height: 40px;
+  border-radius: 8px;
+  font-weight: 600;
+  background: #12355f !important;
+}
+
+.post_job_btn:hover {
+  background: #1a4a84 !important;
+  box-shadow: 0 4px 12px rgba(18, 53, 95, 0.2);
+}
+
+.jobs_page_wrapper {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Percentage and Criteria UI Improvements */
+.form_section_heading {
+  font-weight: 600;
+  margin-bottom: 12px !important;
+}
+
+.percentage_grid_box {
+  padding: 20px;
+  background: #fdfdfe;
+  border: 1px solid #eef2f6;
+  border-radius: 12px;
+}
+
+.sub_inner_label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #344054;
+  margin-bottom: 12px;
+}
+
+.percentage_input_wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.perc_level {
+  font-size: 12px;
+  color: #667085;
+  font-weight: 500;
+}
+
+.criteria_check_group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.criteria_pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid #d0d5dd;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: white;
+  user-select: none;
+}
+
+.criteria_pill:hover {
+  border-color: #2160ad;
+  background: #f5f8ff;
+}
+
+.criteria_pill.checked {
+  background: #f0f5ff;
+  border-color: #2160ad;
+  color: #12355f;
+  font-weight: 500;
+}
+
+/* Interview Rounds Refined UI */
+.rounds_list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.round_input_row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #fdfdfe;
+  border: 1px solid #eef2f6;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.round_input_row:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  border-color: #d0d5dd;
+}
+
+.round_badge {
+  min-width: 36px;
+  height: 36px;
+  background: #12355f;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(18, 53, 95, 0.15);
+}
+
+.round_name_input {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.round_name_input:focus {
+  box-shadow: none !important;
+}
+
+.add_round_btn {
+  font-weight: 600 !important;
+  color: #2160ad !important;
+  padding: 0 !important;
+  height: auto !important;
+}
+
+/* Upload Section Enhancement */
+.upload_section_box {
+  padding: 24px;
+  background: #fdfdfe;
+  border: 2px dashed #eaecf0;
+  border-radius: 16px;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.upload_section_box:hover {
+  border-color: #2160ad;
+  background: #f5f8ff;
+}
+
+.upload_trigger_area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.upload_icon_circle {
+  width: 48px;
+  height: 48px;
+  background: #f0f5ff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d0e3ff;
+}
+
+.main_upload_text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #12355f;
+}
+
+.sub_upload_text {
+  font-size: 12px;
+  color: #667085;
+}
+
+.jobs_create_drawer_submit_button {
+  background-color: #2160ad;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #2160ad13;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 0px;
+  width: 180px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.jobs_create_drawer_submit_button_loading {
+  background-color: #2160ad;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 #2160ad13;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 0px;
+  width: 180px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0.7;
 }

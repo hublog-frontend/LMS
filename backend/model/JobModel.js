@@ -423,7 +423,7 @@ const JobModel = {
           notes = COALESCE(?, notes),
           expires_at = COALESCE(?, expires_at),
           job_category = COALESCE(?, job_category),
-          updated_at = COALESCE(?, updated_at),
+          updated_at = COALESCE(?, updated_at)
       `;
 
       const values = [

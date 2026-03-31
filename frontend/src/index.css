@@ -399,3 +399,7 @@ button:focus-visible {
 .ant-select.ant-select-outlined:not(.ant-select-disabled):hover {
   border-color: #2160ad !important;
 }
+/* antd spinner styles */
+.ant-spin .ant-spin-dot-item {
+  background: #2160ad !important;
+}

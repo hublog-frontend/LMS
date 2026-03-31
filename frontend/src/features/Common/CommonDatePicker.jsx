@@ -13,6 +13,8 @@ export default function CommonDatePicker({
   error,
   required,
   style,
+  allowClear = false,
+  disable_future_dates = true,
 }) {
   const handleChange = (date) => {
     const dates = new Date(date.$d);
@@ -50,8 +52,8 @@ export default function CommonDatePicker({
         placeholder={placeholder}
         status={error ? "error" : ""}
         style={{ width: "100%", fontWeight: 300, fontSize: "14px" }}
-        allowClear={false}
-        disabledDate={disableFutureDates}
+        allowClear={allowClear}
+        disabledDate={disable_future_dates ? disableFutureDates : null}
       />
       {error && (
         <div className="common_inputfields_error_text">

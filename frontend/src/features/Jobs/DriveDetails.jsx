@@ -1,24 +1,78 @@
-import React from "react";
-import { Row, Col, Tabs } from "antd";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Row, Col, Tabs, Spin, Empty, message } from "antd";
+import { useNavigate, useParams } from "react-router-dom";
 import { IoArrowBackOutline } from "react-icons/io5";
 import BuildingImage from "../../assets/building.png";
-import { FiUser, FiCheckSquare } from "react-icons/fi";
-import { PiMapPin } from "react-icons/pi";
-import { PiWallet } from "react-icons/pi";
-import { LuBookOpen } from "react-icons/lu";
-import { FiCalendar } from "react-icons/fi";
-import { FiBriefcase } from "react-icons/fi";
-import { LuClock4 } from "react-icons/lu";
-import { FiBook } from "react-icons/fi";
-import { IoTransgenderSharp } from "react-icons/io5";
+import {
+  FiUser,
+  FiCalendar,
+  FiBriefcase,
+  FiBook,
+  FiCheck,
+} from "react-icons/fi";
+import { PiMapPin, PiWallet } from "react-icons/pi";
+import { LuBookOpen, LuClock4 } from "react-icons/lu";
+import { IoTransgenderSharp, IoCodeSharp } from "react-icons/io5";
 import { AiOutlinePercentage } from "react-icons/ai";
-import { IoMdCode } from "react-icons/io";
 import { MdBlockFlipped } from "react-icons/md";
-import { FiCheck } from "react-icons/fi";
+import { getJobById } from "../ApiService/action";
+import dayjs from "dayjs";
+import "./styles.css";
 
 export default function DriveDetails() {
+  const { job_id } = useParams();
+  const id = job_id; // Keep id variable name for internal logic
   const navigate = useNavigate();
+  const [job, setJob] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchJob = async () => {
+      console.log("DriveDetails: Fetching job with ID:", id);
+      setLoading(true);
+      try {
+        const response = await getJobById(id);
+        console.log("DriveDetails: API Response:", response.data);
+        if (response.data && response.data.data) {
+          setJob(response.data.data);
+        } else {
+          message.error("Job not found");
+        }
+      } catch (error) {
+        console.error("DriveDetails: Error fetching job details:", error);
+        message.error("Failed to load job details");
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) {
+      fetchJob();
+    } else {
+      console.warn("DriveDetails: No ID provided in URL params");
+    }
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div style={{ padding: "100px", textAlign: "center" }}>
+        <Spin size="small" />
+      </div>
+    );
+  }
+
+  if (!job) {
+    return (
+      <div style={{ padding: "100px", textAlign: "center" }}>
+        <Empty description="No job details found" />
+      </div>
+    );
+  }
+
+  const formatList = (data) => {
+    if (!data) return "Not specified";
+    if (Array.isArray(data)) return data.join(", ");
+    return data;
+  };
 
   return (
     <div>
@@ -28,30 +82,21 @@ export default function DriveDetails() {
             <IoArrowBackOutline
               size={30}
               style={{ cursor: "pointer" }}
-              onClick={() => {
-                navigate("/jobs");
-              }}
+              onClick={() => navigate("/jobs")}
             />
             <p className="common_heading">Job Details</p>
           </div>
         </Col>
-        <Col
-          xs={12}
-          sm={12}
-          md={12}
-          lg={12}
-          className="tests_createtopic_button_container"
-        ></Col>
       </Row>
 
       <div className="drive_title_container">
-        <img src={BuildingImage} className="job_cards_image" />
-        <p className="drive_main_title">TAP-JOB-ID-2469</p>
+        <img src={BuildingImage} className="job_cards_image" alt="company" />
+        <p className="drive_main_title">{job.job_id || "Job Drive"}</p>
       </div>
 
       <Tabs
         className="companyquestions_tabs"
-        defaultActiveKey={"1"} // ✅ auto select first visible tab
+        defaultActiveKey={"1"}
         items={[
           {
             label: "Drive Details",
@@ -78,7 +123,7 @@ export default function DriveDetails() {
                     <div style={{ color: "gray" }}>
                       <p style={{ fontSize: "13px" }}>Looking for</p>
                       <p className="drive_content_section_title">
-                        Salesforce Developer
+                        {job.looking_for || "N/A"}
                       </p>
                     </div>
                   </Col>
@@ -98,7 +143,7 @@ export default function DriveDetails() {
                     <div style={{ color: "gray" }}>
                       <p style={{ fontSize: "13px" }}>Location</p>
                       <p className="drive_content_section_title">
-                        Bengaluru, Andhra Pradesh
+                        {formatList(job.location)}
                       </p>
                     </div>
                   </Col>
@@ -117,7 +162,9 @@ export default function DriveDetails() {
                     />
                     <div style={{ color: "gray" }}>
                       <p style={{ fontSize: "13px" }}>Service Agreement</p>
-                      <p style={{ fontWeight: 500 }}>3 Years</p>
+                      <p style={{ fontWeight: 500, color: "#667085" }}>
+                        {job.service_agreement || "N/A"}
+                      </p>
                     </div>
                   </Col>
 
@@ -135,7 +182,9 @@ export default function DriveDetails() {
                     />
                     <div style={{ color: "gray" }}>
                       <p style={{ fontSize: "13px" }}>Salary</p>
-                      <p className="drive_content_section_title">Upto 4 LPA</p>
+                      <p className="drive_content_section_title">
+                        {job.salary || "N/A"}
+                      </p>
                     </div>
                   </Col>
 
@@ -154,7 +203,7 @@ export default function DriveDetails() {
                     <div style={{ color: "gray" }}>
                       <p style={{ fontSize: "13px" }}>Qualification</p>
                       <p className="drive_content_section_title">
-                        B.Sc, BCA, BE/B.Tech, MCA, M.Sc
+                        {formatList(job.qualification)}
                       </p>
                     </div>
                   </Col>
@@ -174,7 +223,10 @@ export default function DriveDetails() {
                     <div style={{ color: "gray" }}>
                       <p style={{ fontSize: "13px" }}>Year of Passing</p>
                       <p className="drive_content_section_title">
-                        2024, 2023, 2022, 2021, 2020, 2019, 2018
+                        {job.year_of_passing
+                          ?.map((y) => y.year)
+                          .sort()
+                          .join(", ") || "N/A"}
                       </p>
                     </div>
                   </Col>
@@ -193,13 +245,18 @@ export default function DriveDetails() {
                     />
                     <div style={{ color: "gray" }}>
                       <p style={{ fontSize: "13px" }}>Interview Rounds</p>
-                      <p className="drive_content_section_title">
-                        <ol style={{ margin: "0px", padding: "8px 12px" }}>
-                          <li>Communication Round</li>
-                          <li> Technical coding Round</li>
-                          <li>HR Round</li>
-                        </ol>
-                      </p>
+                      <div className="drive_content_section_title">
+                        {job.interview_rounds &&
+                        job.interview_rounds.length > 0 ? (
+                          <ol style={{ margin: "0px", padding: "8px 12px" }}>
+                            {job.interview_rounds.map((round, idx) => (
+                              <li key={idx}>{round.round_name}</li>
+                            ))}
+                          </ol>
+                        ) : (
+                          "N/A"
+                        )}
+                      </div>
                     </div>
                   </Col>
 
@@ -218,7 +275,9 @@ export default function DriveDetails() {
                     <div style={{ color: "gray" }}>
                       <p style={{ fontSize: "13px" }}>Interview Date</p>
                       <p className="drive_content_section_title">
-                        30-03-2026 ( online )
+                        {job.interview_date
+                          ? `${dayjs(job.interview_date).format("DD-MM-YYYY")} ( ${job.interview_mode || ""} )`
+                          : "N/A"}
                       </p>
                     </div>
                   </Col>
@@ -238,7 +297,7 @@ export default function DriveDetails() {
                     <div style={{ color: "gray" }}>
                       <p style={{ fontSize: "13px" }}>Shift</p>
                       <p className="drive_content_section_title">
-                        based on project
+                        {job.shift || "N/A"}
                       </p>
                     </div>
                   </Col>
@@ -258,12 +317,8 @@ export default function DriveDetails() {
                     <div style={{ color: "gray" }}>
                       <p style={{ fontSize: "13px" }}>Streams</p>
                       <p className="drive_content_section_title">
-                        Computer Science Engineering , Computer Science and
-                        Business Systems , Computer Science and Data Science ,
-                        Artificial Intelligence and Data Science , Computer
-                        Science - Any Streams , Electronics and Communication
-                        Engineering , Information Technology , Information
-                        Science , AI - ML{" "}
+                        {job.streams?.map((s) => s.stream_name).join(", ") ||
+                          "N/A"}
                       </p>
                     </div>
                   </Col>
@@ -281,9 +336,9 @@ export default function DriveDetails() {
                       style={{ flexShrink: 0 }}
                     />
                     <div style={{ color: "gray" }}>
-                      <p style={{ fontSize: "13px" }}>genderPreference</p>
+                      <p style={{ fontSize: "13px" }}>Gender Preference</p>
                       <p className="drive_content_section_title">
-                        Male & Female
+                        {job.gender_preference || "N/A"}
                       </p>
                     </div>
                   </Col>
@@ -305,7 +360,9 @@ export default function DriveDetails() {
                         Min Required Percentage
                       </p>
                       <p className="drive_content_section_title">
-                        SSLC : 35 PUC/Diploma : 35 Degree : 35{" "}
+                        {job.min_required_percentage
+                          ?.map((p) => `${p.education_level} : ${p.percentage}`)
+                          .join(" ") || "N/A"}
                       </p>
                     </div>
                   </Col>
@@ -317,7 +374,7 @@ export default function DriveDetails() {
                     lg={6}
                     className="drive_content_col_container"
                   >
-                    <IoMdCode
+                    <IoCodeSharp
                       color="#000000"
                       size={24}
                       style={{ flexShrink: 0 }}
@@ -326,8 +383,9 @@ export default function DriveDetails() {
                       <p style={{ fontSize: "13px" }}>Skills Required</p>
                       <div className="drive_content_skills_div">
                         <ul style={{ padding: "0px", margin: "4px 0px" }}>
-                          <li>Any programming language</li>
-                          <li>communication</li>
+                          {job.skills_required?.map((s, idx) => (
+                            <li key={idx}>{s.skill_name}</li>
+                          ))}
                         </ul>
                       </div>
                     </div>
@@ -347,7 +405,9 @@ export default function DriveDetails() {
                     />
                     <div style={{ color: "gray" }}>
                       <p style={{ fontSize: "13px" }}>Blocking Period</p>
-                      <p className="drive_content_section_title">6 months</p>
+                      <p className="drive_content_section_title">
+                        {job.blocking_period || "N/A"}
+                      </p>
                     </div>
                   </Col>
 
@@ -358,7 +418,7 @@ export default function DriveDetails() {
                     lg={6}
                     className="drive_content_col_container"
                   >
-                    <IoMdCode
+                    <IoCodeSharp
                       color="#000000"
                       size={24}
                       style={{ flexShrink: 0 }}
@@ -367,32 +427,20 @@ export default function DriveDetails() {
                       <p style={{ fontSize: "13px" }}>Other Criterias</p>
                       <div className="drive_content_other_criterias_div">
                         <ul style={{ padding: "0px", margin: "4px 0px" }}>
-                          <li>
-                            Gap In Education{" "}
-                            <FiCheck
-                              size={16}
-                              color="#111929"
-                              style={{ flexShrink: 0 }}
-                            />
-                          </li>
-                          <li>
-                            Relocation{" "}
-                            <FiCheck
-                              size={16}
-                              color="#111929"
-                              style={{ flexShrink: 0 }}
-                            />
-                          </li>
-                          <li>
-                            Certificate Submission{" "}
-                            <FiCheck
-                              size={16}
-                              color="#111929"
-                              style={{ flexShrink: 0 }}
-                            />
-                          </li>
+                          {job.other_criterias?.map((c, idx) => (
+                            <li key={idx}>
+                              {c.criteria_name}{" "}
+                              {c.is_allowed && (
+                                <FiCheck
+                                  size={16}
+                                  color="#111929"
+                                  style={{ flexShrink: 0 }}
+                                />
+                              )}
+                            </li>
+                          ))}
                         </ul>
-                      </div>{" "}
+                      </div>
                     </div>
                   </Col>
                 </Row>
@@ -403,45 +451,15 @@ export default function DriveDetails() {
                 >
                   Notes
                 </div>
-
                 <div className="drive_content_row_container">
-                  <div style={{ color: "#101828", fontWeight: 500 }}>
-                    <p>Please Note:</p>
-                    <br />
-                    <p>
-                      The company will provide Salesforce training . Candidates
-                      who are willing to learn and wor
-                    </p>
-                    <br />
-                    <p>
-                      The company has openings based on pass-out year and
-                      location:
-                    </p>
-                    <br />
-                    <p>
-                      2016 – 2022 pass-out candidates: Openings are available in
-                      Bangalore
-                    </p>
-                    <p>
-                      2023 – 2024 pass-out candidates: Openings are available in
-                      Anantapur, Andhra Pradesh
-                    </p>
-                    <br />
-                    <p>Salary Details:</p>
-                    <p>
-                      A stipend of ₹5,000 will be provided to all candidates
-                      during the initial period.
-                    </p>
-                    <br />
-                    <p>2016 – 2022 pass-outs: ₹4 LPA</p>
-                    <p>2023 – 2024 pass-outs: ₹3 LPA</p>
-
-                    <br />
-                    <p>
-                      A 2-year bond is applicable for candidates who passed out
-                      between 2016 and 2022, and a 3-year bond is applicable for
-                      candidates who passed out in 2023 and 2024
-                    </p>
+                  <div
+                    style={{
+                      color: "#101828",
+                      fontWeight: 500,
+                      whiteSpace: "pre-wrap",
+                    }}
+                  >
+                    {job.notes || "No additional notes provided."}
                   </div>
                 </div>
               </div>

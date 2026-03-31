@@ -113,3 +113,22 @@ export const addCompany = async (payload) => {
     throw error;
   }
 };
+
+// job api's
+export const createJob = async (payload) => {
+  try {
+    const response = await api.post(`/api/createJob`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateJob = async (id, payload) => {
+  try {
+    const response = await api.put(`/api/updateJob/${id}`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
