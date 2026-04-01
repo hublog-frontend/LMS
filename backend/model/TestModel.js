@@ -327,13 +327,18 @@ const TestModel = {
                       t.topic_id = tp.id AND tp.is_active = 1
                   WHERE
                       th.user_id = ?`;
-      let countQuery = `SELECT COUNT(*) as total FROM test_history WHERE user_id = ? AND test_id IN (SELECT id FROM tests WHERE is_active = 1)`;
+      let countQuery = `SELECT
+                            COUNT(*) AS total
+                        FROM
+                            test_history th
+                        INNER JOIN tests t ON
+                            th.test_id = t.id AND t.is_active = 1
+                        WHERE
+                            th.user_id = ?`;
 
       if (test_name) {
-        query += ` AND t.test_name LIKE ?`;
-        queryParams.push(`%${test_name}%`);
-        countQuery += ` AND t.test_name LIKE ?`;
-        countParams.push(`%${test_name}%`);
+        query += ` AND t.test_name LIKE '%${test_name}%'`;
+        countQuery += ` AND t.test_name LIKE '%${test_name}%'`;
       }
 
       query += ` ORDER BY th.id DESC`;

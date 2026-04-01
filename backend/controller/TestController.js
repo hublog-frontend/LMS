@@ -298,7 +298,7 @@ const getTestQuestions = async (request, response) => {
 };
 
 const userWiseTestHistory = async (request, response) => {
-  const { user_id, test_name, page, limit } = request.query;
+  const { user_id, test_name, page, limit } = request.body;
   try {
     const result = await TestModel.userWiseTestHistory(
       user_id,
