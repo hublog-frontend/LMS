@@ -23,46 +23,49 @@ export default function Jobs() {
     setSelectedJob(null);
   };
 
-  const tabItems = React.useMemo(() => [
-    {
-      label: "Technical Drives",
-      key: "1",
-      children: (
-        <TechnicalDrive
-          key={`tech-${refreshKey}`}
-          category="Technical drives"
-          onEdit={handleEdit}
-        />
-      ),
-    },
-    {
-      label: "Non-Technical Drives",
-      key: "2",
-      children: (
-        <TechnicalDrive
-          key={`non-tech-${refreshKey}`}
-          category="Non-technical drives"
-          onEdit={handleEdit}
-        />
-      ),
-    },
-    {
-      label: "Internal Drives",
-      key: "3",
-      children: (
-        <TechnicalDrive
-          key={`internal-${refreshKey}`}
-          category="Internal drives"
-          onEdit={handleEdit}
-        />
-      ),
-    },
-    {
-      label: "Applied Drives",
-      key: "4",
-      children: <p>Under Development</p>,
-    },
-  ], [refreshKey]);
+  const tabItems = React.useMemo(
+    () => [
+      {
+        label: "Technical Drives",
+        key: "1",
+        children: (
+          <TechnicalDrive
+            key={`tech-${refreshKey}`}
+            category="Technical drives"
+            onEdit={handleEdit}
+          />
+        ),
+      },
+      {
+        label: "Non-Technical Drives",
+        key: "2",
+        children: (
+          <TechnicalDrive
+            key={`non-tech-${refreshKey}`}
+            category="Non-technical drives"
+            onEdit={handleEdit}
+          />
+        ),
+      },
+      {
+        label: "Internal Drives",
+        key: "3",
+        children: (
+          <TechnicalDrive
+            key={`internal-${refreshKey}`}
+            category="Internal drives"
+            onEdit={handleEdit}
+          />
+        ),
+      },
+      // {
+      //   label: "Applied Drives",
+      //   key: "4",
+      //   children: <p>Under Development</p>,
+      // },
+    ],
+    [refreshKey],
+  );
 
   return (
     <div className="jobs_page_wrapper">

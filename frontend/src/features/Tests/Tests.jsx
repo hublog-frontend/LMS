@@ -169,7 +169,12 @@ export default function Tests() {
                 </p>
 
                 <div style={{ marginTop: "30px" }}>
-                  <button className="tests_banner_viewhistory_button">
+                  <button
+                    className="tests_banner_viewhistory_button"
+                    onClick={() => {
+                      navigate("/tests/testHistory");
+                    }}
+                  >
                     View History
                   </button>
                 </div>

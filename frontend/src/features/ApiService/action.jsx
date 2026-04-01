@@ -341,6 +341,14 @@ export const getTestResult = async (payload) => {
   }
 };
 
+export const userWiseTestFullHistory = async (payload) => {
+  try {
+    const response = await api.post(`/api/userWiseTestHistory`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 // question api's
 export const createQuestion = async (payload) => {
   try {

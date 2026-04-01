@@ -31,6 +31,7 @@ import TestResult from "../Tests/TestResult";
 import Jobs from "../Jobs/Jobs";
 import DriveDetails from "../Jobs/DriveDetails";
 import AssignmentPractice from "../Assignments/AssignmentPractice";
+import FullTestHistory from "../Tests/FullTestHistory";
 
 const { Sider, Content, Header } = Layout;
 const { useBreakpoint } = Grid;
@@ -250,6 +251,7 @@ export default function Pages() {
             <Route element={<CourseVideos />} path="/course-videos" />
             <Route element={<Tests />} path="/tests" />
             <Route path="/tests/:testType/:topicId" element={<TestTopics />} />
+            <Route path="/tests/testHistory" element={<FullTestHistory />} />
             <Route
               path="/testresult/:testName/:history_id"
               element={<TestResult />}

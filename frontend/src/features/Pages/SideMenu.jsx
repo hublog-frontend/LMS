@@ -69,6 +69,9 @@ export default function SideMenu() {
   useEffect(() => {
     const pathName = location.pathname.split("/")[1];
     setSelectedKey(pathName);
+    if (pathName.includes("testresult")) {
+      setSelectedKey("tests");
+    }
   }, [location.pathname]);
 
   const renderMenuItems = (menuConfig) => {

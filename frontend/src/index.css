@@ -403,3 +403,10 @@ button:focus-visible {
 .ant-spin .ant-spin-dot-item {
   background: #2160ad !important;
 }
+.ant-radio-wrapper .ant-radio-checked {
+  background-color: #2160ad !important;
+  border-color: #2160ad !important;
+}
+.ant-radio-wrapper:hover .ant-radio {
+  border-color: #2160ad !important;
+}

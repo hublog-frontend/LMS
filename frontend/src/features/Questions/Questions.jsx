@@ -27,6 +27,7 @@ import CommonTextArea from "../Common/CommonTextArea";
 import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonSpinner from "../Common/CommonSpinner";
+import CommonAntdMultiSelect from "../Common/CommonAntMultiSelect";
 import { addressValidator, selectValidator } from "../Common/Validation";
 import {
   createCategory,
@@ -36,6 +37,7 @@ import {
   getCategories,
   getQuestions,
   updateQuestion,
+  getCompanyQuestions,
 } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
@@ -72,6 +74,10 @@ export default function Questions() {
   const [categoryName, setCategoryName] = useState("");
   const [categoryNameError, setCategoryNameError] = useState("");
   const [questionTypeFilter, setQuestionTypeFilter] = useState(null);
+  // company mapping states
+  const [companiesData, setCompaniesData] = useState([]);
+  const [selectedCompanies, setSelectedCompanies] = useState([]);
+  const [selectedCompaniesError, setSelectedCompaniesError] = useState("");
   //bulk upload usesates
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [bulkErrors, setBulkErrors] = useState([]);
@@ -106,6 +112,7 @@ export default function Questions() {
   useEffect(() => {
     getQuestionsData(1, 10, null, null);
     getCategoriesData();
+    getAllCompaniesData();
   }, []);
 
   const getQuestionsData = async (
@@ -153,6 +160,17 @@ export default function Questions() {
     }
   };
 
+  const getAllCompaniesData = async () => {
+    try {
+      const response = await getCompanyQuestions({ company_name: "" });
+      const companies_data = response?.data?.result || [];
+      setCompaniesData(companies_data);
+    } catch (error) {
+      setCompaniesData([]);
+      console.log("get companies error", error);
+    }
+  };
+
   const handlePaginationChange = ({ page, limit }) => {
     setPagination({
       page: page,
@@ -196,6 +214,15 @@ export default function Questions() {
         key: "category_name",
         width: 150,
         render: (text) => <EllipsisTooltip text={text ? text : "-"} />,
+      },
+      {
+        title: "Companies",
+        dataIndex: "mapped_companies",
+        key: "mapped_companies",
+        width: 200,
+        render: (text) => (
+          <EllipsisTooltip text={Array.isArray(text) ? text.join(", ") : "-"} />
+        ),
       },
     ];
 
@@ -363,6 +390,7 @@ export default function Questions() {
           question: question,
           question_type: questionType,
           category_id: questionCategoryId,
+          companies: selectedCompanies,
           ...(questionType === "MCQ"
             ? {
                 option_a: optionA,
@@ -388,6 +416,7 @@ export default function Questions() {
           question: question,
           question_type: questionType,
           category_id: questionCategoryId,
+          companies: selectedCompanies,
           ...(questionType === "MCQ"
             ? {
                 option_a: optionA,
@@ -454,6 +483,7 @@ export default function Questions() {
         Difficulty: "EASY",
         "Sample Input": "",
         "Sample Output": "",
+        Companies: "", // Comma separated company names
       },
     ]);
     const wb = XLSX.utils.book_new();
@@ -498,6 +528,7 @@ export default function Questions() {
           let diff = row["Difficulty"] || row["difficulty"] || "EASY";
           let si = row["Sample Input"] || row["sample_input"] || "";
           let so = row["Sample Output"] || row["sample_output"] || "";
+          let comp = row["Companies"] || row["companies"] || "";
 
           q = String(q).trim();
           type = String(type).trim().toUpperCase();
@@ -511,6 +542,7 @@ export default function Questions() {
           diff = String(diff).trim().toUpperCase();
           si = String(si).trim();
           so = String(so).trim();
+          comp = String(comp).trim();
 
           // if entirely empty, skip
           if (!q && !a && !b && !c && !d && !ca) return;
@@ -559,6 +591,19 @@ export default function Questions() {
               difficulty: type === "CODING" ? diff : "EASY",
               sample_input: type === "CODING" ? si : null,
               sample_output: type === "CODING" ? so : null,
+              companies: comp
+                ? comp
+                    .split(",")
+                    .map((cName) => {
+                      const matchedCompany = companiesData.find(
+                        (co) =>
+                          co.company_name.toLowerCase() ===
+                          cName.trim().toLowerCase(),
+                      );
+                      return matchedCompany ? matchedCompany.id : null;
+                    })
+                    .filter((id) => id !== null)
+                : [],
             });
           }
         });
@@ -677,6 +722,7 @@ export default function Questions() {
     setQuestion(record.question);
     setQuestionType(record.question_type);
     setQuestionCategoryId(record.category_id);
+    setSelectedCompanies(record.companies || []);
 
     if (record.question_type === "MCQ") {
       setOptionA(record.option_a);
@@ -757,6 +803,8 @@ export default function Questions() {
     setEditCategoryId(null);
     setQuestionCategoryId(null);
     setQuestionCategoryIdError("");
+    setSelectedCompanies([]);
+    setSelectedCompaniesError("");
     setQuestionType("MCQ");
     setDescription("");
     setDescriptionError("");
@@ -1096,6 +1144,20 @@ export default function Questions() {
               }}
               value={questionCategoryId}
               error={questionCategoryIdError}
+            />
+          </div>
+          <div className="questions-drawer-field-mt">
+            <CommonAntdMultiSelect
+              label="Mapping Company"
+              options={companiesData.map((c) => ({
+                id: c.id,
+                name: c.company_name,
+              }))}
+              onChange={(value) => {
+                setSelectedCompanies(value);
+              }}
+              value={selectedCompanies}
+              error={selectedCompaniesError}
             />
           </div>
 
