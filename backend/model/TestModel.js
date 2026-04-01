@@ -310,16 +310,23 @@ const TestModel = {
       const queryParams = [user_id];
       const countParams = [user_id];
 
-      let query = `SELECT 
-                      th.id AS history_id, 
-                      th.test_id, 
-                      th.created_date, 
-                      t.test_name, 
-                      th.total_marks_scored, 
-                      th.total_time_taken 
-                  FROM test_history th 
-                  JOIN tests t ON th.test_id = t.id 
-                  WHERE th.user_id = ? AND t.is_active = 1`;
+      let query = `SELECT
+                      th.id AS history_id,
+                      th.test_id,
+                      th.created_date,
+                      t.test_name,
+                      th.total_marks_scored,
+                      th.total_time_taken,
+                      tp.id AS topic_id,
+                      tp.topic_name
+                  FROM
+                      test_history th
+                  INNER JOIN tests t ON
+                      th.test_id = t.id AND t.is_active = 1
+                  INNER JOIN topics tp ON
+                      t.topic_id = tp.id AND tp.is_active = 1
+                  WHERE
+                      th.user_id = ?`;
       let countQuery = `SELECT COUNT(*) as total FROM test_history WHERE user_id = ? AND test_id IN (SELECT id FROM tests WHERE is_active = 1)`;
 
       if (test_name) {
@@ -344,13 +351,42 @@ const TestModel = {
         pool.query(countQuery, countParams),
       ]);
 
+      const testIds = [...new Set(testHistory.map((test) => test.test_id))];
+
+      let maxMarkMap = new Map();
+
+      if (testIds.length > 0) {
+        const [questionCounts] = await pool.query(
+          `SELECT
+              SUM(CASE WHEN q.question_type = 'MCQ' THEN 2 ELSE 0 END) AS mcq_questions,
+              SUM(CASE WHEN q.question_type = 'CODING' THEN 10 ELSE 0 END) AS coding_questions,
+              tq.test_id
+          FROM
+              test_questions AS tq
+          INNER JOIN questions AS q ON
+              tq.question_id = q.id
+              AND q.is_active = 1
+          WHERE tq.is_active = 1
+            AND tq.test_id IN (?)
+          GROUP BY tq.test_id`,
+          [testIds],
+        );
+
+        questionCounts.forEach((r) => maxMarkMap.set(r.test_id, r));
+      }
+
       const total = totalCount[0].total;
-      const totalPages = Math.ceil(total / limit);
+      const pageNumber = parseInt(page, 10) || 1;
+      const limitNumber = parseInt(limit, 10) || 10;
+      const totalPages = Math.ceil(total / limitNumber);
 
       return {
         testHistory: testHistory.map((test) => ({
           ...test,
           test_type: "On Demand Test",
+          max_mark:
+            Number(maxMarkMap.get(test.test_id)?.mcq_questions || 0) +
+            Number(maxMarkMap.get(test.test_id)?.coding_questions || 0),
         })),
         pagination: {
           total: parseInt(total),
