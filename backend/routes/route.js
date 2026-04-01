@@ -208,4 +208,10 @@ router.get(
   TestController.userWiseTestHistory,
 );
 
+router.post(
+  "/userWiseBookmarks",
+  verifyToken,
+  BookmarkController.userWiseBookmarks,
+);
+
 module.exports = router;

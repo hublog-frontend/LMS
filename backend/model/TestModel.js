@@ -305,9 +305,10 @@ const TestModel = {
     }
   },
 
-  userWiseTestHistory: async (user_id, test_name) => {
+  userWiseTestHistory: async (user_id, test_name, page, limit) => {
     try {
       const queryParams = [user_id];
+      const countParams = [user_id];
 
       let query = `SELECT 
                       th.id AS history_id, 
@@ -319,21 +320,44 @@ const TestModel = {
                   FROM test_history th 
                   JOIN tests t ON th.test_id = t.id 
                   WHERE th.user_id = ? AND t.is_active = 1`;
+      let countQuery = `SELECT COUNT(*) as total FROM test_history WHERE user_id = ? AND test_id IN (SELECT id FROM tests WHERE is_active = 1)`;
 
       if (test_name) {
         query += ` AND t.test_name LIKE ?`;
         queryParams.push(`%${test_name}%`);
+        countQuery += ` AND t.test_name LIKE ?`;
+        countParams.push(`%${test_name}%`);
       }
 
       query += ` ORDER BY th.id DESC`;
 
-      const [testHistory] = await pool.query(query, queryParams);
+      if (page && limit) {
+        const pageNumber = parseInt(page, 10) || 1;
+        const limitNumber = parseInt(limit, 10) || 10;
+        const offset = (pageNumber - 1) * limitNumber;
+        query += ` LIMIT ? OFFSET ?`;
+        queryParams.push(limitNumber, offset);
+      }
+
+      const [[testHistory], [totalCount]] = await Promise.all([
+        pool.query(query, queryParams),
+        pool.query(countQuery, countParams),
+      ]);
+
+      const total = totalCount[0].total;
+      const totalPages = Math.ceil(total / limit);
 
       return {
         testHistory: testHistory.map((test) => ({
           ...test,
           test_type: "On Demand Test",
         })),
+        pagination: {
+          total: parseInt(total),
+          page: pageNumber,
+          limit: limitNumber,
+          totalPages,
+        },
       };
     } catch (error) {
       throw new Error(error.message);

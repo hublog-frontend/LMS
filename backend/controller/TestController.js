@@ -298,9 +298,14 @@ const getTestQuestions = async (request, response) => {
 };
 
 const userWiseTestHistory = async (request, response) => {
-  const { user_id, test_name } = request.query;
+  const { user_id, test_name, page, limit } = request.query;
   try {
-    const result = await TestModel.userWiseTestHistory(user_id, test_name);
+    const result = await TestModel.userWiseTestHistory(
+      user_id,
+      test_name,
+      page,
+      limit,
+    );
     return response.status(200).send({
       message: "User wise test history fetched successfully",
       data: result,

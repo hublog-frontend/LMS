@@ -38,4 +38,26 @@ const removeBookmark = async (request, response) => {
   }
 };
 
-module.exports = { addBookmark, removeBookmark };
+const userWiseBookmarks = async (request, response) => {
+  try {
+    const { user_id, category_type } = request.body;
+    const result = await BookmarkModel.userWiseBookmarks(
+      user_id,
+      category_type,
+    );
+    response
+      .status(200)
+      .json({ message: "User wise bookmarks fetched successfully", result });
+  } catch (error) {
+    response.status(500).json({
+      message: "Error fetching user wise bookmarks",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = {
+  addBookmark,
+  removeBookmark,
+  userWiseBookmarks,
+};
