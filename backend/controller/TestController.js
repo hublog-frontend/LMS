@@ -297,6 +297,22 @@ const getTestQuestions = async (request, response) => {
   }
 };
 
+const userWiseTestHistory = async (request, response) => {
+  const { user_id, test_name } = request.query;
+  try {
+    const result = await TestModel.userWiseTestHistory(user_id, test_name);
+    return response.status(200).send({
+      message: "User wise test history fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    response.status(500).send({
+      message: "Error while fetching user wise test history",
+      details: error.message,
+    });
+  }
+};
+
 module.exports = {
   createTopic,
   createTest,
@@ -312,4 +328,5 @@ module.exports = {
   getTestQuestions,
   deleteTopic,
   deleteQuestion,
+  userWiseTestHistory,
 };

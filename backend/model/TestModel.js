@@ -305,6 +305,41 @@ const TestModel = {
     }
   },
 
+  userWiseTestHistory: async (user_id, test_name) => {
+    try {
+      const queryParams = [user_id];
+
+      let query = `SELECT 
+                      th.id AS history_id, 
+                      th.test_id, 
+                      th.created_date, 
+                      t.test_name, 
+                      th.total_marks_scored, 
+                      th.total_time_taken 
+                  FROM test_history th 
+                  JOIN tests t ON th.test_id = t.id 
+                  WHERE th.user_id = ? AND t.is_active = 1`;
+
+      if (test_name) {
+        query += ` AND t.test_name LIKE ?`;
+        queryParams.push(`%${test_name}%`);
+      }
+
+      query += ` ORDER BY th.id DESC`;
+
+      const [testHistory] = await pool.query(query, queryParams);
+
+      return {
+        testHistory: testHistory.map((test) => ({
+          ...test,
+          test_type: "On Demand Test",
+        })),
+      };
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  },
+
   getTestResult: async (history_id) => {
     try {
       const [testResult] = await pool.query(

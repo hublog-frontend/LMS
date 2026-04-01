@@ -202,4 +202,10 @@ router.post(
   AssignmentController.userWiseModules,
 );
 
+router.get(
+  "/userWiseTestHistory",
+  verifyToken,
+  TestController.userWiseTestHistory,
+);
+
 module.exports = router;
