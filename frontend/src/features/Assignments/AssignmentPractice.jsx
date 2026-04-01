@@ -440,7 +440,21 @@ const AssignmentPractice = () => {
                 <AiOutlineHistory />{" "}
                 <Text strong>{location?.state?.module_item?.module_name}</Text>
               </Space>
-              <Text type="secondary">{formatTime(timeElapsed)}</Text>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-end",
+                  flexShrink: 0,
+                }}
+              >
+                <Text type="secondary" style={{ fontSize: "12px" }}>
+                  Time spent
+                </Text>
+                <Text strong style={{ whiteSpace: "nowrap" }}>
+                  {formatTime(timeElapsed)}
+                </Text>
+              </div>
             </div>
 
             {/* Questions navigation grid removed */}

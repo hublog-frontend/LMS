@@ -305,7 +305,7 @@ const TestModel = {
     }
   },
 
-  userWiseTestHistory: async (user_id, test_name, page, limit) => {
+  userWiseTestHistory: async (user_id, test_name, page, pageSize) => {
     try {
       const queryParams = [user_id];
       const countParams = [user_id];
@@ -337,19 +337,19 @@ const TestModel = {
                             th.user_id = ?`;
 
       if (test_name) {
-        query += ` AND t.test_name LIKE '%${test_name}%'`;
-        countQuery += ` AND t.test_name LIKE '%${test_name}%'`;
+        query += ` AND t.test_name LIKE ?`;
+        countQuery += ` AND t.test_name LIKE ?`;
+        queryParams.push(`%${test_name}%`);
+        countParams.push(`%${test_name}%`);
       }
 
       query += ` ORDER BY th.id DESC`;
 
-      if (page && limit) {
-        const pageNumber = parseInt(page, 10) || 1;
-        const limitNumber = parseInt(limit, 10) || 10;
-        const offset = (pageNumber - 1) * limitNumber;
-        query += ` LIMIT ? OFFSET ?`;
-        queryParams.push(limitNumber, offset);
-      }
+      const pageNumber = parseInt(page, 10) || 1;
+      const limitNumber = parseInt(pageSize, 10) || 10;
+      const offset = (pageNumber - 1) * limitNumber;
+      query += ` LIMIT ? OFFSET ?`;
+      queryParams.push(limitNumber, offset);
 
       const [[testHistory], [totalCount]] = await Promise.all([
         pool.query(query, queryParams),
@@ -381,8 +381,6 @@ const TestModel = {
       }
 
       const total = totalCount[0].total;
-      const pageNumber = parseInt(page, 10) || 1;
-      const limitNumber = parseInt(limit, 10) || 10;
       const totalPages = Math.ceil(total / limitNumber);
 
       return {
@@ -751,8 +749,8 @@ const TestModel = {
             id: companyQuestion.id,
             question_id: companyQuestion.question_id,
             company_id: companyQuestion.company_id,
-            company_name: companyQuestion.name,
-            logo_image: companyQuestion.logo_image,
+            company_name: companyQuestion.company_name,
+            logo_image: companyQuestion.company_logo,
           });
         });
       }

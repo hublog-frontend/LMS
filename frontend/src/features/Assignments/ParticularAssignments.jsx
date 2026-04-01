@@ -8,6 +8,7 @@ import { IoMdCheckmark, IoIosArrowDown } from "react-icons/io";
 import { FaRegStar } from "react-icons/fa";
 import { LuClock4 } from "react-icons/lu";
 import { FiBookmark } from "react-icons/fi";
+import { FaBookmark } from "react-icons/fa6";
 import { IoCheckmarkSharp } from "react-icons/io5";
 import { addressValidator, formatToBackendIST } from "../Common/Validation";
 import CommonSpinner from "../Common/CommonSpinner";
@@ -19,6 +20,8 @@ import {
   getQuestions,
   insertAssignmentAttempt,
   mapQuestionsToAssignment,
+  addBookmark,
+  removeBookmark,
 } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSelectField from "../Common/CommonSelectField";
@@ -386,6 +389,53 @@ export default function ParticularAssignments() {
     // }
   };
 
+  const handleAddOrRemoveBookmark = async (question, module) => {
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+    const loginUserId = converAsJson?.id;
+
+    try {
+      if (question.is_bookmarked) {
+        const removePayload = {
+          user_id: loginUserId,
+          category_type: "Question",
+          key_column: question.mq_id,
+        };
+        await removeBookmark(removePayload);
+        CommonMessage("success", "Bookmark removed!");
+      } else {
+        const payload = {
+          user_id: loginUserId,
+          category_type: "Question",
+          key_column: question.mq_id,
+          created_date: new Date(),
+        };
+        await addBookmark(payload);
+        CommonMessage("success", "Bookmark added!");
+      }
+
+      // Update local state
+      setModulesData((prev) =>
+        prev.map((m) => {
+          if (m.id === module.id) {
+            return {
+              ...m,
+              questions: m.questions.map((q) =>
+                q.mq_id === question.mq_id
+                  ? { ...q, is_bookmarked: q.is_bookmarked ? 0 : 1 }
+                  : q,
+              ),
+            };
+          }
+          return m;
+        }),
+      );
+    } catch (error) {
+      console.error("Bookmark Error:", error);
+      CommonMessage("error", "Failed to update bookmark");
+    }
+  };
+
   const formReset = () => {
     setIsOpenAddModuleModal(false);
     setEditModuleId(null);
@@ -607,8 +657,16 @@ export default function ParticularAssignments() {
                               </div>
                             )}
                           </span>
-                          <span className="question_bookmark_icon">
-                            <FiBookmark />
+                          <span
+                            className="question_bookmark_icon"
+                            style={{ cursor: "pointer" }}
+                            onClick={() => handleAddOrRemoveBookmark(q, item)}
+                          >
+                            {q.is_bookmarked ? (
+                              <FaBookmark color="#2160ad" size={17} />
+                            ) : (
+                              <FiBookmark color="#2160ad" size={18} />
+                            )}
                           </span>
                         </div>
                         <div className="question_badges_container">

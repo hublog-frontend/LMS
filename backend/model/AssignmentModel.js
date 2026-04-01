@@ -638,7 +638,8 @@ const AssignmentModel = {
               q.option_c,
               q.option_d,
               q.description,
-              q.constraints
+              q.constraints,
+              CASE WHEN b.id IS NOT NULL THEN 1 ELSE 0 END AS is_bookmarked
           FROM
               assignment_module_questions AS mq
           INNER JOIN questions AS q ON
@@ -647,8 +648,9 @@ const AssignmentModel = {
           LEFT JOIN question_category AS qc ON
             q.category_id = qc.id
               AND qc.is_active = 1
+          LEFT JOIN bookmarks AS b ON mq.id = b.key_column AND b.user_id = ? AND b.category_type = 'Question'
           WHERE mq.assignment_module_id IN (?) AND mq.is_active = 1`,
-          [moduleIds],
+          [user_id, moduleIds],
         );
 
         // Fetch user attempts and results for these questions

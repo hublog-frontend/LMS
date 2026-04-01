@@ -595,6 +595,15 @@ export const removeBookmark = async (payload) => {
   }
 };
 
+export const userWiseBookmarks = async (payload) => {
+  try {
+    const response = await api.post(`/api/userWiseBookmarks`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // job api's
 export const getJobs = async (payload) => {
   try {

@@ -1,0 +1,201 @@
+.bookmarks-container {
+  padding: 0px;
+}
+.bookmark_heading {
+  margin-bottom: 20px !important;
+}
+.bookmarks_tabs .ant-tabs-nav {
+  margin-bottom: 24px !important;
+}
+
+.bookmarks_tabs .ant-tabs-tab {
+  padding: 12px 0 !important;
+  margin: 0 24px 0 0 !important;
+}
+
+.bookmarks_tabs .ant-tabs-tab-btn {
+  font-size: 14px;
+  font-weight: 400;
+  color: #6b7280;
+}
+
+.bookmarks_tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #2160ad !important;
+  font-weight: 500;
+}
+
+.bookmark-card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 24px 32px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #eef0f2;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.bookmark-card:hover {
+  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.08);
+  transform: translateY(-Windowed);
+  border-color: #d1d5db;
+}
+
+.bookmark-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+}
+
+.bookmark-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #e9f4fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2160ad;
+  font-size: 22px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.bookmark-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.bookmark-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.action-btn {
+  height: 42px;
+  min-width: 140px;
+  padding: 0 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: 1px solid #d1d5db;
+  color: #4b5563;
+  background: white;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.action-btn:hover {
+  border-color: #2160ad !important;
+  color: #2160ad !important;
+}
+
+.delete-btn {
+  color: #fca5a5;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.delete-btn:hover {
+  color: #ef4444;
+}
+
+/* .chat-fab {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 56px;
+  height: 56px;
+  background: #0066cc;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 102, 204, 0.4);
+  z-index: 1000;
+  transition: transform 0.3s;
+}
+
+.chat-fab:hover {
+  transform: scale(1.05);
+} */
+
+/* Video Full Screen Overlay */
+.video-full-page-viewer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-full-screen-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.video-viewer-header {
+  height: 60px;
+  background-color: #1a1a1a;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  border-bottom: 1px solid #333;
+}
+
+.video-viewer-title {
+  color: #fff;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.video-close-btn {
+  color: #fff !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.video-close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.video-content-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background-color: #000;
+}
+
+.full-video-player {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 4px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}

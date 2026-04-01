@@ -4,9 +4,12 @@ import { Row, Col } from "antd";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { LuFile } from "react-icons/lu";
 import { FiBookmark } from "react-icons/fi";
+import { FaBookmark } from "react-icons/fa6";
 import { pdfjs } from "react-pdf";
 import PdfIcon from "../../assets/pdf_icon.png";
 import CommonPdfViewer from "../Common/CommonPdfViewer";
+import { addBookmark, removeBookmark } from "../ApiService/action";
+import { CommonMessage } from "../Common/CommonMessage";
 
 // Use the same worker version established in the viewer
 const PDF_WORKER_URL = `https://unpkg.com/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs`;
@@ -19,6 +22,8 @@ export default function CompanyDocuments() {
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [currentPdf, setCurrentPdf] = useState({ url: "", title: "" });
   const [pageCounts, setPageCounts] = useState({});
+  const loginUserDetails = JSON.parse(localStorage.getItem("loginUserDetails"));
+  const loginUserId = loginUserDetails?.id;
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -57,6 +62,41 @@ export default function CompanyDocuments() {
       title: item.original_name,
     });
     setIsPdfModalOpen(true);
+  };
+
+  const handleAddOrRemoveBookmark = async (item) => {
+    try {
+      if (item.is_bookmarked) {
+        const removePayload = {
+          user_id: loginUserId,
+          category_type: "Lecture",
+          key_column: item.id,
+        };
+        await removeBookmark(removePayload);
+        CommonMessage("success", "Bookmark removed!");
+      } else {
+        const payload = {
+          user_id: loginUserId,
+          category_type: "Lecture",
+          key_column: item.id,
+          created_date: new Date(),
+        };
+        await addBookmark(payload);
+        CommonMessage("success", "Bookmark added!");
+      }
+
+      // Update local state to reflect change
+      setAttachments((prev) =>
+        prev.map((doc) =>
+          doc.id === item.id
+            ? { ...doc, is_bookmarked: doc.is_bookmarked ? 0 : 1 }
+            : doc,
+        ),
+      );
+    } catch (error) {
+      console.error("Bookmark Error:", error);
+      CommonMessage("error", "Failed to update bookmark");
+    }
   };
 
   return (
@@ -99,7 +139,29 @@ export default function CompanyDocuments() {
                       <div>
                         <p className="company_documents_name">
                           {item?.original_name || ""}
-                          <FiBookmark size={16} color="#2160ad" />
+                          {item.is_bookmarked ? (
+                            <FaBookmark
+                              size={16}
+                              color="#2160ad"
+                              style={{
+                                marginLeft: "8px",
+                                cursor: "pointer",
+                                verticalAlign: "middle",
+                              }}
+                              onClick={() => handleAddOrRemoveBookmark(item)}
+                            />
+                          ) : (
+                            <FiBookmark
+                              size={16}
+                              color="#2160ad"
+                              style={{
+                                marginLeft: "8px",
+                                cursor: "pointer",
+                                verticalAlign: "middle",
+                              }}
+                              onClick={() => handleAddOrRemoveBookmark(item)}
+                            />
+                          )}
                         </p>
                         <p className="company_documents_page_number">
                           Pages:{" "}

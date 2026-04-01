@@ -217,11 +217,17 @@ export default function Questions() {
       },
       {
         title: "Companies",
-        dataIndex: "mapped_companies",
-        key: "mapped_companies",
+        dataIndex: "companies",
+        key: "companies",
         width: 200,
         render: (text) => (
-          <EllipsisTooltip text={Array.isArray(text) ? text.join(", ") : "-"} />
+          <EllipsisTooltip
+            text={
+              Array.isArray(text) && text.length > 0
+                ? text.map((c) => c.company_name).join(", ")
+                : "-"
+            }
+          />
         ),
       },
     ];
@@ -722,7 +728,11 @@ export default function Questions() {
     setQuestion(record.question);
     setQuestionType(record.question_type);
     setQuestionCategoryId(record.category_id);
-    setSelectedCompanies(record.companies || []);
+    setSelectedCompanies(
+      Array.isArray(record.companies)
+        ? record.companies.map((c) => Number(c.company_id))
+        : [],
+    );
 
     if (record.question_type === "MCQ") {
       setOptionA(record.option_a);
