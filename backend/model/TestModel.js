@@ -668,12 +668,12 @@ const TestModel = {
               qc.id,
               qc.question_id,
               qc.company_id,
-              c.name,
+              c.company_name,
               c.logo_image
           FROM
               question_companies AS qc
-          INNER JOIN companies AS c ON
-              qc.company_id = c.company_id AND c.is_active = 1
+          LEFT JOIN company_questions AS c ON
+              qc.company_id = c.id AND c.is_active = 1
           WHERE qc.question_id IN(?)`,
           [questionIds],
         );

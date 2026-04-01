@@ -681,12 +681,12 @@ const AssignmentModel = {
             `SELECT
                 qc.question_id,
                 qc.company_id,
-                c.name AS company_name,
-                c.logo_image
+                cq.company_name,
+                cq.logo_image
             FROM
                 question_companies AS qc
-            INNER JOIN companies AS c ON
-                qc.company_id = c.company_id AND c.is_active = 1
+            LEFT JOIN company_questions AS cq ON
+                qc.company_id = cq.id AND cq.is_active = 1
             WHERE qc.question_id IN (?)`,
             [questionIds],
           );
