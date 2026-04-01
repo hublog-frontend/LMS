@@ -682,7 +682,7 @@ const AssignmentModel = {
                 qc.question_id,
                 qc.company_id,
                 cq.company_name,
-                cq.logo_image
+                cq.company_logo
             FROM
                 question_companies AS qc
             LEFT JOIN company_questions AS cq ON

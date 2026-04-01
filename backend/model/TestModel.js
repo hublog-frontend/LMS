@@ -669,7 +669,7 @@ const TestModel = {
               qc.question_id,
               qc.company_id,
               c.company_name,
-              c.logo_image
+              c.company_logo
           FROM
               question_companies AS qc
           LEFT JOIN company_questions AS c ON
