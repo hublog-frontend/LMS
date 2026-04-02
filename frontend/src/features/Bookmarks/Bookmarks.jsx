@@ -185,7 +185,9 @@ export default function Bookmarks() {
     if (bookmarks.length === 0) {
       return (
         <div style={{ marginTop: "60px" }}>
-          <Empty description={`No bookmarked ${activeTab.toLowerCase()}s found`} />
+          <Empty
+            description={`No bookmarked ${activeTab.toLowerCase()}s found`}
+          />
         </div>
       );
     }

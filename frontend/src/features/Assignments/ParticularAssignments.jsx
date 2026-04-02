@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { Row, Col, Flex, Progress, Modal, Button, Drawer } from "antd";
+import {
+  Row,
+  Col,
+  Flex,
+  Progress,
+  Modal,
+  Button,
+  Drawer,
+  Tooltip,
+  Empty,
+} from "antd";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { FiLayers } from "react-icons/fi";
 import { FiCheckCircle } from "react-icons/fi";
@@ -30,6 +40,7 @@ import EllipsisTooltip from "../Common/EllipsisTooltip";
 
 export default function ParticularAssignments() {
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL;
   const location = useLocation();
   const { assignment_id } = useParams();
   const [isOpenAddModuleModal, setIsOpenAddModuleModal] = useState(false);
@@ -41,7 +52,7 @@ export default function ParticularAssignments() {
   const [modulesData, setModulesData] = useState([]);
   const [overallAssignmentResult, setOverallAssignmentResult] = useState(null);
   const [viewParticularAssignment, setViewParticularAssignment] = useState("");
-  const [isCollapseOpen, setIsCollapseOpen] = useState(true);
+  const [openModuleId, setOpenModuleId] = useState(null);
   //questions usestates
   const [isOpenMapQuestionDrawer, setIsOpenMapQuestionDrawer] = useState(false);
   const [assignmentModuleId, setAssignmentModuleId] = useState(null);
@@ -136,6 +147,9 @@ export default function ParticularAssignments() {
         response?.data?.data?.overall_assignment_results || null,
       );
       setModulesData(modules_data);
+      if (modules_data.length > 0 && openModuleId === null) {
+        setOpenModuleId(modules_data[0].id);
+      }
     } catch (error) {
       setModulesData([]);
       setOverallAssignmentResult(null);
@@ -544,16 +558,17 @@ export default function ParticularAssignments() {
       </Row>
 
       {modulesData.map((item, index) => {
+        const isOpen = openModuleId === item.id;
         return (
           <div
             className={`particular_assignment_collapse_container ${
-              isCollapseOpen ? "open" : ""
+              isOpen ? "open" : ""
             }`}
             key={index}
           >
             <div
               className="particular_assignment_collapse_header_container"
-              onClick={() => setIsCollapseOpen(!isCollapseOpen)}
+              onClick={() => setOpenModuleId(isOpen ? null : item.id)}
             >
               <div className="particular_assignment_collapse_header_inner_container">
                 <div
@@ -570,18 +585,17 @@ export default function ParticularAssignments() {
 
                 <div className="particular_assignment_collapse_header_right_container">
                   <div className="particular_assignment_collapse_timetaken_badge">
-                    Time Taken: 0m:0s
+                    Time Taken: {Math.floor((item?.time_taken || 0) / 60)}m:
+                    {(item?.time_taken || 0) % 60}s
                   </div>
-                  <div className="particular_assignment_collapse_duedate_badge">
+                  {/* <div className="particular_assignment_collapse_duedate_badge">
                     Due Date NA
-                  </div>
+                  </div> */}
                   <IoIosArrowDown
                     color="#98A2B3"
                     size={20}
                     style={{
-                      transform: isCollapseOpen
-                        ? "rotate(180deg)"
-                        : "rotate(0deg)",
+                      transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
                       transition: "transform 0.3s",
                     }}
                   />
@@ -589,7 +603,7 @@ export default function ParticularAssignments() {
               </div>
             </div>
 
-            {isCollapseOpen && (
+            {isOpen && (
               <div className="particular_assignment_collapse_content">
                 <Row>
                   <Col xs={24} sm={24} md={12} lg={12}>
@@ -632,82 +646,117 @@ export default function ParticularAssignments() {
                   </Col>
                 </Row>
 
-                <div className="particular_assignment_questions_table_container">
-                  <div className="questions_table_header">
-                    <p className="column_question">Question</p>
-                    <p className="column_company">Company</p>
-                    {/* <p className="column_difficulty">Difficulty</p> */}
-                    <p className="column_action">Action</p>
-                  </div>
+                {item.questions && item.questions.length > 0 ? (
+                  <div className="particular_assignment_questions_table_container">
+                    <div className="questions_table_header">
+                      <p className="column_question">Question</p>
+                      <p className="column_company">Company</p>
+                      {/* <p className="column_difficulty">Difficulty</p> */}
+                      <p className="column_action">Action</p>
+                    </div>
 
-                  {item.questions.map((q, index) => (
-                    <div className="questions_table_row" key={index}>
-                      <div className="column_question">
-                        <div className="question_title_container">
-                          <p className="question_title">{q.question}</p>
-                          {/* Placeholder icons for orange clock/checkmark */}
-                          <span className="question_status_icon">
-                            {index === 0 ? (
-                              <div className="questions_table_row_icon_container questions_table_row_clock_icon_container">
-                                <LuClock4 color="#f79009" />
-                              </div>
+                    {item.questions.map((q, index) => (
+                      <div className="questions_table_row" key={index}>
+                        <div className="column_question">
+                          <div className="question_title_container">
+                            <p className="question_title">{q.question}</p>
+                            {/* Placeholder icons for orange clock/checkmark */}
+                            <span className="question_status_icon">
+                              {index === 0 ? (
+                                <div className="questions_table_row_icon_container questions_table_row_clock_icon_container">
+                                  <LuClock4 color="#f79009" />
+                                </div>
+                              ) : (
+                                <div className="questions_table_row_icon_container questions_table_row_check_icon_container">
+                                  <IoCheckmarkSharp color="#667085" />
+                                </div>
+                              )}
+                            </span>
+                            <span
+                              className="question_bookmark_icon"
+                              style={{ cursor: "pointer" }}
+                              onClick={() => handleAddOrRemoveBookmark(q, item)}
+                            >
+                              {q.is_bookmarked ? (
+                                <FaBookmark color="#2160ad" size={17} />
+                              ) : (
+                                <FiBookmark color="#2160ad" size={18} />
+                              )}
+                            </span>
+                          </div>
+                          <div className="question_badges_container">
+                            <span className="badge_type code">
+                              {q.question_type}
+                            </span>
+                            <span className="badge_score">
+                              Score:{" "}
+                              {`${q?.user_status?.score_obtained || 0} / ${q.question_type == "MCQ" ? 2 : 10}`}
+                            </span>
+                            <span className="badge_attempts">
+                              Attempts: {q?.user_status?.num_of_attempt || 0}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="column_company">
+                          <div className="company_logo_stack">
+                            {q.companies && q.companies.length > 0 ? (
+                              q.companies.slice(0, 3).map((company, cIdx) => (
+                                <Tooltip
+                                  title={company.company_name}
+                                  key={cIdx}
+                                >
+                                  <div className="company_logo_item">
+                                    {company.company_logo ? (
+                                      <img
+                                        // src={`${API_URL}${company.company_logo}`}
+                                        src={`data:image/png;base64,${company.company_logo}`}
+                                        alt={company.company_name}
+                                        className="company_logo_img"
+                                      />
+                                    ) : (
+                                      <div className="company_logo_initial">
+                                        {company.company_name
+                                          ?.split(" ")
+                                          .map((word) => word[0])
+                                          .join("")
+                                          .slice(0, 2)
+                                          .toUpperCase() || ""}
+                                      </div>
+                                    )}
+                                  </div>
+                                </Tooltip>
+                              ))
                             ) : (
-                              <div className="questions_table_row_icon_container questions_table_row_check_icon_container">
-                                <IoCheckmarkSharp color="#667085" />
+                              <span className="no_company_text">--</span>
+                            )}
+                            {q.companies && q.companies.length > 3 && (
+                              <div className="company_logo_more">
+                                +{q.companies.length - 3}
                               </div>
                             )}
-                          </span>
-                          <span
-                            className="question_bookmark_icon"
-                            style={{ cursor: "pointer" }}
-                            onClick={() => handleAddOrRemoveBookmark(q, item)}
-                          >
-                            {q.is_bookmarked ? (
-                              <FaBookmark color="#2160ad" size={17} />
-                            ) : (
-                              <FiBookmark color="#2160ad" size={18} />
-                            )}
-                          </span>
+                          </div>
                         </div>
-                        <div className="question_badges_container">
-                          <span className="badge_type code">
-                            {q.question_type}
-                          </span>
-                          <span className="badge_score">
-                            Score:{" "}
-                            {`${q?.user_status?.score_obtained || 0} / ${q.question_type == "MCQ" ? 2 : 10}`}
-                          </span>
-                          <span className="badge_attempts">
-                            Attempts: {q?.user_status?.num_of_attempt || 0}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="column_company">
-                        {/* Placeholder for company logos */}
-                        <div className="company_logos_placeholder">
-                          {index === 0
-                            ? "TCS"
-                            : index === 1
-                              ? "TCS >"
-                              : "G B TCS I"}
-                        </div>
-                      </div>
-                      {/* <div className="column_difficulty">
+                        {/* <div className="column_difficulty">
                         <span className="difficulty_badge easy">Easy</span>
                       </div> */}
-                      <div className="column_action">
-                        <button
-                          className="solve_button"
-                          onClick={() => {
-                            handleSolve(q, item);
-                          }}
-                        >
-                          Solve
-                        </button>
+                        <div className="column_action">
+                          <button
+                            className="solve_button"
+                            onClick={() => {
+                              handleSolve(q, item);
+                            }}
+                          >
+                            Solve
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+                    <Empty description="No questions mapped for this module" />
+                  </div>
+                )}
               </div>
             )}
           </div>
