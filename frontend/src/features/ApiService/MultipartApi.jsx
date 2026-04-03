@@ -104,6 +104,15 @@ export const uploadCourseVideo = async (payload) => {
   }
 };
 
+export const deleteCourseVideo = async (params) => {
+  try {
+    const response = await api.delete(`/api/deleteContent`, { params });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // company question api's
 export const addCompany = async (payload) => {
   try {

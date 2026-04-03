@@ -217,6 +217,15 @@ export const getUserById = async (user_id) => {
   }
 };
 
+export const getAllUsers = async (payload) => {
+  try {
+    const response = await api.post(`/api/getAllUsers`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const updateExperience = async (payload) => {
   try {
     const response = await api.post(`/api/updateExperience`, payload);

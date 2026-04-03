@@ -44,7 +44,8 @@ export default function CommonInputField({
       label === "Attendance Sheet Link" ||
       label === "Job ID / Code" ||
       label === "Offered Salary / CTC" ||
-      label === "Shift / Timings"
+      label === "Shift / Timings" ||
+      label === "Certificate Name"
     ) {
       onChange?.({ target: { value } });
     } else {

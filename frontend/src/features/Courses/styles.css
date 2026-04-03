@@ -270,6 +270,15 @@
   gap: 10px;
   align-items: center;
 }
+.coursevideos_delete_icon {
+  opacity: 0;
+  transition: all 0.3s ease;
+  visibility: hidden;
+}
+.coursevideos_accordion_content_container:hover .coursevideos_delete_icon {
+  opacity: 1;
+  visibility: visible;
+}
 .coursevideos_videoicon_conatiner {
   width: 32px;
   height: 32px;

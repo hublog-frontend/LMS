@@ -1,5 +1,6 @@
 const VideoModel = require("../model/VideoModel");
 const compressVideo = require("../validation/CompressVideo");
+const { uploadFileToDrive } = require("../config/googleDrive");
 const fssync = require("fs");
 const fs = require("fs/promises");
 const path = require("path");
@@ -7,7 +8,7 @@ const { getVideoDurationInSeconds } = require("get-video-duration");
 
 class VideoController {
   static async uploadContent(request, response) {
-    const { module_id, content_type, content_url, title } = request.body;
+    const { module_id, content_type, title, folder_id } = request.body;
 
     try {
       if (!module_id || !content_type) {
@@ -71,7 +72,40 @@ class VideoController {
 
           return;
 
+        case "google_drive":
+          if (!request.file) {
+            return response
+              .status(400)
+              .send({ message: "No video file uploaded" });
+          }
+
+          const driveUploadPath = request.file.path;
+          const driveDuration = await getVideoDurationInSeconds(driveUploadPath);
+
+          // Upload to Google Drive using utility
+          const driveResult = await uploadFileToDrive(
+            driveUploadPath,
+            request.file.originalname,
+            folder_id || null,
+            request.file.mimetype
+          );
+
+          contentDate = {
+            type: "google_drive",
+            fileName: driveResult.fileId,
+            originalname: request.file.originalname,
+            size: fssync.statSync(driveUploadPath).size,
+            duration: driveDuration,
+            mimetype: request.file.mimetype,
+            path: driveResult.webViewLink, // This will be used in iframe/embed
+          };
+
+          // Clean up the local file after upload to Drive
+          await fs.unlink(driveUploadPath);
+          break;
+
         case "youtube":
+          const { content_url } = request.body;
           if (!content_url) {
             return response
               .status(400)
@@ -92,7 +126,7 @@ class VideoController {
           return response.status(400).send({ message: "Invalid content type" });
       }
 
-      // This part will run only for non-video types
+      // This part will run only for non-video types (youtube, google_drive)
       const contentId = await VideoModel.createContent(
         module_id,
         title,
@@ -108,6 +142,7 @@ class VideoController {
         },
       });
     } catch (error) {
+      console.error(error);
       return response.status(500).send({
         message: "Failed to upload content",
         details: error.message,

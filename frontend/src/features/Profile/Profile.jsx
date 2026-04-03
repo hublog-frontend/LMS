@@ -25,6 +25,7 @@ import {
   AiOutlineZoomOut,
 } from "react-icons/ai";
 import { LuEye } from "react-icons/lu";
+import { CommonMessage } from "../Common/CommonMessage";
 
 export default function Profile() {
   const [userFulldetails, setUserFullDetails] = useState(null);
@@ -59,6 +60,15 @@ export default function Profile() {
 
   const handleResumePreview = async (type) => {
     if (!userFulldetails) return;
+
+    const hasActeCertificate = userFulldetails.certificates?.some(
+      (cert) => cert.issuing_organization?.toLowerCase().includes("acte technologies")
+    );
+
+    if (!hasActeCertificate) {
+      CommonMessage("error", "Please add at least one certificate issued by ACTE Technologies before generating your resume.");
+      return;
+    }
 
     let ResumeComponent;
     switch (type) {

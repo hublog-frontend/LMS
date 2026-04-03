@@ -11,6 +11,7 @@ import { FiBookmark } from "react-icons/fi";
 import { PiSealQuestionBold } from "react-icons/pi";
 import { useDispatch } from "react-redux";
 import { storeCompanyQuestionSearchValue } from "../Redux/Slice";
+import { LuUsers } from "react-icons/lu";
 
 export default function SideMenu() {
   const navigate = useNavigate();
@@ -63,6 +64,11 @@ export default function SideMenu() {
       title: "Profile",
       icon: <FiUser size={19} />,
       path: "profile",
+    },
+    10: {
+      title: "Users",
+      icon: <LuUsers size={19} />,
+      path: "students",
     },
   });
 
