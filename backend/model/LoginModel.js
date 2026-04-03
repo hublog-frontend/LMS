@@ -4,7 +4,20 @@ const LoginModel = {
   login: async (email, password) => {
     try {
       const [isExists] = await pool.query(
-        `SELECT id, email, user_name, password FROM users WHERE email = ? AND password = ? AND is_active = 1`,
+        `SELECT
+            u.id,
+            u.email,
+            u.user_name,
+            u.password,
+            u.role_id,
+            r.role_name
+        FROM
+            users AS u
+        INNER JOIN role AS r ON
+          u.role_id = r.role_id
+            AND	r.is_active = 1
+        WHERE
+            email = ? AND PASSWORD = ? AND is_active = 1`,
         [email, password],
       );
 
