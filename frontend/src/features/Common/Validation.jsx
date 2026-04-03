@@ -641,3 +641,23 @@ export const youtubeLinkValidator = (link) => {
 
   return error;
 };
+
+export const otpValidator = (otp) => {
+  let error = "";
+
+  if (!otp || otp.length <= 0) error = " is required";
+  else if (!mobileRegex.test(otp) || otp.length !== 6) error = " is not valid";
+  return error;
+};
+
+export const isAdmin = () => {
+  const userDetails = localStorage.getItem("loginUserDetails");
+  if (!userDetails) return false;
+  try {
+    const parsed = JSON.parse(userDetails);
+    return parsed?.role_name === "Admin";
+  } catch (e) {
+    return false;
+  }
+};
+

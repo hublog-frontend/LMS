@@ -20,7 +20,7 @@ import { LuClock4 } from "react-icons/lu";
 import { FiBookmark } from "react-icons/fi";
 import { FaBookmark } from "react-icons/fa6";
 import { IoCheckmarkSharp } from "react-icons/io5";
-import { addressValidator, formatToBackendIST } from "../Common/Validation";
+import { addressValidator, formatToBackendIST, isAdmin } from "../Common/Validation";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonInputField from "../Common/CommonInputField";
 import {
@@ -486,12 +486,14 @@ export default function ParticularAssignments() {
           lg={12}
           className="tests_createtopic_button_container"
         >
-          <button
-            className="courses_createcourse_button"
-            onClick={() => setIsOpenAddModuleModal(true)}
-          >
-            Create Module
-          </button>
+          {isAdmin() && (
+            <button
+              className="courses_createcourse_button"
+              onClick={() => setIsOpenAddModuleModal(true)}
+            >
+              Create Module
+            </button>
+          )}
         </Col>
       </Row>
 
@@ -634,14 +636,16 @@ export default function ParticularAssignments() {
                     }}
                   >
                     <div>
-                      <button
-                        className="solve_button"
-                        onClick={() => {
-                          handleOpenMapDrawer(item);
-                        }}
-                      >
-                        Map Questions
-                      </button>
+                      {isAdmin() && (
+                        <button
+                          className="solve_button"
+                          onClick={() => {
+                            handleOpenMapDrawer(item);
+                          }}
+                        >
+                          Map Questions
+                        </button>
+                      )}
                     </div>
                   </Col>
                 </Row>

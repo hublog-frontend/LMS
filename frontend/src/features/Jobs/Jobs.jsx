@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import TechnicalDrive from "./TechnicalDrive";
 import JobDrawer from "./JobDrawer";
 import { FiPlus } from "react-icons/fi";
+import { isAdmin } from "../Common/Validation";
 
 export default function Jobs() {
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -80,15 +81,17 @@ export default function Jobs() {
           Jobs
         </p>
         <div>
-          <button
-            className="courses_createcourse_button"
-            onClick={() => {
-              setSelectedJob(null);
-              setDrawerVisible(true);
-            }}
-          >
-            Post New Job
-          </button>
+          {isAdmin() && (
+            <button
+              className="courses_createcourse_button"
+              onClick={() => {
+                setSelectedJob(null);
+                setDrawerVisible(true);
+              }}
+            >
+              Post New Job
+            </button>
+          )}
         </div>
       </div>
 

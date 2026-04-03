@@ -12,6 +12,7 @@ import CommonNodataFound from "../Common/CommonNoDataFound";
 import {
   addressValidator,
   formatToBackendIST,
+  isAdmin,
   selectValidator,
 } from "../Common/Validation";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -335,12 +336,14 @@ export default function TestTopics() {
           lg={12}
           className="tests_createtopic_button_container"
         >
-          <button
-            className="courses_createcourse_button"
-            onClick={() => setIsOpenAddTestModal(true)}
-          >
-            Create Test
-          </button>
+          {isAdmin() && (
+            <button
+              className="courses_createcourse_button"
+              onClick={() => setIsOpenAddTestModal(true)}
+            >
+              Create Test
+            </button>
+          )}
         </Col>
       </Row>
 
@@ -365,18 +368,20 @@ export default function TestTopics() {
                           </div>
                         </div>
                         <div className="ondemand_tests_icon_container">
-                          <AiOutlineEdit
-                            size={16}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEditTestId(item.id);
-                              setTestName(item.test_name);
-                              setDuration(
-                                item.duration ? String(item.duration) : "",
-                              );
-                              setIsOpenAddTestModal(true);
-                            }}
-                          />
+                          {isAdmin() && (
+                            <AiOutlineEdit
+                              size={16}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditTestId(item.id);
+                                setTestName(item.test_name);
+                                setDuration(
+                                  item.duration ? String(item.duration) : "",
+                                );
+                                setIsOpenAddTestModal(true);
+                              }}
+                            />
+                          )}
                         </div>
                         <div className="test_topicscards_header_container">
                           <div className="tests_topiccards_header_icon_container">
@@ -398,13 +403,14 @@ export default function TestTopics() {
                           >
                             View History
                           </button>
-
-                          <button
-                            className="coursereviews_rating_modal_btn coursereviews_rating_modal_cancelbutton"
-                            onClick={() => handleOpenMapDrawer(item)}
-                          >
-                            Map Question
-                          </button>
+                          {isAdmin() && (
+                            <button
+                              className="coursereviews_rating_modal_btn coursereviews_rating_modal_cancelbutton"
+                              onClick={() => handleOpenMapDrawer(item)}
+                            >
+                              Map Question
+                            </button>
+                          )}
 
                           <button
                             key="create"

@@ -19,6 +19,7 @@ import { AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
 import { useSelector } from "react-redux";
 import CommonDeleteModal from "../Common/CommonDeleteModal";
 import { CommonMessage } from "../Common/CommonMessage";
+import { isAdmin } from "../Common/Validation";
 import { useDispatch } from "react-redux";
 import {
   storeCompanyQuestionList,
@@ -231,25 +232,27 @@ export default function CompanyQuestions({ handleEdit }) {
                   <IoArrowForwardOutline size={19} />
                 </div>
 
-                <div className="company_cards_icon_container">
-                  <AiOutlineEdit
-                    size={16}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEdit(item);
-                    }}
-                  />
+                {isAdmin() && (
+                  <div className="company_cards_icon_container">
+                    <AiOutlineEdit
+                      size={16}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(item);
+                      }}
+                    />
 
-                  <AiOutlineDelete
-                    size={16}
-                    className="action-delete-icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsOpenDeleteModal(true);
-                      setCompanyId(item.id);
-                    }}
-                  />
-                </div>
+                    <AiOutlineDelete
+                      size={16}
+                      className="action-delete-icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsOpenDeleteModal(true);
+                        setCompanyId(item.id);
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </Col>
           );

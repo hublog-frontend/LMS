@@ -10,6 +10,7 @@ import {
   addressValidator,
   formatToBackendIST,
   selectValidator,
+  isAdmin,
 } from "../Common/Validation";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import CommonAntdMultiSelect from "../Common/CommonAntMultiSelect";
@@ -247,12 +248,14 @@ export default function CompanyQuestionsTab() {
           lg={12}
           className="tests_createtopic_button_container"
         >
-          <button
-            className="courses_createcourse_button"
-            onClick={() => setIsOpenAddCompanyDrawer(true)}
-          >
-            Create Company
-          </button>
+          {isAdmin() && (
+            <button
+              className="courses_createcourse_button"
+              onClick={() => setIsOpenAddCompanyDrawer(true)}
+            >
+              Create Company
+            </button>
+          )}
         </Col>
       </Row>
 

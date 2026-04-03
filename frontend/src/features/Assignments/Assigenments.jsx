@@ -15,7 +15,7 @@ import AptitudeImage from "../../assets/apti.png";
 import { IoArrowForwardOutline } from "react-icons/io5";
 import CommonSpinner from "../Common/CommonSpinner";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
-import { addressValidator, formatToBackendIST } from "../Common/Validation";
+import { addressValidator, formatToBackendIST, isAdmin } from "../Common/Validation";
 import { createAssignment, getAssignments } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import BuildingImage from "../../assets/building.png";
@@ -172,12 +172,14 @@ export default function Assignments() {
           lg={12}
           className="tests_createtopic_button_container"
         >
-          <button
-            className="courses_createcourse_button"
-            onClick={() => setIsOpenAddAssignmentModal(true)}
-          >
-            Create Assignment
-          </button>
+          {isAdmin() && (
+            <button
+              className="courses_createcourse_button"
+              onClick={() => setIsOpenAddAssignmentModal(true)}
+            >
+              Create Assignment
+            </button>
+          )}
         </Col>
       </Row>
 
@@ -260,28 +262,30 @@ export default function Assignments() {
                     });
                   }}
                 >
-                  <div className="tests_topics_icon_container">
-                    <AiOutlineEdit
-                      size={15}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditAssignmentId(item.id);
-                        setAssignmentName(item.assignment_name);
-                        setAssignmentLogoBase64(item.logo_image);
-                        setIsOpenAddAssignmentModal(true);
-                      }}
-                    />
+                  {isAdmin() && (
+                    <div className="tests_topics_icon_container">
+                      <AiOutlineEdit
+                        size={15}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditAssignmentId(item.id);
+                          setAssignmentName(item.assignment_name);
+                          setAssignmentLogoBase64(item.logo_image);
+                          setIsOpenAddAssignmentModal(true);
+                        }}
+                      />
 
-                    <AiOutlineDelete
-                      size={15}
-                      className="action-delete-icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // setIsOpenDeleteModal(true);
-                        setEditAssignmentId(item.id);
-                      }}
-                    />
-                  </div>
+                      <AiOutlineDelete
+                        size={15}
+                        className="action-delete-icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // setIsOpenDeleteModal(true);
+                          setEditAssignmentId(item.id);
+                        }}
+                      />
+                    </div>
+                  )}
                   <div className="assignment_cards_header_container">
                     <div className="assignment_cards_header_name_container">
                       {/* {item.image} */}

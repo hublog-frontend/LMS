@@ -200,7 +200,7 @@ export default function Login() {
               </div>
 
               <div className="loginpage_forgotpassword_container">
-                <p className="loginpage_forgotpassword">Forgot Password?</p>
+                <p className="loginpage_forgotpassword" onClick={() => navigate("/forgot-password")} style={{ cursor: "pointer" }}>Forgot Password?</p>
               </div>
 
               {loading ? (

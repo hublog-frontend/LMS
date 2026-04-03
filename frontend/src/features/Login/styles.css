@@ -200,3 +200,55 @@
     padding: 40px 20px;
   }
 }
+
+.forgot-shared-btn {
+  background: none;
+  border: none;
+  color: #667085;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 24px;
+  transition: color 0.3s;
+}
+.forgot-shared-btn:hover {
+  color: #1a1a1a;
+}
+.resend-text {
+  margin-top: 24px;
+  text-align: center;
+  color: #667085;
+  font-size: 14px;
+}
+.resend-link {
+  color: #3b42e4;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 4px;
+}
+.resend-link:hover {
+  text-decoration: underline;
+}
+
+.success-icon-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+  color: #4caf50;
+}
+.success-heading {
+  font-weight: 700;
+  font-size: 2rem;
+  text-align: center;
+  color: #111827;
+  margin-bottom: 12px;
+}
+.success-description {
+  color: #6b7280;
+  font-size: 1rem;
+  text-align: center;
+  margin-bottom: 32px;
+}

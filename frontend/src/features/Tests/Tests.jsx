@@ -6,7 +6,7 @@ import BuildingImage from "../../assets/building.png";
 import "./styles.css";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonInputField from "../Common/CommonInputField";
-import { addressValidator, formatToBackendIST } from "../Common/Validation";
+import { addressValidator, formatToBackendIST, isAdmin } from "../Common/Validation";
 import { createTopic, deleteTopic, getTopics } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
@@ -149,12 +149,14 @@ export default function Tests() {
           lg={12}
           className="tests_createtopic_button_container"
         >
-          <button
-            className="courses_createcourse_button"
-            onClick={() => setIsOpenAddTopicModal(true)}
-          >
-            Create Topic
-          </button>
+          {isAdmin() && (
+            <button
+              className="courses_createcourse_button"
+              onClick={() => setIsOpenAddTopicModal(true)}
+            >
+              Create Topic
+            </button>
+          )}
         </Col>
       </Row>
 
@@ -278,28 +280,30 @@ export default function Tests() {
                     navigate(`/tests/onDemandTests/${item.id}`);
                   }}
                 >
-                  <div className="tests_topics_icon_container">
-                    <AiOutlineEdit
-                      size={15}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditTopicId(item.id);
-                        setTopicName(item.topic_name);
-                        setTopicLogoBase64(item.logo_image);
-                        setIsOpenAddTopicModal(true);
-                      }}
-                    />
+                  {isAdmin() && (
+                    <div className="tests_topics_icon_container">
+                      <AiOutlineEdit
+                        size={15}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditTopicId(item.id);
+                          setTopicName(item.topic_name);
+                          setTopicLogoBase64(item.logo_image);
+                          setIsOpenAddTopicModal(true);
+                        }}
+                      />
 
-                    <AiOutlineDelete
-                      size={15}
-                      className="action-delete-icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsOpenDeleteModal(true);
-                        setEditTopicId(item.id);
-                      }}
-                    />
-                  </div>
+                      <AiOutlineDelete
+                        size={15}
+                        className="action-delete-icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsOpenDeleteModal(true);
+                          setEditTopicId(item.id);
+                        }}
+                      />
+                    </div>
+                  )}
                   {item.logo_image ? (
                     <img
                       src={`data:image/png;base64,${item.logo_image}`}

@@ -104,6 +104,33 @@ export const LoginApi = async (payload) => {
   }
 };
 
+export const forgotPassword = async (payload) => {
+  try {
+    const response = await api.post("/api/forgotPassword", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const verifyOTP = async (payload) => {
+  try {
+    const response = await api.post("/api/verifyOTP", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const resetPassword = async (payload) => {
+  try {
+    const response = await api.post("/api/resetPassword", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 //course api's
 export const getCourses = async (payload) => {
   try {

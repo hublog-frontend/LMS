@@ -12,6 +12,7 @@ import { PiSealQuestionBold } from "react-icons/pi";
 import { useDispatch } from "react-redux";
 import { storeCompanyQuestionSearchValue } from "../Redux/Slice";
 import { LuUsers } from "react-icons/lu";
+import { isAdmin } from "../Common/Validation";
 
 export default function SideMenu() {
   const navigate = useNavigate();
@@ -101,11 +102,22 @@ export default function SideMenu() {
     dispatch(storeCompanyQuestionSearchValue(""));
   };
 
+  const filteredMenuOptions = React.useMemo(() => {
+    return Object.entries(sideMenuOptions).reduce((acc, [key, item]) => {
+      // Hide "Questions" and "Users" (Students) if not an admin
+      if ((item.path === "questions" || item.path === "students") && !isAdmin()) {
+        return acc;
+      }
+      acc[key] = item;
+      return acc;
+    }, {});
+  }, [sideMenuOptions]);
+
   return (
     <Menu
       mode="inline"
       selectedKeys={[selectedKey]}
-      items={renderMenuItems(sideMenuOptions)}
+      items={renderMenuItems(filteredMenuOptions)}
       onClick={handleMenuClick}
       style={{
         marginTop: "6px",

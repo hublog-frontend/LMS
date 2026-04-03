@@ -86,7 +86,7 @@ const verifyOTP = async (request, response) => {
 };
 
 const resetPassword = async (request, response) => {
-  const { email, otp, newPassword } = request.body;
+  const { email, otp, password } = request.body;
   try {
     // Re-verify OTP for security before updating password
     const user = await LoginModel.verifyOTP(email, otp);
@@ -94,7 +94,7 @@ const resetPassword = async (request, response) => {
       return response.status(400).send({ message: "Invalid or expired OTP" });
     }
 
-    await LoginModel.updatePassword(email, newPassword);
+    await LoginModel.updatePassword(email, password);
     return response
       .status(200)
       .send({ message: "Password updated successfully" });

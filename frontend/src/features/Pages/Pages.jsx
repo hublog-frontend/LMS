@@ -10,6 +10,7 @@ import { Layout, Drawer, Button, Grid, Divider } from "antd";
 import { MenuOutlined } from "@ant-design/icons";
 import ActeLogo from "../../assets/acte-logo.png";
 import Login from "../Login/Login";
+import ForgotPassword from "../Login/ForgotPassword";
 import Courses from "../Courses/Courses";
 import SideMenu from "./SideMenu";
 import CourseVideos from "../Courses/CourseVideos";
@@ -57,6 +58,7 @@ export default function Pages() {
       path.startsWith("/customer-registration") ||
       path === "/success" ||
       path === "/helpdesk" ||
+      path === "/forgot-password" ||
       path.startsWith("/test-attempt") ||
       path.startsWith("/assignment-practice")
     );
@@ -65,9 +67,12 @@ export default function Pages() {
   useEffect(() => {
     //handle navigate to login page when token expire
     const handleTokenExpire = () => {
+      setCollapsed(true);
+      setMobileOpen(false);
       localStorage.clear();
       navigate("/login");
     };
+
 
     window.addEventListener("tokenExpireUpdated", handleTokenExpire);
 
@@ -105,6 +110,7 @@ export default function Pages() {
     return (
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route
           path="/test-attempt/:testName/:testId"
           element={<TestAttempt />}
@@ -181,9 +187,12 @@ export default function Pages() {
                         color="gray"
                         style={{ cursor: "pointer" }}
                         onClick={() => {
-                          navigate("/login");
+                          setCollapsed(true);
+                          setMobileOpen(false);
                           localStorage.clear();
+                          navigate("/login");
                         }}
+
                       />
                     </Tooltip>
                   </div>

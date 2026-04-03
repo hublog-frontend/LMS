@@ -11,6 +11,7 @@ import { PiMapPin, PiWallet } from "react-icons/pi";
 import { LuBookOpen } from "react-icons/lu";
 import { getJobs } from "../ApiService/action";
 import { Tooltip } from "antd";
+import { isAdmin } from "../Common/Validation";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "./styles.css";
@@ -301,15 +302,17 @@ export default function TechnicalDrive({ category, onEdit }) {
                       {isJobClosed(job.expires_at) ? "Closed" : "Active"}
                     </div>
 
-                    <Tooltip title="Edit Job">
-                      <FiEdit
-                        className="edit_job_icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEdit?.(job);
-                        }}
-                      />
-                    </Tooltip>
+                    {isAdmin() && (
+                      <Tooltip title="Edit Job">
+                        <FiEdit
+                          className="edit_job_icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit?.(job);
+                          }}
+                        />
+                      </Tooltip>
+                    )}
                   </div>
                 </div>
 

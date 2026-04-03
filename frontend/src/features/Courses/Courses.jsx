@@ -11,7 +11,7 @@ import "./styles.css";
 import CourseVideos from "./CourseVideos";
 import CommonInputField from "../Common/CommonInputField";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
-import { addressValidator, selectValidator } from "../Common/Validation";
+import { addressValidator, selectValidator, isAdmin } from "../Common/Validation";
 import CommonSpinner from "../Common/CommonSpinner";
 import { CommonMessage } from "../Common/CommonMessage";
 import { getCourses, createCourse } from "../ApiService/action";
@@ -160,12 +160,14 @@ export default function Courses() {
               lg={18}
               style={{ display: "flex", justifyContent: "flex-end" }}
             >
-              <button
-                className="courses_createcourse_button"
-                onClick={() => setIsOpenAddCourseDrawer(true)}
-              >
-                Create Course
-              </button>
+              {isAdmin() && (
+                <button
+                  className="courses_createcourse_button"
+                  onClick={() => setIsOpenAddCourseDrawer(true)}
+                >
+                  Create Course
+                </button>
+              )}
             </Col>
           </Row>
 

@@ -20,6 +20,7 @@ import {
   addressValidator,
   selectValidator,
   youtubeLinkValidator,
+  isAdmin,
 } from "../Common/Validation";
 import {
   createModule,
@@ -432,19 +433,23 @@ export default function CourseVideos({
           lg={12}
           className="courses_createmodule_button_container"
         >
-          <button
-            className="courses_createcourse_button"
-            onClick={() => setIsOpenAddModuleModal(true)}
-          >
-            Create Module
-          </button>
+          {isAdmin() && (
+            <>
+              <button
+                className="courses_createcourse_button"
+                onClick={() => setIsOpenAddModuleModal(true)}
+              >
+                Create Module
+              </button>
 
-          <button
-            className="courses_createcourse_button"
-            onClick={() => setIsOpenUploadVideoDrawer(true)}
-          >
-            Upload Video
-          </button>
+              <button
+                className="courses_createcourse_button"
+                onClick={() => setIsOpenUploadVideoDrawer(true)}
+              >
+                Upload Video
+              </button>
+            </>
+          )}
         </Col>
       </Row>
 
@@ -770,19 +775,21 @@ export default function CourseVideos({
                                     }}
                                     className="delete-btn"
                                   >
-                                    <DeleteOutlined
-                                      size={20}
-                                      className="coursevideos_delete_icon"
-                                      color="#f5222d"
-                                      style={{
-                                        flexShrink: 0,
-                                        cursor: "pointer",
-                                      }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteVideo(lesson);
-                                      }}
-                                    />
+                                    {isAdmin() && (
+                                      <DeleteOutlined
+                                        size={20}
+                                        className="coursevideos_delete_icon"
+                                        color="#f5222d"
+                                        style={{
+                                          flexShrink: 0,
+                                          cursor: "pointer",
+                                        }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDeleteVideo(lesson);
+                                        }}
+                                      />
+                                    )}
                                     {activeVideo?.id === lesson.id ? (
                                       <CgPlayStopO size={22} color="#2160ad" />
                                     ) : (
@@ -792,6 +799,7 @@ export default function CourseVideos({
                                       />
                                     )}
                                   </div>
+
                                 </div>
                               </React.Fragment>
                             );

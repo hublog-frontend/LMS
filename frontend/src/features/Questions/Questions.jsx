@@ -28,7 +28,7 @@ import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonAntdMultiSelect from "../Common/CommonAntMultiSelect";
-import { addressValidator, selectValidator } from "../Common/Validation";
+import { addressValidator, selectValidator, isAdmin } from "../Common/Validation";
 import {
   createCategory,
   createQuestion,
@@ -313,39 +313,43 @@ export default function Questions() {
       ];
     }
 
-    const actionColumn = {
-      title: "Action",
-      key: "action",
-      width: 100,
-      fixed: "right",
-      render: (text, record) => (
-        <Space size="middle">
-          <Tooltip title="Edit Question">
-            <span
-              className="action-edit-icon"
-              onClick={() => handleQuestionEdit(record)}
-            >
-              <AiOutlineEdit size={18} />
-            </span>
-          </Tooltip>
-          <Popconfirm
-            title="Are you sure to delete this question?"
-            onConfirm={() => handleQuestionDelete(record.id)}
-            okText="Yes"
-            cancelText="No"
-            okButtonProps={{ danger: true }}
-          >
-            <Tooltip title="Delete Question">
-              <span className="action-delete-icon">
-                <AiOutlineDelete size={18} />
-              </span>
-            </Tooltip>
-          </Popconfirm>
-        </Space>
-      ),
-    };
+    const actionColumn = isAdmin()
+      ? {
+          title: "Action",
+          key: "action",
+          width: 100,
+          fixed: "right",
+          render: (text, record) => (
+            <Space size="middle">
+              <Tooltip title="Edit Question">
+                <span
+                  className="action-edit-icon"
+                  onClick={() => handleQuestionEdit(record)}
+                >
+                  <AiOutlineEdit size={18} />
+                </span>
+              </Tooltip>
+              <Popconfirm
+                title="Are you sure to delete this question?"
+                onConfirm={() => handleQuestionDelete(record.id)}
+                okText="Yes"
+                cancelText="No"
+                okButtonProps={{ danger: true }}
+              >
+                <Tooltip title="Delete Question">
+                  <span className="action-delete-icon">
+                    <AiOutlineDelete size={18} />
+                  </span>
+                </Tooltip>
+              </Popconfirm>
+            </Space>
+          ),
+        }
+      : null;
 
-    return [...commonColumns, ...typeSpecificColumns, actionColumn];
+    return [...commonColumns, ...typeSpecificColumns, actionColumn].filter(
+      Boolean,
+    );
   };
 
   const handleSubmit = async () => {
@@ -855,30 +859,32 @@ export default function Questions() {
           lg={12}
           className="courses_createmodule_button_container"
         >
-          {/* <div className="questions_create_button_col_inner"> */}
-          <button
-            className="questions_create_button"
-            onClick={() => {
-              setIsOpenCategoryModal(true);
-            }}
-          >
-            Create Category
-          </button>
-          <button
-            className="questions_create_button"
-            onClick={handleBulkUploadClick}
-          >
-            Bulk Upload
-          </button>
-          <button
-            className="questions_create_button"
-            onClick={() => {
-              setIsOpenAddDrawer(true);
-            }}
-          >
-            Create Question
-          </button>
-          {/* </div> */}
+          {isAdmin() && (
+            <>
+              <button
+                className="questions_create_button"
+                onClick={() => {
+                  setIsOpenCategoryModal(true);
+                }}
+              >
+                Create Category
+              </button>
+              <button
+                className="questions_create_button"
+                onClick={handleBulkUploadClick}
+              >
+                Bulk Upload
+              </button>
+              <button
+                className="questions_create_button"
+                onClick={() => {
+                  setIsOpenAddDrawer(true);
+                }}
+              >
+                Create Question
+              </button>
+            </>
+          )}
         </Col>
       </Row>
 
@@ -891,36 +897,38 @@ export default function Questions() {
             renderOption={(opt) => (
               <div className="category-option-wrapper">
                 <span>{opt.name}</span>
-                <div className="category-option-actions">
-                  <div
-                    className="category-action-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCategoryEdit(opt);
-                    }}
-                  >
-                    <Tooltip title="Edit Category">
-                      <AiOutlineEdit className="category-edit-icon" />
-                    </Tooltip>
-                  </div>
-                  <div
-                    className="category-action-btn"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Popconfirm
-                      title="Delete category?"
-                      description="Are you sure you want to delete the category?"
-                      onConfirm={() => handleCategoryDelete(opt.id)}
-                      okText="Yes"
-                      cancelText="No"
-                      okButtonProps={{ danger: true }}
+                {isAdmin() && (
+                  <div className="category-option-actions">
+                    <div
+                      className="category-action-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCategoryEdit(opt);
+                      }}
                     >
-                      <Tooltip title="Delete Category">
-                        <AiOutlineDelete className="category-delete-icon" />
+                      <Tooltip title="Edit Category">
+                        <AiOutlineEdit className="category-edit-icon" />
                       </Tooltip>
-                    </Popconfirm>
+                    </div>
+                    <div
+                      className="category-action-btn"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Popconfirm
+                        title="Delete category?"
+                        description="Are you sure you want to delete the category?"
+                        onConfirm={() => handleCategoryDelete(opt.id)}
+                        okText="Yes"
+                        cancelText="No"
+                        okButtonProps={{ danger: true }}
+                      >
+                        <Tooltip title="Delete Category">
+                          <AiOutlineDelete className="category-delete-icon" />
+                        </Tooltip>
+                      </Popconfirm>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
             onChange={(e) => {
