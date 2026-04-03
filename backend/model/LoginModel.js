@@ -17,7 +17,7 @@ const LoginModel = {
           u.role_id = r.role_id
             AND	r.is_active = 1
         WHERE
-            email = ? AND PASSWORD = ? AND is_active = 1`,
+            u.email = ? AND u.password = ? AND u.is_active = 1`,
         [email, password],
       );
 
