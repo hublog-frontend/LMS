@@ -15,6 +15,9 @@ const CompilerController = require("../controller/CompilerController");
 const JobController = require("../controller/JobController");
 
 router.post("/login", LoginController.login);
+router.post("/forgotPassword", LoginController.forgotPassword);
+router.post("/verifyOTP", LoginController.verifyOTP);
+router.post("/resetPassword", LoginController.resetPassword);
 router.post("/createCourse", verifyToken, CourseController.createCourse);
 router.get("/getCourses", verifyToken, CourseController.getCourses);
 router.post("/createModule", verifyToken, CourseController.createModule);
