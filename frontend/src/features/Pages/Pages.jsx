@@ -32,6 +32,7 @@ import Jobs from "../Jobs/Jobs";
 import DriveDetails from "../Jobs/DriveDetails";
 import AssignmentPractice from "../Assignments/AssignmentPractice";
 import FullTestHistory from "../Tests/FullTestHistory";
+import Students from "../Students/Students";
 
 const { Sider, Content, Header } = Layout;
 const { useBreakpoint } = Grid;
@@ -273,6 +274,7 @@ export default function Pages() {
             <Route element={<Profile />} path="/profile" />
             <Route element={<Jobs />} path="/jobs" />
             <Route element={<DriveDetails />} path="/jobs/:job_id" />
+            <Route element={<Students />} path="/students" />
             <Route element={<Navigate to={"/courses"} />} path="*" />
           </Routes>
         </Content>

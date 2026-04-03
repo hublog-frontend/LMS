@@ -33,9 +33,14 @@ import {
 import { CommonMessage } from "../Common/CommonMessage";
 import NodataImage from "../../assets/nodata.png";
 import CommonSelectField from "../Common/CommonSelectField";
-import { uploadCourseVideo } from "../ApiService/MultipartApi";
+import { MdDelete } from "react-icons/md";
+import {
+  uploadCourseVideo,
+  deleteCourseVideo,
+} from "../ApiService/MultipartApi";
 import CommonNodataFound from "../Common/CommonNoDataFound";
 import { CgPlayStopO } from "react-icons/cg";
+import { DeleteOutlined } from "@ant-design/icons";
 
 const { Dragger } = Upload;
 
@@ -62,7 +67,7 @@ export default function CourseVideos({
   const [moduleId, setModuleId] = useState(null);
   const [moduleIdError, setModuleIdError] = useState("");
   const videoTypeOptions = [
-    { id: "video", name: "Video" },
+    { id: "video", name: "Internal Video" },
     { id: "youtube", name: "Youtube Link" },
   ];
   const [videoType, setVideoType] = useState("video");
@@ -180,7 +185,10 @@ export default function CourseVideos({
 
   const handleCourseVideo = ({ file }) => {
     console.log("fileeeeee", file);
-    const ValidType = file.type === "video/mp4";
+    const ValidType =
+      file.type?.startsWith("video/") ||
+      file.name?.toLowerCase().endsWith(".mp4") ||
+      file.name?.toLowerCase().endsWith(".mov");
 
     if (file.status === "uploading" || file.status === "removed") {
       setCourseVideo(null);
@@ -189,13 +197,16 @@ export default function CourseVideos({
     }
 
     if (ValidType) {
-      setCourseVideo(file);
+      // Use originFileObj for Ant Design Upload
+      const actualFile = file.originFileObj || file;
+      setCourseVideo(actualFile);
       setCourseVideoArray([file]);
-      CommonMessage("success", "Video uploaded");
+      console.log("DEBUG: File captured:", actualFile);
+      CommonMessage("success", "Video selected");
     } else {
       setCourseVideo(null);
       setCourseVideoArray([]);
-      CommonMessage("error", "Only .mp4 files are accepted");
+      CommonMessage("error", "Only video files are accepted");
     }
   };
 
@@ -203,9 +214,11 @@ export default function CourseVideos({
     const titleValidate = addressValidator(videoTitle);
     const moduleIdValidate = selectValidator(moduleId);
     const youtubeUrlValidate =
-      videoType == 2 ? youtubeLinkValidator(youtubeUrl) : "";
+      videoType === "youtube" ? youtubeLinkValidator(youtubeUrl) : "";
     const courseVideoValidate =
-      videoType == 1 ? selectValidator(courseVideo) : "";
+      videoType === "video" || videoType === "google_drive"
+        ? selectValidator(courseVideo)
+        : "";
 
     setVideoTitleError(titleValidate);
     setModuleIdError(moduleIdValidate);
@@ -230,13 +243,32 @@ export default function CourseVideos({
     formData.append("content_url", youtubeUrl);
     formData.append("content", courseVideo);
 
+    console.log("DEBUG: Sending Payload:", {
+      module_id: moduleId,
+      title: videoTitle,
+      content_type: videoType,
+      content_url: youtubeUrl,
+      file: courseVideo?.name,
+    });
+
     for (let pair of formData.entries()) {
       console.log(pair[0], pair[1]);
     }
     try {
       const response = await uploadCourseVideo(formData);
+      const currentModuleId = moduleId; // Capture moduleId before formReset
       setTimeout(() => {
         CommonMessage("success", "Video Uploaded Successfully!");
+
+        // Refresh the specific module's videos immediately
+        if (currentModuleId) {
+          getModuleVideos(currentModuleId);
+          // Automatically open the accordion for that module
+          if (!openAccordionIds.includes(currentModuleId)) {
+            setOpenAccordionIds((prev) => [...prev, currentModuleId]);
+          }
+        }
+
         formReset();
         getCoursesData();
       }, 300);
@@ -248,6 +280,30 @@ export default function CourseVideos({
           "Something went wrong. Try again later",
       );
     }
+  };
+
+  const handleDeleteVideo = (lesson) => {
+    Modal.confirm({
+      title: "Delete Video",
+      content: `Are you sure you want to delete "${lesson.title}"?`,
+      okText: "Yes, Delete",
+      okType: "danger",
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          const filename =
+            lesson.content_type === "video" ? lesson.filename : null;
+          await deleteCourseVideo({ id: lesson.id, filename });
+          setTimeout(() => {
+            CommonMessage("success", "Video Deleted Successfully!");
+            getModuleVideos(lesson.module_id);
+            getCoursesData();
+          }, 300);
+        } catch (error) {
+          CommonMessage("error", "Failed to delete video");
+        }
+      },
+    });
   };
 
   const getModuleVideos = async (id) => {
@@ -400,9 +456,36 @@ export default function CourseVideos({
                 key={activeVideo?.file_path}
                 src={`https://www.youtube.com/embed/${getYoutubeId(activeVideo?.file_path)}`}
                 allowFullScreen
+                allow="autoplay; encrypted-media"
                 className="courses_iframevideos"
                 style={{ height: "400px" }}
               ></iframe>
+            ) : activeVideo.content_type === "google_drive" ? (
+              <div
+                style={{
+                  position: "relative",
+                  overflow: "hidden",
+                  height: "400px",
+                  width: "100%",
+                  borderRadius: "8px",
+                  border: "1px solid #eaecf0",
+                }}
+              >
+                <iframe
+                  key={activeVideo?.file_path}
+                  src={`https://drive.google.com/file/d/${activeVideo?.filename}/preview?authuser=0&rm=minimal`}
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                  style={{
+                    position: "absolute",
+                    top: "-48px", // Cropping the Google Drive header
+                    left: "0",
+                    width: "100%",
+                    height: "calc(100% + 48px)",
+                    border: "none",
+                  }}
+                ></iframe>
+              </div>
             ) : (
               <video
                 key={activeVideo?.file_path}
@@ -649,6 +732,7 @@ export default function CourseVideos({
                                           style={{
                                             flexShrink: 0,
                                             cursor: "pointer",
+                                            marginLeft: "10px",
                                           }}
                                           onClick={(e) => {
                                             e.stopPropagation();
@@ -662,6 +746,7 @@ export default function CourseVideos({
                                           style={{
                                             flexShrink: 0,
                                             cursor: "pointer",
+                                            marginLeft: "10px",
                                           }}
                                           onClick={(e) => {
                                             e.stopPropagation();
@@ -680,8 +765,24 @@ export default function CourseVideos({
                                       display: "flex",
                                       justifyContent: "center",
                                       alignItems: "center",
+                                      gap: "12px",
+                                      fontSize: "16px",
                                     }}
+                                    className="delete-btn"
                                   >
+                                    <DeleteOutlined
+                                      size={20}
+                                      className="coursevideos_delete_icon"
+                                      color="#f5222d"
+                                      style={{
+                                        flexShrink: 0,
+                                        cursor: "pointer",
+                                      }}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteVideo(lesson);
+                                      }}
+                                    />
                                     {activeVideo?.id === lesson.id ? (
                                       <CgPlayStopO size={22} color="#2160ad" />
                                     ) : (
@@ -832,7 +933,7 @@ export default function CourseVideos({
             />
           </Col>
 
-          {videoType == "youtube" ? (
+          {videoType === "youtube" ? (
             <Col
               xs={24}
               sm={24}
@@ -865,6 +966,7 @@ export default function CourseVideos({
               <Dragger
                 className="profilepage_personalinfo_dragger"
                 multiple={false}
+                accept="video/*"
                 beforeUpload={(file) => {
                   console.log(file);
                   return false; // Prevent auto-upload

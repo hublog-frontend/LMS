@@ -1066,7 +1066,20 @@ export default function PersonalInfo({ userFulldetails }) {
                     type="link"
                     size="small"
                     style={{ padding: 0, paddingTop: 10 }}
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => {
+                      // const hasActeCertificate = userFulldetails.certificates?.some((cert) =>
+                      //   cert.issuing_organization?.toLowerCase().includes("acte technologies"),
+                      // );
+
+                      // if (!hasActeCertificate) {
+                      //   CommonMessage(
+                      //     "error",
+                      //     "You must add at least one certificate issued by ACTE Technologies before viewing or downloading your resume.",
+                      //   );
+                      //   return;
+                      // }
+                      setIsModalOpen(true);
+                    }}
                   >
                     <EyeOutlined style={{ color: "gray" }} />
                   </Button>
