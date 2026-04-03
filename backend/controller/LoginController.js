@@ -122,9 +122,26 @@ const generateToken = (user) => {
   );
 };
 
+const updateFirebaseToken = async (request, response) => {
+  const { email, token } = request.body;
+  try {
+    // Only pass email and token. Let the model handle socket_id preservation.
+    await LoginModel.updateActiveSession(email, token);
+    return response.status(200).send({ message: "Token updated" });
+  } catch (error) {
+    response.status(500).send({
+      message: "Error updating token",
+      details: error.message,
+    });
+  }
+};
+
+
 module.exports = {
   login,
   forgotPassword,
   verifyOTP,
   resetPassword,
+  updateFirebaseToken,
 };
+

@@ -76,6 +76,46 @@ const LoginModel = {
       throw new Error(error.message);
     }
   },
+  updateActiveSession: async (email, token, socketId) => {
+    try {
+      const [isExists] = await pool.query(
+        `SELECT id, socket_id FROM active_sessions WHERE email = ?`,
+        [email],
+      );
+
+      if (isExists.length > 0) {
+        // If socketId is not provided (e.g. from the API call) 
+        // we keep the existing socket_id to allow the WebSocket server 
+        // to find and logout the previous session.
+        const currentSocketId = socketId !== undefined ? socketId : isExists[0].socket_id;
+        
+        await pool.query(
+          `UPDATE active_sessions SET token = ?, socket_id = ? WHERE email = ?`,
+          [token, currentSocketId, email],
+        );
+      } else {
+        await pool.query(
+          `INSERT INTO active_sessions (email, token, socket_id) VALUES (?, ?, ?)`,
+          [email, token, socketId],
+        );
+      }
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  },
+
+  getActiveSession: async (email) => {
+    try {
+      const [rows] = await pool.query(
+        `SELECT token, socket_id FROM active_sessions WHERE email = ?`,
+        [email],
+      );
+      return rows[0];
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  },
 };
 
 module.exports = LoginModel;
+

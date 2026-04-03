@@ -131,6 +131,16 @@ export const resetPassword = async (payload) => {
   }
 };
 
+export const updateFirebaseToken = async (payload) => {
+  try {
+    const response = await api.post("/api/updateFirebaseToken", payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
 //course api's
 export const getCourses = async (payload) => {
   try {

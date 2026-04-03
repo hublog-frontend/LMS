@@ -1,0 +1,61 @@
+import { io } from "socket.io-client";
+import { auth } from "./firebase";
+import { CommonMessage } from "./features/Common/CommonMessage";
+
+const SOCKET_URL = "http://localhost:3000"; // Should match backend port
+
+let socket = null;
+let currentToken = null;
+
+export const initiateSocket = (token, deviceId) => {
+  // If socket already exists and token is the same, don't reconnect
+  if (socket && currentToken === token && socket.connected) {
+    return socket;
+  }
+
+  if (socket) {
+    socket.disconnect();
+    socket.off(); // Remove all listeners
+  }
+
+  currentToken = token;
+  socket = io(SOCKET_URL, {
+    auth: {
+      token,
+      deviceId,
+      deviceInfo: navigator.userAgent,
+    },
+    transports: ["websocket"],
+    reconnection: true,
+    reconnectionAttempts: 5,
+  });
+
+  console.log("Socket connection initiated...");
+
+  // Register listener ONLY ONCE per socket instance
+  socket.on("forceLogout", (data) => {
+    console.warn("Force Logout received:", data.message);
+
+    // 1. Show the message immediately in the current tab
+    CommonMessage("warning", data.message);
+
+    // 2. Prepare for redirect after a 2-second delay
+    setTimeout(() => {
+      localStorage.clear();
+      auth.signOut().then(() => {
+        window.location.replace("/login");
+      });
+    }, 2000);
+  });
+
+  return socket;
+};
+
+export const disconnectSocket = () => {
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+  }
+};
+
+export const getSocket = () => socket;

@@ -7,14 +7,15 @@ import { GrNotes } from "react-icons/gr";
 import { AiOutlineLock } from "react-icons/ai";
 import { FiEyeOff, FiEye } from "react-icons/fi";
 import "./styles.css";
-import CommonInputField from "../Common/CommonInputField";
-import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { MdOutlineEmail } from "react-icons/md";
 import { emailValidator, passwordValidator } from "../Common/Validation";
-import { LoginApi } from "../ApiService/action";
+import { LoginApi, updateFirebaseToken } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
 import { Input } from "antd";
+import { auth } from "../../firebase";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -27,6 +28,14 @@ export default function Login() {
   const [rememberMe, setRememberMe] = useState(false);
   const [validationTrigger, setValidationTrigger] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  React.useEffect(() => {
+    const logoutMsg = localStorage.getItem("logoutMessage");
+    if (logoutMsg) {
+      CommonMessage("warning", logoutMsg);
+      localStorage.removeItem("logoutMessage");
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,26 +56,68 @@ export default function Login() {
       password: password,
     };
     try {
+      // 1. Primary Authentication via MySQL (Absolute source of truth)
       const response = await LoginApi(payload);
-      console.log("login response", response);
       const loginUserDetails = response?.data?.data;
-      localStorage.setItem("AccessToken", response?.data?.token);
+      const mysqlToken = response?.data?.token;
+
+      // Ensure deviceId exists (REQUIRED for socket connection)
+      let deviceId = localStorage.getItem("deviceId");
+      if (!deviceId) {
+        deviceId = uuidv4();
+        localStorage.setItem("deviceId", deviceId);
+      }
+
+      let firebaseToken;
+
+      try {
+        // 2. Attempt Firebase Login
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const firebaseUser = userCredential.user;
+        firebaseToken = await firebaseUser.getIdToken();
+      } catch (fbError) {
+        console.warn("Firebase sign-in failed, attempting provision:", fbError.code);
+        // 3. Auto-Provision if user is valid in MySQL but missing or unsynced in Firebase
+        if (fbError.code === "auth/user-not-found" || fbError.code === "auth/invalid-credential" || fbError.code === "auth/invalid-login-credentials") {
+          try {
+            const newUser = await createUserWithEmailAndPassword(auth, email, password);
+            firebaseToken = await newUser.user.getIdToken();
+            console.log("Firebase account provisioned successfully.");
+          } catch (createError) {
+             // If creation also fails (e.g. wrong password if user exists with different pass), 
+             // we throw the original error or a specialized one.
+             throw fbError; 
+          }
+        } else {
+          throw fbError; 
+        }
+      }
+
+      // 4. Update MySQL with the latest Firebase Token for socket forceLogout
+      await updateFirebaseToken({ email: email, token: firebaseToken });
+
+      // Store tokens and metadata
+      localStorage.setItem("AccessToken", mysqlToken);
+      localStorage.setItem("FirebaseToken", firebaseToken); 
       localStorage.setItem(
         "loginUserDetails",
         JSON.stringify(loginUserDetails),
       );
-      setTimeout(() => {
-        setLoading(false);
-        navigate("/courses");
-      }, 300);
-    } catch (error) {
-      console.log("login error");
+
       setLoading(false);
-      CommonMessage(
-        "error",
-        error?.response?.data?.details ||
-          "Something went wrong. Try again later",
-      );
+      navigate("/courses");
+    } catch (error) {
+      console.error("login error", error);
+      setLoading(false);
+      
+      let errorMsg = "Something went wrong. Try again later";
+      if (error?.response?.data?.details) {
+        errorMsg = error.response.data.details;
+      } else if (error.message) {
+        errorMsg = error.message;
+      }
+
+      CommonMessage("error", errorMsg);
     }
   };
 
@@ -92,7 +143,6 @@ export default function Login() {
             </h1>
 
             <div className="loginpage_cards_container">
-              {/* ----------------left card------------------ */}
               <div className="loginpage_cards">
                 <div className="loginpage_cards_icon_container">
                   <FaCode size={24} />
@@ -103,7 +153,6 @@ export default function Login() {
                 </p>
               </div>
 
-              {/* ----------------right card------------------ */}
               <div className="loginpage_cards">
                 <div className="loginpage_cards_icon_container">
                   <GrNotes size={24} />
@@ -130,7 +179,7 @@ export default function Login() {
               Technologies
             </p>
 
-            <form>
+            <form onSubmit={handleSubmit}>
               <div style={{ marginTop: "30px", position: "relative" }}>
                 <Input
                   label="Email"
@@ -204,13 +253,13 @@ export default function Login() {
               </div>
 
               {loading ? (
-                <button className="loginpage_loading_submitbutton">
+                <button className="loginpage_loading_submitbutton" type="button">
                   <CommonSpinner />
                 </button>
               ) : (
                 <button
                   className="loginpage_submitbutton"
-                  onClick={handleSubmit}
+                  type="submit"
                 >
                   Continue
                 </button>

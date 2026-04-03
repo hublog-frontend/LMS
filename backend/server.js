@@ -27,7 +27,14 @@ app.use((req, res) => {
   });
 });
 
+const http = require("http");
+const initSocket = require("./socket");
+
+const server = http.createServer(app);
+initSocket(server);
+
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server is running on ${port}`);
 });
+

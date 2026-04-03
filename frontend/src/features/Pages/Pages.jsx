@@ -34,6 +34,9 @@ import DriveDetails from "../Jobs/DriveDetails";
 import AssignmentPractice from "../Assignments/AssignmentPractice";
 import FullTestHistory from "../Tests/FullTestHistory";
 import Students from "../Students/Students";
+import { initiateSocket, disconnectSocket } from "../../socket";
+import { auth } from "../../firebase";
+import { CommonMessage } from "../Common/CommonMessage";
 
 const { Sider, Content, Header } = Layout;
 const { useBreakpoint } = Grid;
@@ -86,9 +89,11 @@ export default function Pages() {
 
   useEffect(() => {
     const getloginUserDetails = localStorage.getItem("loginUserDetails");
-    const converAsJson = JSON.parse(getloginUserDetails);
-    setUserName(converAsJson?.user_name);
-    setUserEmail(converAsJson?.email);
+    if (getloginUserDetails) {
+      const converAsJson = JSON.parse(getloginUserDetails);
+      setUserName(converAsJson?.user_name);
+      setUserEmail(converAsJson?.email);
+    }
 
     const token = localStorage.getItem("AccessToken");
     const path = location.pathname;
@@ -105,6 +110,26 @@ export default function Pages() {
 
     setShowSidebar(true);
   }, [location.pathname, navigate]);
+
+  // Separate effect for Socket Initialization - runs only when tokens change
+  useEffect(() => {
+    const fbToken = localStorage.getItem("FirebaseToken");
+    const deviceId = localStorage.getItem("deviceId");
+    
+    // Only initiate if we are NOT on a public route and have tokens
+    if (!isPublicRoute(location.pathname) && fbToken && deviceId) {
+      initiateSocket(fbToken, deviceId);
+    }
+  }, [location.pathname]); // We keep location.pathname here just to catch the transition from public to private, but initiateSocket is now idempotent.
+
+  useEffect(() => {
+    // Show logout message if set
+    const forceLogoutMsg = localStorage.getItem("logoutMessage");
+    if (forceLogoutMsg) {
+      CommonMessage("warning", forceLogoutMsg);
+      localStorage.removeItem("logoutMessage");
+    }
+  }, []);
 
   if (isPublicRoute(location.pathname)) {
     return (
@@ -190,6 +215,8 @@ export default function Pages() {
                           setCollapsed(true);
                           setMobileOpen(false);
                           localStorage.clear();
+                          disconnectSocket();
+                          auth.signOut();
                           navigate("/login");
                         }}
 

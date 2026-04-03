@@ -21,6 +21,7 @@
     "apexcharts": "^5.10.4",
     "axios": "^1.13.4",
     "dayjs": "^1.11.19",
+    "firebase": "^12.11.0",
     "i": "^0.3.7",
     "mammoth": "^1.11.0",
     "moment": "^2.30.1",
@@ -35,6 +36,8 @@
     "react-prismazoom": "^3.3.5",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.13.0",
+    "socket.io-client": "^4.8.3",
+    "uuid": "^13.0.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
