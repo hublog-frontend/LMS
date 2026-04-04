@@ -2,7 +2,7 @@ import { io } from "socket.io-client";
 import { auth } from "./firebase";
 import { CommonMessage } from "./features/Common/CommonMessage";
 
-const SOCKET_URL = "http://localhost:3000"; // Should match backend port
+const SOCKET_URL = import.meta.env.VITE_API_URL; // Uses the dynamic API URL
 
 let socket = null;
 let currentToken = null;

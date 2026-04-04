@@ -6,8 +6,19 @@ import BuildingImage from "../../assets/building.png";
 import "./styles.css";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonInputField from "../Common/CommonInputField";
-import { addressValidator, formatToBackendIST, isAdmin } from "../Common/Validation";
-import { createTopic, deleteTopic, getTopics } from "../ApiService/action";
+import {
+  addressValidator,
+  formatToBackendIST,
+  isAdmin,
+} from "../Common/Validation";
+import {
+  createTopic,
+  deleteTopic,
+  getTopics,
+  getUpcomingTests,
+  getCompletedTests,
+} from "../ApiService/action";
+import dayjs from "dayjs";
 import { CommonMessage } from "../Common/CommonMessage";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
 import { AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
@@ -25,10 +36,31 @@ export default function Tests() {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [topicsData, setTopicsData] = useState([]);
   const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
+  const [upcomingTests, setUpcomingTests] = useState([]);
+  const [completedTests, setCompletedTests] = useState([]);
 
   useEffect(() => {
     getTopicsData();
+    fetchDashboardTests();
   }, []);
+
+  const fetchDashboardTests = async () => {
+    const loginUserDetails = localStorage.getItem("loginUserDetails");
+    if (!loginUserDetails) return;
+    const user = JSON.parse(loginUserDetails);
+    const userId = user?.id; // Use 'id' as per LoginModel/LoginController
+
+    try {
+      const [upcomingRes, completedRes] = await Promise.all([
+        getUpcomingTests({ user_id: userId }),
+        getCompletedTests({ user_id: userId }),
+      ]);
+      setUpcomingTests(upcomingRes.data.data || []);
+      setCompletedTests(completedRes.data.data || []);
+    } catch (error) {
+      console.error("Error fetching dashboard tests:", error);
+    }
+  };
 
   const getTopicsData = async () => {
     try {
@@ -40,6 +72,18 @@ export default function Tests() {
       setTopicsData([]);
       console.log("get modules error", error);
     }
+  };
+
+  const formatDuration = (val) => {
+    if (!val) return "0 mins";
+    const num = parseInt(val);
+    if (isNaN(num)) return val;
+    const hours = Math.floor(num / 60);
+    const minutes = num % 60;
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
   };
 
   const handleCreateTopic = async () => {
@@ -206,15 +250,51 @@ export default function Tests() {
           <div className="tests_completetest_container">
             <div className="tests_completedtest_header">
               <p className="tests_completedtest_heading">Upcoming Test</p>
-              <p className="tests_completedtest_viewall_text">View All</p>
+              {/* <p className="tests_completedtest_viewall_text">View All</p> */}
             </div>
 
             <Divider className="tests_completedtests_divider" />
 
-            <div className="tests_completedtests_empty_container">
-              <p className="tests_completedtests_empty_container_text">
-                No Upcoming Test currently!
-              </p>
+            <div className="tests_completedtests_list">
+              {upcomingTests.length > 0 ? (
+                upcomingTests.slice(0, 1).map((test) => (
+                  <div key={test.id} className="tests_dashboard_card_wrapper">
+                    <div className="tests_completedtests_card_title_container">
+                      <p className="tests_completedtests_card_title">
+                        {test.test_name}
+                      </p>
+                    </div>
+
+                    <div className="tests_completedtests_duration_container">
+                      <p className="tests_completedtests_duration_text">
+                        <span style={{ color: "#667085" }}>Duration:</span>{" "}
+                        {formatDuration(test.duration)}
+                      </p>
+                      <p className="tests_completedtests_duration_text">
+                        <span style={{ color: "#667085" }}>Type:</span>{" "}
+                        {test.topic_name}
+                      </p>
+                    </div>
+
+                    <div className="tests_completedtests_viewresult_container">
+                      <button
+                        className="tests_completedtests_viewresult_button"
+                        onClick={() =>
+                          navigate(`/tests/onDemandTests/${test.topic_id}`)
+                        }
+                      >
+                        Start Test
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="tests_completedtests_empty_container">
+                  <p className="tests_completedtests_empty_container_text">
+                    No Upcoming Test currently!
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </Col>
@@ -222,47 +302,73 @@ export default function Tests() {
           <div className="tests_completetest_container">
             <div className="tests_completedtest_header">
               <p className="tests_completedtest_heading">Completed Test</p>
-              <p className="tests_completedtest_viewall_text">View All</p>
+              {/* <p className="tests_completedtest_viewall_text">View All</p> */}
             </div>
 
             <Divider className="tests_completedtests_divider" />
 
-            <div>
-              <div className="tests_completedtests_card_title_container">
-                <p className="tests_completedtests_card_title">Arrays Test</p>
-              </div>
+            <div className="tests_completedtests_list">
+              {completedTests.length > 0 ? (
+                completedTests.slice(0, 1).map((test) => (
+                  <div
+                    key={test.history_id}
+                    className="tests_dashboard_card_wrapper"
+                  >
+                    <div className="tests_completedtests_card_title_container">
+                      <p className="tests_completedtests_card_title">
+                        {test.test_name}
+                      </p>
+                    </div>
 
-              <div className="tests_completedtests_duration_container">
-                <p className="tests_completedtests_duration_text">
-                  <span style={{ color: "#667085" }}>Duration:</span> 1h:0
-                </p>
+                    <div className="tests_completedtests_duration_container">
+                      <p className="tests_completedtests_duration_text">
+                        <span style={{ color: "#667085" }}>Duration:</span>{" "}
+                        {formatDuration(test.duration)}
+                      </p>
 
-                <p className="tests_completedtests_duration_text">
-                  <span style={{ color: "#667085" }}>Type:</span> Arrays
-                </p>
-              </div>
+                      <p className="tests_completedtests_duration_text">
+                        <span style={{ color: "#667085" }}>Type:</span>{" "}
+                        {test.topic_name}
+                      </p>
+                    </div>
 
-              <div className="tests_completedtests_conducted_container">
-                <div className="tests_completedtests_conducted_date_tag">
-                  Conducted on Jan 17 2026
+                    <div className="tests_completedtests_conducted_container">
+                      <div className="tests_completedtests_conducted_date_tag">
+                        Conducted on{" "}
+                        {dayjs(test.attempt_date).format("MMM DD YYYY")}
+                      </div>
+                      <div className="tests_completedtests_conducted_time_tag">
+                        {dayjs(test.attempt_date).format("hh:mm A")}
+                      </div>
+                    </div>
+
+                    <div className="tests_completedtests_viewresult_container">
+                      <button
+                        className="tests_completedtests_viewresult_button"
+                        onClick={() =>
+                          navigate(
+                            `/testresult/${test.test_name}/${test.history_id}`,
+                            {
+                              state: {
+                                coming_from_completedtest: true,
+                              },
+                            },
+                          )
+                        }
+                      >
+                        View Result
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="tests_completedtests_empty_container">
+                  <p className="tests_completedtests_empty_container_text">
+                    No Completed Test currently!
+                  </p>
                 </div>
-                <div className="tests_completedtests_conducted_time_tag">
-                  10:42 AM
-                </div>
-              </div>
-
-              <div className="tests_completedtests_viewresult_container">
-                <button className="tests_completedtests_viewresult_button">
-                  View Result
-                </button>
-              </div>
+              )}
             </div>
-
-            {/* <div className="tests_completedtests_empty_container">
-              <p className="tests_completedtests_empty_container_text">
-                No Completed Test currently!
-              </p>
-            </div> */}
           </div>
         </Col>
       </Row>

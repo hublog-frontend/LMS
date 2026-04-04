@@ -423,7 +423,7 @@ export default function TestTopics() {
                               )
                             }
                           >
-                            Retake Test
+                            Take Test
                           </button>
                         </div>
                       </div>

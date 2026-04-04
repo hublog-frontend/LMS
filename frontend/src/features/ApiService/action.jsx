@@ -677,3 +677,25 @@ export const getStreams = async (payload) => {
     throw error;
   }
 };
+
+export const getUpcomingTests = async (payload) => {
+  try {
+    const response = await api.get(`/api/getUpcomingTests`, {
+      params: payload,
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getCompletedTests = async (payload) => {
+  try {
+    const response = await api.get(`/api/getCompletedTests`, {
+      params: payload,
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

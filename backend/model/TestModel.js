@@ -844,6 +844,54 @@ const TestModel = {
       throw new Error(error.message);
     }
   },
+
+  getUpcomingTests: async (user_id) => {
+    try {
+      const query = `
+        SELECT 
+          t.id, 
+          t.test_name, 
+          t.duration, 
+          t.created_date,
+          t.topic_id,
+          tp.topic_name
+        FROM tests t
+        JOIN topics tp ON t.topic_id = tp.id
+        WHERE t.is_active = 1 
+        AND t.id NOT IN (SELECT test_id FROM test_history WHERE user_id = ?)
+        ORDER BY t.id DESC
+        LIMIT 5
+      `;
+      const [upcomingTests] = await pool.query(query, [user_id]);
+      return upcomingTests;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  },
+
+  getCompletedTests: async (user_id) => {
+    try {
+      const query = `
+        SELECT 
+          th.id as history_id,
+          th.test_id,
+          th.created_date as attempt_date,
+          t.test_name,
+          t.duration,
+          tp.topic_name
+        FROM test_history th
+        JOIN tests t ON th.test_id = t.id
+        JOIN topics tp ON t.topic_id = tp.id
+        WHERE th.user_id = ?
+        ORDER BY th.id DESC
+        LIMIT 5
+      `;
+      const [completedTests] = await pool.query(query, [user_id]);
+      return completedTests;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  },
 };
 
 module.exports = TestModel;

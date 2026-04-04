@@ -74,6 +74,8 @@ router.post("/updateQuestion", verifyToken, TestController.updateQuestion);
 router.post("/getQuestions", verifyToken, TestController.getQuestions);
 router.post("/mapTestQuestions", verifyToken, TestController.mapTestQuestions);
 router.get("/getTestQuestions", verifyToken, TestController.getTestQuestions);
+router.get("/getUpcomingTests", verifyToken, TestController.getUpcomingTests);
+router.get("/getCompletedTests", verifyToken, TestController.getCompletedTests);
 
 router.post(
   "/createAssignment",
@@ -218,6 +220,6 @@ router.post(
   BookmarkController.userWiseBookmarks,
 );
 
-router.post("/addUser", verifyToken, UserController.addUser);
+router.post("/addUser", UserController.addUser);
 
 module.exports = router;

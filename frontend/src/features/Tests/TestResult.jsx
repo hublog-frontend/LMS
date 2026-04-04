@@ -116,12 +116,19 @@ export default function TestResult() {
               size={30}
               style={{ cursor: "pointer" }}
               onClick={() => {
-                navigate(`/tests/onDemandTests/${location?.state?.topic_id}`, {
-                  state: {
-                    showHistory: true,
-                    test_id: location?.state?.test_id,
-                  },
-                });
+                if (location?.state?.coming_from_completedtest) {
+                  navigate("/tests");
+                } else {
+                  navigate(
+                    `/tests/onDemandTests/${location?.state?.topic_id}`,
+                    {
+                      state: {
+                        showHistory: true,
+                        test_id: location?.state?.test_id,
+                      },
+                    },
+                  );
+                }
               }}
             />
             <p className="common_heading">Test Result</p>

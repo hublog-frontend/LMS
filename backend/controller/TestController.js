@@ -318,6 +318,38 @@ const userWiseTestHistory = async (request, response) => {
   }
 };
 
+const getUpcomingTests = async (request, response) => {
+  const { user_id } = request.query;
+  try {
+    const result = await TestModel.getUpcomingTests(user_id);
+    return response.status(200).send({
+      message: "Upcoming tests fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    response.status(500).send({
+      message: "Error while fetching upcoming tests",
+      details: error.message,
+    });
+  }
+};
+
+const getCompletedTests = async (request, response) => {
+  const { user_id } = request.query;
+  try {
+    const result = await TestModel.getCompletedTests(user_id);
+    return response.status(200).send({
+      message: "Completed tests fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    response.status(500).send({
+      message: "Error while fetching completed tests",
+      details: error.message,
+    });
+  }
+};
+
 module.exports = {
   createTopic,
   createTest,
@@ -334,4 +366,6 @@ module.exports = {
   deleteTopic,
   deleteQuestion,
   userWiseTestHistory,
+  getUpcomingTests,
+  getCompletedTests,
 };
