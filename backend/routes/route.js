@@ -218,4 +218,6 @@ router.post(
   BookmarkController.userWiseBookmarks,
 );
 
+router.post("/addUser", verifyToken, UserController.addUser);
+
 module.exports = router;

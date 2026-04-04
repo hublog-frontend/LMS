@@ -674,6 +674,30 @@ const UserModel = {
       throw new Error(error.message);
     }
   },
+
+  addUser: async (branch_id, user_name, email) => {
+    try {
+      const [isExists] = await pool.query(
+        `SELECT id FROM users WHERE email = ? AND branch_id = ? AND is_active = 1`,
+        [email, branch_id],
+      );
+      if (isExists.length > 0) {
+        throw new Error("User already exists");
+      }
+
+      const [getRole] = await pool.query(
+        `SELECT role_id FROM role WHERE role_name = 'Student' AND is_active = 1`,
+      );
+      const [result] = await pool.query(
+        `INSERT INTO users (branch_id, user_name, email, role_id) VALUES (?, ?, ?, ?)`,
+        [branch_id, user_name, email, getRole[0].role_id],
+      );
+
+      return result.affectedRows;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  },
 };
 
 module.exports = UserModel;

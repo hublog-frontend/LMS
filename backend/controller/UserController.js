@@ -327,6 +327,23 @@ const deleteCertificate = async (request, response) => {
   }
 };
 
+const addUser = async (request, response) => {
+  const { branch_id, user_name, email } = request.body;
+  try {
+    const result = await UserModel.addUser(branch_id, user_name, email);
+
+    return response.status(201).send({
+      message: "User added successfully",
+      data: result,
+    });
+  } catch (error) {
+    response.status(500).send({
+      message: "Error while adding user",
+      details: error.message,
+    });
+  }
+};
+
 module.exports = {
   updateExperience,
   updateEducation,
@@ -338,4 +355,5 @@ module.exports = {
   deleteExperience,
   deleteProject,
   deleteCertificate,
+  addUser,
 };
