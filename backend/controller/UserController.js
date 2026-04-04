@@ -344,6 +344,39 @@ const addUser = async (request, response) => {
   }
 };
 
+const getRegion = async (request, response) => {
+  try {
+    const result = await UserModel.getRegion();
+
+    return response.status(200).send({
+      message: "Region fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    response.status(500).send({
+      message: "Error while fetching region",
+      details: error.message,
+    });
+  }
+};
+
+const getBranches = async (request, response) => {
+  const { region_id } = request.query;
+  try {
+    const result = await UserModel.getBranches(region_id);
+
+    return response.status(200).send({
+      message: "Branches fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    response.status(500).send({
+      message: "Error while fetching branches",
+      details: error.message,
+    });
+  }
+};
+
 module.exports = {
   updateExperience,
   updateEducation,
@@ -356,4 +389,6 @@ module.exports = {
   deleteProject,
   deleteCertificate,
   addUser,
+  getRegion,
+  getBranches,
 };

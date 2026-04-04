@@ -698,6 +698,37 @@ const UserModel = {
       throw new Error(error.message);
     }
   },
+
+  getRegion: async () => {
+    try {
+      const [result] = await pool.query(
+        `SELECT id, region_name FROM region WHERE is_active = 1`,
+      );
+
+      return result;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  },
+
+  getBranches: async (region_id) => {
+    try {
+      let sql;
+      const [getRegion] = await pool.query(
+        `SELECT id, name FROM region WHERE id = ?`,
+        [region_id],
+      );
+      if (getRegion[0].name === "Hub") {
+        sql = `SELECT id, name FROM branches WHERE region_id = ? AND is_active = 1`;
+      } else {
+        sql = `SELECT id, name FROM branches WHERE is_active = 1 AND region_id = ? AND name <> 'Online' ORDER BY name ASC`;
+      }
+      const [result] = await pool.query(sql, [region_id]);
+      return result;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  },
 };
 
 module.exports = UserModel;

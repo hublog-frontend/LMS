@@ -222,4 +222,7 @@ router.post(
 
 router.post("/addUser", UserController.addUser);
 
+router.get("/getRegion", UserController.getRegion);
+router.get("/getBranches", UserController.getBranches);
+
 module.exports = router;
