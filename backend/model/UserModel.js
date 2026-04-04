@@ -702,7 +702,7 @@ const UserModel = {
   getRegion: async () => {
     try {
       const [result] = await pool.query(
-        `SELECT id, region_name FROM region WHERE is_active = 1`,
+        `SELECT id, name AS region_name FROM region WHERE is_active = 1`,
       );
 
       return result;
