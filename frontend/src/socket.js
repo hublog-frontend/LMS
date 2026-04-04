@@ -41,7 +41,10 @@ export const initiateSocket = (token, deviceId) => {
 
     // 2. Prepare for redirect after a 2-second delay
     setTimeout(() => {
-      localStorage.clear();
+      // Clear auth but keep deviceId for session stability across tabs
+      Object.keys(localStorage).forEach((key) => {
+        if (key !== "deviceId") localStorage.removeItem(key);
+      });
       auth.signOut().then(() => {
         window.location.replace("/login");
       });

@@ -72,7 +72,10 @@ export default function Pages() {
     const handleTokenExpire = () => {
       setCollapsed(true);
       setMobileOpen(false);
-      localStorage.clear();
+      // Clear auth but keep deviceId for session stability across tabs
+      Object.keys(localStorage).forEach((key) => {
+        if (key !== "deviceId") localStorage.removeItem(key);
+      });
       navigate("/login");
     };
 
@@ -214,7 +217,10 @@ export default function Pages() {
                         onClick={() => {
                           setCollapsed(true);
                           setMobileOpen(false);
-                          localStorage.clear();
+                          // Clear auth but keep deviceId for session stability across tabs
+                          Object.keys(localStorage).forEach((key) => {
+                            if (key !== "deviceId") localStorage.removeItem(key);
+                          });
                           disconnectSocket();
                           auth.signOut();
                           navigate("/login");

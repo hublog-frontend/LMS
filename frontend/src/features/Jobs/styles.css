@@ -141,8 +141,9 @@
   padding: 16px 24px;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
-  font-weight: 500;
-  font-size: 19px;
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: 0.5px;
 }
 .drive_content_row_container {
   width: 100%;
@@ -151,6 +152,81 @@
   border: 1px solid #eaecf0;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
+  margin-bottom: 24px;
+}
+
+/* Attachment Card Styles */
+.attachment_box {
+  background: #ffffff;
+  border: 1px solid #eaecf0;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: fit-content;
+  min-width: 300px;
+  transition: all 0.2s ease;
+}
+
+.attachment_box:hover {
+  border-color: #d0d5dd;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.pdf_icon_container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fef3f2;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.pdf_icon {
+  color: #d92d20;
+  font-size: 30px;
+}
+
+.attachment_info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.attachment_name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #101828;
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+.attachment_size {
+  font-size: 13px;
+  color: #667085;
+  margin: 0;
+  font-weight: 500;
+}
+
+.download_icon_btn {
+  margin-left: 20px;
+  cursor: pointer;
+  color: #667085;
+  font-size: 20px;
+  padding: 8px;
+  border: 1px solid #eaecf0;
+  border-radius: 8px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.download_icon_btn:hover {
+  background: #f9fafb;
+  color: #12355f;
+  border-color: #d0d5dd;
 }
 .drive_content_col_container {
   padding: 12px;

@@ -662,10 +662,26 @@ export default function JobDrawer({ visible, onClose, jobData, onSuccess }) {
                 Job Description / Company Profile
               </p>
               <Upload
+                accept=".pdf"
                 listType="picture"
                 fileList={fileList}
-                beforeUpload={() => false}
-                onChange={({ fileList }) => setFileList(fileList)}
+                beforeUpload={(file) => {
+                  const isPdf = file.type === "application/pdf";
+                  if (!isPdf) {
+                    message.error("You can only upload PDF files!");
+                  }
+                  return false; // Prevent auto-upload
+                }}
+                onChange={({ fileList }) => {
+                  // Filter out non-pdf files just in case
+                  const formattedList = fileList.filter((file) => {
+                    if (file.type && file.type !== "application/pdf") {
+                      return false;
+                    }
+                    return true;
+                  });
+                  setFileList(formattedList);
+                }}
                 maxCount={1}
               >
                 <div className="upload_trigger_area">
@@ -677,7 +693,7 @@ export default function JobDrawer({ visible, onClose, jobData, onSuccess }) {
                       Click or drag to upload document
                     </p>
                     <p className="sub_upload_text">
-                      Compatible with PDF, DOC, DOCX (Max 10MB)
+                      Only PDF files are supported (Max 10MB)
                     </p>
                   </div>
                 </div>

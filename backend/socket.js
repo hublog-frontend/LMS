@@ -35,13 +35,23 @@ const initSocket = (server) => {
       // 1. Join a user-specific room
       await socket.join(userEmail);
 
-      // 2. Notify all OTHER sockets in this room to logout
-      socket.to(userEmail).emit("forceLogout", {
-        message:
-          "You have been logged out because your account was used on another device.",
+      // 2. Notify all sockets from DIFFERENT devices in this room to logout
+      const otherSockets = await io.in(userEmail).fetchSockets();
+      otherSockets.forEach((s) => {
+        // Only force logout if it's a different device AND not the current socket
+        if (
+          s.id !== socket.id &&
+          s.handshake.auth.deviceId !== socket.handshake.auth.deviceId
+        ) {
+          s.emit("forceLogout", {
+            message:
+              "You have been logged out because your account was used on another device.",
+          });
+          console.log(
+            `Sent forceLogout to socket ${s.id} for user ${userEmail} (Different Device: ${s.handshake.auth.deviceId})`,
+          );
+        }
       });
-
-      console.log(`Sent forceLogout to other sessions for: ${userEmail}`);
 
       // 3. Update MySQL with the latest active session details
       // This keeps the DB in sync for API validation and single-session tracking

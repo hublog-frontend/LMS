@@ -9,12 +9,14 @@ import {
   FiBriefcase,
   FiBook,
   FiCheck,
+  FiDownload,
 } from "react-icons/fi";
 import { PiMapPin, PiWallet } from "react-icons/pi";
 import { LuBookOpen, LuClock4 } from "react-icons/lu";
 import { IoTransgenderSharp, IoCodeSharp } from "react-icons/io5";
 import { AiOutlinePercentage } from "react-icons/ai";
 import { MdBlockFlipped } from "react-icons/md";
+import { FaFilePdf } from "react-icons/fa";
 import { getJobById } from "../ApiService/action";
 import dayjs from "dayjs";
 import "./styles.css";
@@ -72,6 +74,14 @@ export default function DriveDetails() {
     if (!data) return "Not specified";
     if (Array.isArray(data)) return data.join(", ");
     return data;
+  };
+
+  const formatFileSize = (bytes) => {
+    if (!bytes) return "0 KB";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   return (
@@ -447,19 +457,58 @@ export default function DriveDetails() {
 
                 <div
                   className="drive_content_header_container"
-                  style={{ marginTop: "20px" }}
+                  style={{ marginTop: "24px" }}
                 >
                   Notes
                 </div>
                 <div className="drive_content_row_container">
                   <div
                     style={{
-                      color: "#101828",
+                      color: "#344054",
                       fontWeight: 500,
                       whiteSpace: "pre-wrap",
+                      fontSize: "15px",
+                      lineHeight: "1.6",
                     }}
                   >
                     {job.notes || "No additional notes provided."}
+                  </div>
+                </div>
+
+                <div
+                  className="drive_content_header_container"
+                  style={{ marginTop: "24px" }}
+                >
+                  Job Description
+                </div>
+                <div className="drive_content_row_container">
+                  <div className="attachment_box">
+                    <div className="pdf_icon_container">
+                      <FaFilePdf className="pdf_icon" />
+                    </div>
+                    <div className="attachment_info">
+                      <p className="attachment_name">{job?.job_id ?? ""}</p>
+                      <p className="attachment_size">
+                        {formatFileSize(job.file_size)}
+                      </p>
+                    </div>
+                    <div
+                      className="download_icon_btn"
+                      onClick={() => {
+                        const fileUrl = job.file_path;
+                        if (fileUrl) {
+                          // Handle relative paths if necessary
+                          const fullUrl = fileUrl.startsWith("http")
+                            ? fileUrl
+                            : `${import.meta.env.VITE_API_URL || ""}${fileUrl}`;
+                          window.open(fullUrl, "_blank");
+                        } else {
+                          message.info("Attachment not available");
+                        }
+                      }}
+                    >
+                      <FiDownload />
+                    </div>
                   </div>
                 </div>
               </div>
