@@ -377,6 +377,23 @@ const getBranches = async (request, response) => {
   }
 };
 
+const getUserProgress = async (request, response) => {
+  const { user_id } = request.query;
+  try {
+    const progress = await UserModel.getUserProgress(user_id);
+
+    return response.status(200).send({
+      message: "User progress fetched successfully",
+      data: progress,
+    });
+  } catch (error) {
+    response.status(500).send({
+      message: "Error while fetching user progress",
+      details: error.message,
+    });
+  }
+};
+
 module.exports = {
   updateExperience,
   updateEducation,
@@ -391,4 +408,5 @@ module.exports = {
   addUser,
   getRegion,
   getBranches,
+  getUserProgress,
 };

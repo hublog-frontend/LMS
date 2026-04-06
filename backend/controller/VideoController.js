@@ -193,6 +193,27 @@ class VideoController {
       });
     }
   }
+
+  static async setVideoProgress(request, response) {
+    const { user_id, video_id, status } = request.body;
+    try {
+      const result = await VideoModel.setVideoProgress(
+        user_id,
+        video_id,
+        status,
+      );
+
+      return response.status(200).send({
+        message: "Video progress updated successfully",
+        data: result,
+      });
+    } catch (error) {
+      response.status(500).send({
+        message: "Error while updating video progress",
+        details: error.message,
+      });
+    }
+  }
 }
 
 module.exports = VideoController;

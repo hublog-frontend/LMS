@@ -224,5 +224,7 @@ router.post("/addUser", UserController.addUser);
 
 router.get("/getRegion", UserController.getRegion);
 router.get("/getBranches", UserController.getBranches);
+router.get("/getUserProgress", verifyToken, UserController.getUserProgress);
+router.post("/setVideoProgress", verifyToken, VideoController.setVideoProgress);
 
 module.exports = router;

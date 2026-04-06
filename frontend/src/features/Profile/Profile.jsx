@@ -8,7 +8,7 @@ import Experience from "./Experience";
 import Projects from "./Projects";
 import Certificates from "./Certificates";
 import Education from "./Education";
-import { getUserById } from "../ApiService/action";
+import { getUserById, getUserProgress } from "../ApiService/action";
 import { Dropdown, Menu, Space, Modal, Button, Pagination } from "antd";
 import { pdf } from "@react-pdf/renderer";
 import { Document, Page, pdfjs } from "react-pdf";
@@ -26,6 +26,7 @@ import {
 } from "react-icons/ai";
 import { LuEye } from "react-icons/lu";
 import { CommonMessage } from "../Common/CommonMessage";
+import { isAdmin } from "../Common/Validation";
 
 export default function Profile() {
   const [userFulldetails, setUserFullDetails] = useState(null);
@@ -38,9 +39,30 @@ export default function Profile() {
   const [pageNumber, setPageNumber] = useState(1);
   const [scale, setScale] = useState(1.0);
 
+  const [progressData, setProgressData] = useState({
+    courseProgress: 0,
+    assignmentProgress: 0,
+  });
+
   useEffect(() => {
     getUserByIdData();
+    fetchUserProgress();
   }, []);
+
+  const fetchUserProgress = async () => {
+    const getloginUserDetails = localStorage.getItem("loginUserDetails");
+    const converAsJson = JSON.parse(getloginUserDetails);
+    if (converAsJson?.id) {
+      try {
+        const response = await getUserProgress(converAsJson.id);
+        setProgressData(
+          response?.data?.data || { courseProgress: 0, assignmentProgress: 0 },
+        );
+      } catch (error) {
+        console.error("Error fetching progress:", error);
+      }
+    }
+  };
 
   const getUserByIdData = async () => {
     const getloginUserDetails = localStorage.getItem("loginUserDetails");
@@ -61,12 +83,15 @@ export default function Profile() {
   const handleResumePreview = async (type) => {
     if (!userFulldetails) return;
 
-    const hasActeCertificate = userFulldetails.certificates?.some(
-      (cert) => cert.issuing_organization?.toLowerCase().includes("acte technologies")
+    const hasActeCertificate = userFulldetails.certificates?.some((cert) =>
+      cert.issuing_organization?.toLowerCase().includes("acte technologies"),
     );
 
     if (!hasActeCertificate) {
-      CommonMessage("error", "Please add at least one certificate issued by ACTE Technologies before generating your resume.");
+      CommonMessage(
+        "error",
+        "Please add at least one certificate issued by ACTE Technologies before generating your resume.",
+      );
       return;
     }
 
@@ -180,18 +205,26 @@ export default function Profile() {
               </div>
               <p className="profilepage_name_text">{userName}</p>
               <div className="profilepage_studenttag">
-                <p>Student</p>
+                <p>{isAdmin() ? "Admin" : "Student"}</p>
               </div>
             </div>
 
             <div className="profilepage_progress_container">
               <div className="profilepage_progress_sub_container">
-                <Progress type="circle" percent={50} size={65} />
+                <Progress
+                  type="circle"
+                  percent={progressData.courseProgress}
+                  size={65}
+                />
                 <p className="profilepage_progress_text">Course Progress</p>
               </div>
 
               <div className="profilepage_progress_sub_container">
-                <Progress type="circle" percent={50} size={65} />
+                <Progress
+                  type="circle"
+                  percent={progressData.assignmentProgress}
+                  size={65}
+                />
                 <p className="profilepage_progress_text">Assignment Progress</p>
               </div>
             </div>

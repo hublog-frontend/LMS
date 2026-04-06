@@ -724,3 +724,21 @@ export const getCompletedTests = async (payload) => {
     throw error;
   }
 };
+
+export const getUserProgress = async (user_id) => {
+  try {
+    const response = await api.get(`/api/getUserProgress?user_id=${user_id}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const setVideoProgress = async (payload) => {
+  try {
+    const response = await api.post(`/api/setVideoProgress`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

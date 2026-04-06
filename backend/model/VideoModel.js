@@ -65,7 +65,8 @@ const VideoModel = {
             cv.module_id,
             m.module_name,
             m.title AS module_title,
-            CASE WHEN b.id IS NOT NULL THEN 1 ELSE 0 END AS is_bookmarked
+            CASE WHEN b.id IS NOT NULL THEN 1 ELSE 0 END AS is_bookmarked,
+            CASE WHEN vp.is_completed = 1 THEN 1 ELSE 0 END AS is_completed
         FROM
             course_videos cv
         INNER JOIN module AS m ON
@@ -74,13 +75,15 @@ const VideoModel = {
             m.course_id = c.id
         LEFT JOIN bookmarks b ON
             b.user_id = ? AND b.category_type = 'Video' AND b.key_column = cv.id
+        LEFT JOIN video_progress vp ON
+            vp.user_id = ? AND vp.video_id = cv.id
         WHERE
             c.id = ? AND cv.is_deleted = 0 AND m.id = ?
         ORDER BY
             cv.created_at
         ASC
     `,
-        [user_id || 0, courseId, module_id],
+        [user_id || 0, user_id || 0, courseId, module_id],
       );
 
       const formattedResult = videos.map((item) => {
@@ -93,6 +96,15 @@ const VideoModel = {
       return formattedResult;
     } catch (error) {
       throw new Error("Error while fetching videos: " + error.message);
+    }
+  },
+
+  setVideoProgress: async (user_id, video_id, status) => {
+    try {
+      const query = `INSERT INTO video_progress (user_id, video_id, is_completed) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE is_completed = ?`;
+      await pool.query(query, [user_id, video_id, status, status]);
+    } catch (error) {
+      throw new Error("Error updating video progress: " + error.message);
     }
   },
 };

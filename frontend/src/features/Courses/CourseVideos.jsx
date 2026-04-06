@@ -30,6 +30,7 @@ import {
   getVideos,
   addBookmark,
   removeBookmark,
+  setVideoProgress,
 } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import NodataImage from "../../assets/nodata.png";
@@ -405,9 +406,25 @@ export default function CourseVideos({
     setModuleIdError("");
     setVideoType("video");
     setVideoTypeError("");
-    setCourseVideo("");
+    setCourseVideoError("");
     setCourseVideoArray([]);
     setCourseVideoError("");
+  };
+
+  const handleVideoEnd = async () => {
+    if (activeVideo && loginUserId) {
+      try {
+        await setVideoProgress({
+          user_id: loginUserId,
+          video_id: activeVideo.id,
+          status: 1,
+        });
+        // Refresh the specific module's videos to update UI icons
+        getModuleVideos(activeVideo.module_id);
+      } catch (error) {
+        console.error("Error setting video progress:", error);
+      }
+    }
   };
 
   return (
@@ -497,6 +514,8 @@ export default function CourseVideos({
                 controls
                 controlsList="nodownload"
                 className="courses_iframevideos"
+                autoPlay
+                onEnded={handleVideoEnd}
               >
                 <source
                   src={`${import.meta.env.VITE_API_URL}${activeVideo?.file_path}`}
@@ -795,11 +814,14 @@ export default function CourseVideos({
                                     ) : (
                                       <RiCheckboxCircleFill
                                         size={20}
-                                        color="#667085"
+                                        color={
+                                          lesson.is_completed
+                                            ? "#52c41a"
+                                            : "#667085"
+                                        }
                                       />
                                     )}
                                   </div>
-
                                 </div>
                               </React.Fragment>
                             );

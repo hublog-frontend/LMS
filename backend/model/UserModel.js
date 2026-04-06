@@ -729,6 +729,67 @@ const UserModel = {
       throw new Error(error.message);
     }
   },
+  getUserProgress: async (user_id) => {
+    try {
+      // 1. Create video_progress table if not exists (Lazy Migration)
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS video_progress (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          user_id INT NOT NULL,
+          video_id INT NOT NULL,
+          is_completed TINYINT DEFAULT 1,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE KEY (user_id, video_id)
+        );
+      `);
+
+      // 2. Calculate Assignment Progress: Solved Questions / Total Questions
+      const [[{ total_questions }]] = await pool.query(
+        `SELECT COUNT(*) AS total_questions 
+         FROM assignment_module_questions AS mq
+         INNER JOIN assignments AS a ON (SELECT assignment_id FROM assignment_module WHERE id = mq.assignment_module_id) = a.id
+         WHERE mq.is_active = 1 AND a.is_active = 1`,
+      );
+
+      const [[{ solved_questions }]] = await pool.query(
+        `SELECT COUNT(DISTINCT module_question_id) AS solved_questions 
+         FROM assignment_results 
+         WHERE user_id = ? AND score_obtained > 0`,
+        [user_id],
+      );
+
+      const assignmentProgress =
+        total_questions > 0
+          ? Math.round((solved_questions / total_questions) * 100)
+          : 0;
+
+      // 3. Calculate Course Progress: Watched Videos / Total Videos
+      const [[{ total_videos }]] = await pool.query(
+        `SELECT COUNT(*) AS total_videos 
+         FROM course_videos 
+         WHERE is_deleted = 0`,
+      );
+
+      const [[{ watched_videos }]] = await pool.query(
+        `SELECT COUNT(*) AS watched_videos 
+         FROM video_progress 
+         WHERE user_id = ? AND is_completed = 1`,
+        [user_id],
+      );
+
+      const courseProgress =
+        total_videos > 0
+          ? Math.round((watched_videos / total_videos) * 100)
+          : 0;
+
+      return {
+        assignmentProgress,
+        courseProgress,
+      };
+    } catch (error) {
+      throw new Error("Error fetching user progress: " + error.message);
+    }
+  },
 };
 
 module.exports = UserModel;
