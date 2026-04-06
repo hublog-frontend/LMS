@@ -24,9 +24,9 @@ const createCourse = async (request, response) => {
 };
 
 const getCourses = async (request, response) => {
-  const { course_id } = request.query;
+  const { course_id, searchName } = request.query;
   try {
-    const courses = await CourseModel.getCourses(course_id);
+    const courses = await CourseModel.getCourses(course_id, searchName);
 
     return response.status(200).send({
       message: "Courses fetched successfully",

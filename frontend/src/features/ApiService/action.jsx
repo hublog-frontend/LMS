@@ -742,3 +742,12 @@ export const setVideoProgress = async (payload) => {
     throw error;
   }
 };
+
+export const getDashboardData = async (user_id) => {
+  try {
+    const response = await api.get(`/api/getDashboardData?user_id=${user_id}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

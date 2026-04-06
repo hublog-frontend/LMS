@@ -29,7 +29,7 @@ const CourseModel = {
     }
   },
 
-  getCourses: async (course_id) => {
+  getCourses: async (course_id, searchName) => {
     try {
       const queryParams = [];
       let getQuery = `SELECT id, course_name, base64string, description, outcomes FROM course WHERE is_active = 1`;
@@ -37,6 +37,11 @@ const CourseModel = {
       if (course_id) {
         getQuery += ` AND id = ?`;
         queryParams.push(course_id);
+      }
+
+      if (searchName) {
+        getQuery += ` AND course_name LIKE ?`;
+        queryParams.push(`%${searchName}%`);
       }
 
       getQuery += ` ORDER BY course_name ASC`;

@@ -318,7 +318,7 @@ export default function Pages() {
             <Route element={<Jobs />} path="/jobs" />
             <Route element={<DriveDetails />} path="/jobs/:job_id" />
             <Route element={<Students />} path="/students" />
-            <Route element={<Navigate to={"/courses"} />} path="*" />
+            <Route element={<Navigate to={"/dashboard"} />} path="*" />
           </Routes>
         </Content>
       </Layout>

@@ -14,7 +14,10 @@ import { CommonMessage } from "../Common/CommonMessage";
 import CommonSpinner from "../Common/CommonSpinner";
 import { Input } from "antd";
 import { auth } from "../../firebase";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+} from "firebase/auth";
 import { v4 as uuidv4 } from "uuid";
 
 export default function Login() {
@@ -72,24 +75,39 @@ export default function Login() {
 
       try {
         // 2. Attempt Firebase Login
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password,
+        );
         const firebaseUser = userCredential.user;
         firebaseToken = await firebaseUser.getIdToken();
       } catch (fbError) {
-        console.warn("Firebase sign-in failed, attempting provision:", fbError.code);
+        console.warn(
+          "Firebase sign-in failed, attempting provision:",
+          fbError.code,
+        );
         // 3. Auto-Provision if user is valid in MySQL but missing or unsynced in Firebase
-        if (fbError.code === "auth/user-not-found" || fbError.code === "auth/invalid-credential" || fbError.code === "auth/invalid-login-credentials") {
+        if (
+          fbError.code === "auth/user-not-found" ||
+          fbError.code === "auth/invalid-credential" ||
+          fbError.code === "auth/invalid-login-credentials"
+        ) {
           try {
-            const newUser = await createUserWithEmailAndPassword(auth, email, password);
+            const newUser = await createUserWithEmailAndPassword(
+              auth,
+              email,
+              password,
+            );
             firebaseToken = await newUser.user.getIdToken();
             console.log("Firebase account provisioned successfully.");
           } catch (createError) {
-             // If creation also fails (e.g. wrong password if user exists with different pass), 
-             // we throw the original error or a specialized one.
-             throw fbError; 
+            // If creation also fails (e.g. wrong password if user exists with different pass),
+            // we throw the original error or a specialized one.
+            throw fbError;
           }
         } else {
-          throw fbError; 
+          throw fbError;
         }
       }
 
@@ -98,18 +116,18 @@ export default function Login() {
 
       // Store tokens and metadata
       localStorage.setItem("AccessToken", mysqlToken);
-      localStorage.setItem("FirebaseToken", firebaseToken); 
+      localStorage.setItem("FirebaseToken", firebaseToken);
       localStorage.setItem(
         "loginUserDetails",
         JSON.stringify(loginUserDetails),
       );
 
       setLoading(false);
-      navigate("/courses");
+      navigate("/dashboard");
     } catch (error) {
       console.error("login error", error);
       setLoading(false);
-      
+
       let errorMsg = "Something went wrong. Try again later";
       if (error?.response?.data?.details) {
         errorMsg = error.response.data.details;
@@ -249,18 +267,24 @@ export default function Login() {
               </div>
 
               <div className="loginpage_forgotpassword_container">
-                <p className="loginpage_forgotpassword" onClick={() => navigate("/forgot-password")} style={{ cursor: "pointer" }}>Forgot Password?</p>
+                <p
+                  className="loginpage_forgotpassword"
+                  onClick={() => navigate("/forgot-password")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Forgot Password?
+                </p>
               </div>
 
               {loading ? (
-                <button className="loginpage_loading_submitbutton" type="button">
+                <button
+                  className="loginpage_loading_submitbutton"
+                  type="button"
+                >
                   <CommonSpinner />
                 </button>
               ) : (
-                <button
-                  className="loginpage_submitbutton"
-                  type="submit"
-                >
+                <button className="loginpage_submitbutton" type="submit">
                   Continue
                 </button>
               )}

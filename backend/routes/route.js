@@ -13,12 +13,20 @@ const CompanyController = require("../controller/CompanyController");
 const BookmarkController = require("../controller/BookmarkController");
 const CompilerController = require("../controller/CompilerController");
 const JobController = require("../controller/JobController");
+const DashboardController = require("../controller/DashboardController");
 
 router.post("/login", LoginController.login);
 router.post("/forgotPassword", LoginController.forgotPassword);
 router.post("/verifyOTP", LoginController.verifyOTP);
 router.post("/resetPassword", LoginController.resetPassword);
 router.post("/updateFirebaseToken", LoginController.updateFirebaseToken);
+
+router.get(
+  "/getDashboardData",
+  verifyToken,
+  DashboardController.getDashboardData,
+);
+
 router.post("/createCourse", verifyToken, CourseController.createCourse);
 router.get("/getCourses", verifyToken, CourseController.getCourses);
 router.post("/createModule", verifyToken, CourseController.createModule);

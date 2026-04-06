@@ -1,0 +1,216 @@
+.dashboard_container {
+  min-height: 100vh;
+}
+
+.dashboard_banner_container {
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+
+.dashboard_banner_image {
+  width: 100%;
+  height: 360px;
+  /* object-fit: cover; */
+}
+
+.dashboard_section_card {
+  padding: 20px;
+  height: 100%;
+  background-color: #ffffff;
+  border: 1px solid #eaecf0;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px 0 #1018280d;
+}
+
+.dashboard_section_title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 30px;
+}
+
+.dashboard_progress_grid {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Leaderboard Styles */
+.leaderboard_top_section {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 15px;
+  margin-bottom: 60px;
+  padding-top: 40px;
+}
+
+.leaderboard_podium_item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.leaderboard_avatar_container {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.leaderboard_rank_badge {
+  position: absolute;
+  bottom: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 28px;
+  background: #ffb800;
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  border: 2px solid #fff;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard_crown {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 40px;
+  z-index: 5;
+  width: 82px;
+}
+
+.rank_1 .leaderboard_avatar {
+  width: 130px !important;
+  height: 130px !important;
+  border: 3px solid #fff;
+}
+
+.rank_2 .leaderboard_avatar,
+.rank_3 .leaderboard_avatar {
+  width: 90px !important;
+  height: 90px !important;
+  border: 3px solid #fff;
+}
+
+.rank_2 .leaderboard_rank_badge {
+  background: #8e87d6;
+  color: #fff;
+}
+
+.rank_3 .leaderboard_rank_badge {
+  background: rgb(253, 133, 58);
+  color: #fff;
+}
+
+.leaderboard_name {
+  font-weight: 600;
+  font-size: 16px;
+  color: #1e293b;
+  margin-bottom: 2px;
+  text-align: center;
+}
+
+.leaderboard_score {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.leaderboard_list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.leaderboard_list_item {
+  display: flex;
+  align-items: center;
+  padding: 12px 30px;
+  background: white;
+  border-radius: 100px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.leaderboard_list_rank {
+  font-weight: 500;
+  color: #334155;
+  width: 50px;
+  font-size: 15px;
+}
+
+.leaderboard_list_avatar {
+  width: 38px !important;
+  height: 38px !important;
+  margin-right: 15px;
+  background-color: #f8fafc;
+  color: #334155;
+  font-weight: 600;
+}
+
+.leaderboard_list_name {
+  flex: 1;
+  font-weight: 500;
+  color: #334155;
+  font-size: 15px;
+}
+
+.leaderboard_list_score {
+  font-weight: 500;
+  color: #334155;
+  font-size: 15px;
+}
+
+.leaderboard_list_item.is_login_user {
+  background: #dbeafe;
+  border-color: #dbeafe;
+}
+
+.dashboard_carousel .slick-dots li button {
+  background: #cbd5e1;
+}
+
+/* Linkedin Modal */
+.dashboard_linkedin_message_inputfield:hover {
+  border-color: rgba(128, 128, 128, 0.493) !important;
+}
+.linkedin_hashtag_pill_light {
+  background-color: #f0f9ff;
+  color: #2160ad;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.linkedin_hashtag_pill {
+  background-color: #f0f9ff;
+  color: #2160ad;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #e0f2fe;
+}
+
+.linkedin_post_button {
+  width: 220px;
+  height: 48px;
+  background-color: #2160ad;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500 !important;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}

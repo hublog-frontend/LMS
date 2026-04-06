@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Col, Drawer, Row } from "antd";
 import CommonOutlinedInput from "../Common/CommonOutlinedInput";
 import { CiSearch } from "react-icons/ci";
@@ -11,7 +11,11 @@ import "./styles.css";
 import CourseVideos from "./CourseVideos";
 import CommonInputField from "../Common/CommonInputField";
 import ImageUploadCrop from "../Common/ImageUploadCrop";
-import { addressValidator, selectValidator, isAdmin } from "../Common/Validation";
+import {
+  addressValidator,
+  selectValidator,
+  isAdmin,
+} from "../Common/Validation";
 import CommonSpinner from "../Common/CommonSpinner";
 import { CommonMessage } from "../Common/CommonMessage";
 import { getCourses, createCourse } from "../ApiService/action";
@@ -33,14 +37,15 @@ export default function Courses() {
   const [outcomesError, setOutcomesError] = useState("");
   const [validationTrigger, setValidationTrigger] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const searchTimeoutRef = useRef(null);
 
   useEffect(() => {
     getCoursesData();
   }, []);
 
-  const getCoursesData = async () => {
+  const getCoursesData = async (search = "") => {
     try {
-      const response = await getCourses();
+      const response = await getCourses({ searchName: search });
       console.log("get courses response", response);
       setCoursesData(response?.data?.data || []);
     } catch (error) {
@@ -50,8 +55,16 @@ export default function Courses() {
   };
 
   const handleSearch = (e) => {
-    console.log(e.target.value);
-    setSearchValue(e.target.value);
+    const value = e.target.value;
+    setSearchValue(value);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      getCoursesData(value);
+    }, 500);
   };
 
   const handleCourseCreate = async () => {
@@ -150,6 +163,8 @@ export default function Courses() {
               <CommonInputField
                 placeholder="Search for Course"
                 prefix={<CiSearch size={16} />}
+                onChange={handleSearch}
+                value={searchValue}
               />
             </Col>
 

@@ -446,33 +446,22 @@ const Students = () => {
     }
 
     setCrmLoading(true);
-    const token = localStorage.getItem("AccessToken");
-
-    const payload = {
-      email: email,
-      page: 1,
-      limit: 10,
-    };
 
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_CRM_API_URL}/api/getCustomersV1`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+      const res = await axios.get(
+        `${import.meta.env.VITE_CRM_API_URL}/api/checkUserExists?email=${email}`,
       );
 
-      console.log(res.data);
-      const customer = res.data?.data?.[0];
+      console.log("email response", res);
+      const customer = res.data?.data?.data == true;
       if (customer) {
         CommonMessage("success", "Candidate found in CRM!");
-        setName(customer.user_name || customer.name || "");
         setIsCrmChecked(true);
       } else {
-        CommonMessage("error", "Candidate is not registered in CRM.");
+        CommonMessage(
+          "error",
+          res.data?.data?.message || "Something went wrong!",
+        );
         setIsCrmChecked(false);
       }
     } catch (err) {
@@ -518,6 +507,7 @@ const Students = () => {
               onClick={() => {
                 setIsOpenAddDrawer(true);
               }}
+              style={{ fontWeight: 500 }}
             >
               Add User
             </button>
