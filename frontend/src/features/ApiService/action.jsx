@@ -140,7 +140,6 @@ export const updateFirebaseToken = async (payload) => {
   }
 };
 
-
 //course api's
 export const getCourses = async (payload) => {
   try {
@@ -332,6 +331,32 @@ export const deleteCertificate = async (certificate_id) => {
   }
 };
 
+export const addUser = async (payload) => {
+  try {
+    const response = await api.post(`/api/addUser`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getRegion = async () => {
+  try {
+    const response = await api.get(`/api/getRegion`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getBranches = async (region_id) => {
+  try {
+    const response = await api.get(`/api/getBranches?region_id=${region_id}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 //topic api's
 export const createTopic = async (payload) => {
   try {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Drawer,
   Button,
@@ -12,6 +13,9 @@ import {
   Empty,
   Modal,
   Pagination,
+  Tooltip,
+  Row,
+  Col,
 } from "antd";
 import {
   FiEye,
@@ -25,6 +29,7 @@ import {
   FiBook,
   FiDownload,
   FiFileText,
+  FiCheck,
 } from "react-icons/fi";
 import {
   AiOutlineFilePdf,
@@ -39,10 +44,27 @@ import {
   ModernResume,
   MinimalistResume,
 } from "../Profile/ResumeTemplates";
-import { getAllUsers, getUserById } from "../ApiService/action";
+import {
+  addUser,
+  getAllUsers,
+  getBranches,
+  getRegion,
+  getUserById,
+} from "../ApiService/action";
 import CommonTable from "../Common/CommonTable";
 import { CommonMessage } from "../Common/CommonMessage";
 import "./Students.css";
+import EllipsisTooltip from "../Common/EllipsisTooltip";
+import {
+  emailValidator,
+  isAdmin,
+  nameValidator,
+  selectValidator,
+} from "../Common/Validation";
+import CommonInputField from "../Common/CommonInputField";
+import CommonSpinner from "../Common/CommonSpinner";
+import CommonSelectField from "../Common/CommonSelectField";
+import { IoMdInformationCircleOutline } from "react-icons/io";
 
 // Use CDN worker for maximum compatibility
 const PDF_WORKER_URL = `https://unpkg.com/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs`;
@@ -68,6 +90,41 @@ const Students = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const [scale, setScale] = useState(1.0);
 
+  //drawer
+  const [isOpenAddDrawer, setIsOpenAddDrawer] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [name, setName] = useState("");
+  const [nameError, setNameError] = useState("");
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [regionData, setRegionData] = useState([]);
+  const [regionId, setRegionId] = useState("");
+  const [regionIdError, setRegionIdError] = useState("");
+  const [branchesData, setBranchesData] = useState([]);
+  const [branchId, setBranchId] = useState("");
+  const [branchIdError, setBranchIdError] = useState("");
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const [isCrmChecked, setIsCrmChecked] = useState(false);
+  const [crmLoading, setCrmLoading] = useState(false);
+
+  useEffect(() => {
+    getRegionData();
+  }, []);
+
+  const getRegionData = async () => {
+    try {
+      const response = await getRegion();
+      console.log("region response", response);
+      setRegionData(response?.data?.data || []);
+    } catch (error) {
+      setRegionData([]);
+      console.log("get region error", error);
+    } finally {
+      fetchUsers();
+    }
+  };
+
   const fetchUsers = async (
     page = pagination.page,
     limit = pagination.limit,
@@ -90,10 +147,6 @@ const Students = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
 
   const handlePaginationChange = (pageConfig) => {
     fetchUsers(pageConfig.page, pageConfig.limit);
@@ -222,10 +275,14 @@ const Students = () => {
       dataIndex: "user_name",
       key: "user_name",
       render: (text, record) => (
-        <Space>
+        // <Space>
+
+        //   <span style={{ fontWeight: 500, color: "#101828" }}>{text}</span>
+        // </Space>
+        <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
           <Avatar src={record.profile_image} icon={<FiUser />} />
-          <span style={{ fontWeight: 500, color: "#101828" }}>{text}</span>
-        </Space>
+          <EllipsisTooltip text={text} />
+        </div>
       ),
     },
     {
@@ -233,10 +290,10 @@ const Students = () => {
       dataIndex: "email",
       key: "email",
       render: (text) => (
-        <Space>
-          <FiMail style={{ color: "#667085" }} />
-          <span>{text}</span>
-        </Space>
+        <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+          <FiMail size={14} style={{ color: "#667085", flexShrink: 0 }} />
+          <EllipsisTooltip text={text} />
+        </div>
       ),
     },
     {
@@ -248,7 +305,7 @@ const Students = () => {
           <FiPhone style={{ color: "#667085" }} />
           <span>
             {record.phone_code ? `${record.phone_code} ` : ""}
-            {text}
+            {text ? text : "-"}
           </span>
         </Space>
       ),
@@ -265,7 +322,7 @@ const Students = () => {
       render: (date) => (
         <Space>
           <FiCalendar style={{ color: "#667085" }} />
-          <span>{new Date(date).toLocaleDateString()}</span>
+          <span>{date ? new Date(date).toLocaleDateString() : "-"}</span>
         </Space>
       ),
     },
@@ -308,17 +365,165 @@ const Students = () => {
     </div>
   );
 
+  const getBranchesData = async (region_id) => {
+    try {
+      const response = await getBranches(region_id);
+      console.log("branhes response", response);
+      setBranchesData(response?.data?.data || []);
+    } catch (error) {
+      setBranchesData([]);
+      console.log("get region error", error);
+    }
+  };
+
+  const handleSubmit = async () => {
+    const nameValidate = nameValidator(name);
+    const emailValidate = emailValidator(email);
+    const regionIdValidate = selectValidator(regionId);
+    const branchIdValidate = selectValidator(branchId);
+
+    setNameError(nameValidate);
+    setEmailError(emailValidate);
+    setRegionIdError(regionIdValidate);
+    setBranchIdError(branchIdValidate);
+
+    if (nameValidate || emailValidate || regionIdValidate || branchIdValidate)
+      return;
+
+    if (!isCrmChecked) {
+      CommonMessage(
+        "error",
+        "Please check the email register in CRM before submitting.",
+      );
+      return;
+    }
+
+    setButtonLoading(true);
+    const payload = {
+      branch_id: branchId,
+      user_name: name,
+      email: email,
+    };
+
+    try {
+      const response = await addUser(payload);
+      if (response.status === 201 || response.data?.success) {
+        CommonMessage("success", "User added successfully!");
+        setIsOpenAddDrawer(false);
+        formReset();
+        fetchUsers(1, pagination.limit);
+      }
+    } catch (error) {
+      CommonMessage(
+        "error",
+        error.response?.data?.message || "Error while adding user",
+      );
+      console.log(error);
+    } finally {
+      setButtonLoading(false);
+    }
+  };
+
+  const formReset = () => {
+    setIsOpenAddDrawer(false);
+    setIsCrmChecked(false);
+    setCrmLoading(false);
+    setName("");
+    setEmail("");
+    setRegionId("");
+    setBranchId("");
+    setNameError("");
+    setEmailError("");
+    setRegionIdError("");
+    setBranchIdError("");
+  };
+
+  const checkRegisteredInCrm = async () => {
+    const emailValidate = emailValidator(email);
+    if (emailValidate) {
+      setEmailError(emailValidate);
+      return;
+    }
+
+    setCrmLoading(true);
+    const token = localStorage.getItem("AccessToken");
+
+    const payload = {
+      email: email,
+      page: 1,
+      limit: 10,
+    };
+
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_CRM_API_URL}/api/getCustomersV1`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      console.log(res.data);
+      const customer = res.data?.data?.[0];
+      if (customer) {
+        CommonMessage("success", "Candidate found in CRM!");
+        setName(customer.user_name || customer.name || "");
+        setIsCrmChecked(true);
+      } else {
+        CommonMessage("error", "Candidate is not registered in CRM.");
+        setIsCrmChecked(false);
+      }
+    } catch (err) {
+      console.error(err);
+      CommonMessage("error", "Error checking CRM details.");
+      setIsCrmChecked(false);
+    } finally {
+      setCrmLoading(false);
+    }
+  };
+
   return (
     <div className="students-page-container">
-      <div className="students-header">
+      {/* <div className="students-header">
         <div>
           <p className="common_heading">Students</p>
           <p className="page-subtitle">
             Manage and view all registered students details
           </p>
         </div>
-      </div>
+      </div> */}
 
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <div>
+          <p className="common_heading" style={{ margin: 0 }}>
+            Students
+          </p>
+          <p className="page-subtitle">
+            Manage and view all registered students details
+          </p>
+        </div>
+
+        <div>
+          {isAdmin() && (
+            <button
+              className="courses_createcourse_button"
+              onClick={() => {
+                setIsOpenAddDrawer(true);
+              }}
+            >
+              Add User
+            </button>
+          )}
+        </div>
+      </div>
       <div className="questions_table_container">
         <CommonTable
           columns={columns}
@@ -375,11 +580,11 @@ const Students = () => {
               <FiUser />,
               <Descriptions column={2} size="small">
                 <Descriptions.Item label="Email">
-                  {selectedUser.email}
+                  <EllipsisTooltip text={selectedUser.email} />
                 </Descriptions.Item>
                 <Descriptions.Item label="Phone">
                   {selectedUser.phone_code ? `${selectedUser.phone_code} ` : ""}
-                  {selectedUser.phone}
+                  {selectedUser.phone ? selectedUser.phone : "N/A"}
                 </Descriptions.Item>
                 <Descriptions.Item label="WhatsApp">
                   {selectedUser.whatsapp_code
@@ -658,6 +863,128 @@ const Students = () => {
           </div>
         </div>
       </Modal>
+
+      {/* create question drawer */}
+      <Drawer
+        title={isEdit ? "Edit User" : "Add User"}
+        onClose={formReset}
+        open={isOpenAddDrawer}
+        size={"40%"}
+        className="courses_createcourses_drawer questions-drawer"
+      >
+        <div className="questions-drawer-body">
+          <div className="questions-drawer-field">
+            <CommonInputField
+              label={"Name"}
+              onChange={(e) => {
+                setName(e.target.value);
+                setNameError(nameValidator(e.target.value));
+              }}
+              value={name}
+              error={nameError}
+            />
+          </div>
+
+          <div className="questions-drawer-field-mt">
+            <div className="questions-drawer-field">
+              <Row gutter={12}>
+                <Col span={22}>
+                  <CommonInputField
+                    label={"Email"}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setEmailError(emailValidator(e.target.value));
+                      setIsCrmChecked(false);
+                    }}
+                    value={email}
+                    error={emailError}
+                  />
+                </Col>
+                <Col span={2} style={{ display: "flex", alignItems: "center" }}>
+                  <div style={{ marginTop: "30px" }}>
+                    <Tooltip
+                      title={
+                        isCrmChecked
+                          ? "Candidate verified in CRM"
+                          : "Click to check the email register in CRM"
+                      }
+                    >
+                      {crmLoading ? (
+                        <CommonSpinner />
+                      ) : isCrmChecked ? (
+                        <FiCheck
+                          size={20}
+                          style={{
+                            color: "#52c41a",
+                          }}
+                        />
+                      ) : (
+                        <IoMdInformationCircleOutline
+                          size={20}
+                          style={{
+                            cursor: "pointer",
+                            color: "#2160ad",
+                          }}
+                          onClick={checkRegisteredInCrm}
+                        />
+                      )}
+                    </Tooltip>
+                  </div>
+                </Col>
+              </Row>
+            </div>
+          </div>
+
+          <div className="questions-drawer-field-mt">
+            <div className="questions-drawer-field">
+              <CommonSelectField
+                label={"Region"}
+                options={regionData}
+                onChange={(e) => {
+                  setRegionId(e.target.value);
+                  setRegionIdError(selectValidator(e.target.value));
+                  getBranchesData(e.target.value);
+                }}
+                value={regionId}
+                error={regionIdError}
+              />
+            </div>
+          </div>
+
+          <div className="questions-drawer-field-mt">
+            <div className="questions-drawer-field">
+              <CommonSelectField
+                label={"Branch"}
+                options={branchesData}
+                onChange={(e) => {
+                  setBranchId(e.target.value);
+                  setBranchIdError(selectValidator(e.target.value));
+                }}
+                value={branchId}
+                error={branchIdError}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* footer */}
+        <div className="courses_createcourses_drawer_footer">
+          <div className="courses_createcourses_drawer_submit_buttoncontainer">
+            {buttonLoading ? (
+              <button className="courses_createcourses_drawer_loadingsubmitbutton">
+                <CommonSpinner />
+              </button>
+            ) : (
+              <button
+                className="courses_createcourses_drawer_submitbutton"
+                onClick={handleSubmit}
+              >
+                {isEdit ? "Update" : "Submit"}
+              </button>
+            )}
+          </div>
+        </div>
+      </Drawer>
     </div>
   );
 };

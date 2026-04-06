@@ -37,6 +37,7 @@ import Students from "../Students/Students";
 import { initiateSocket, disconnectSocket } from "../../socket";
 import { auth } from "../../firebase";
 import { CommonMessage } from "../Common/CommonMessage";
+import Dashboard from "../Dashboard/Dashboard";
 
 const { Sider, Content, Header } = Layout;
 const { useBreakpoint } = Grid;
@@ -79,7 +80,6 @@ export default function Pages() {
       navigate("/login");
     };
 
-
     window.addEventListener("tokenExpireUpdated", handleTokenExpire);
 
     // Initial load
@@ -118,7 +118,7 @@ export default function Pages() {
   useEffect(() => {
     const fbToken = localStorage.getItem("FirebaseToken");
     const deviceId = localStorage.getItem("deviceId");
-    
+
     // Only initiate if we are NOT on a public route and have tokens
     if (!isPublicRoute(location.pathname) && fbToken && deviceId) {
       initiateSocket(fbToken, deviceId);
@@ -219,13 +219,13 @@ export default function Pages() {
                           setMobileOpen(false);
                           // Clear auth but keep deviceId for session stability across tabs
                           Object.keys(localStorage).forEach((key) => {
-                            if (key !== "deviceId") localStorage.removeItem(key);
+                            if (key !== "deviceId")
+                              localStorage.removeItem(key);
                           });
                           disconnectSocket();
                           auth.signOut();
                           navigate("/login");
                         }}
-
                       />
                     </Tooltip>
                   </div>
@@ -289,6 +289,7 @@ export default function Pages() {
           }}
         >
           <Routes>
+            <Route element={<Dashboard />} path="/dashboard" />
             <Route element={<Courses />} path="/courses" />
             <Route element={<Questions />} path="/questions" />
             <Route element={<CourseVideos />} path="/course-videos" />

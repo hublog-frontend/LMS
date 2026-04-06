@@ -78,7 +78,7 @@ const VideoModel = {
             c.id = ? AND cv.is_deleted = 0 AND m.id = ?
         ORDER BY
             cv.created_at
-        DESC
+        ASC
     `,
         [user_id || 0, courseId, module_id],
       );

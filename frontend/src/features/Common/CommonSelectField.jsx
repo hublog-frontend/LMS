@@ -45,6 +45,10 @@ export default function CommonSelectField({
       return `${option.user_id} - ${option.user_name}`;
     }
 
+    if (option?.region_name) {
+      return `${option.region_name}`;
+    }
+
     return option?.exp_range || option?.name || "";
   };
 

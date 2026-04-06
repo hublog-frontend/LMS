@@ -21,11 +21,11 @@ export default function SideMenu() {
 
   const [selectedKey, setSelectedKey] = useState("");
   const [sideMenuOptions, setSideMenuOptions] = useState({
-    // 1: {
-    //   title: "Dashboard",
-    //   icon: <GoHome size={19} />,
-    //   path: "dashboard",
-    // },
+    1: {
+      title: "Dashboard",
+      icon: <GoHome size={19} />,
+      path: "dashboard",
+    },
     2: {
       title: "Courses",
       icon: <LuBookOpen size={19} />,
@@ -105,7 +105,10 @@ export default function SideMenu() {
   const filteredMenuOptions = React.useMemo(() => {
     return Object.entries(sideMenuOptions).reduce((acc, [key, item]) => {
       // Hide "Questions" and "Users" (Students) if not an admin
-      if ((item.path === "questions" || item.path === "students") && !isAdmin()) {
+      if (
+        (item.path === "questions" || item.path === "students") &&
+        !isAdmin()
+      ) {
         return acc;
       }
       acc[key] = item;

@@ -80,14 +80,15 @@ class VideoController {
           }
 
           const driveUploadPath = request.file.path;
-          const driveDuration = await getVideoDurationInSeconds(driveUploadPath);
+          const driveDuration =
+            await getVideoDurationInSeconds(driveUploadPath);
 
           // Upload to Google Drive using utility
           const driveResult = await uploadFileToDrive(
             driveUploadPath,
             request.file.originalname,
             folder_id || null,
-            request.file.mimetype
+            request.file.mimetype,
           );
 
           contentDate = {
