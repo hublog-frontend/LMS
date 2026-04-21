@@ -227,30 +227,32 @@ export default function JobDrawer({ visible, onClose, jobData, onSuccess }) {
     setLoading(true);
     const form = new FormData();
 
-    // Process form data for multipart
     Object.keys(formData).forEach((key) => {
       if (key === "interview_date" || key === "expires_at") {
-        if (formData[key])
+        if (formData[key]) {
           form.append(key, dayjs(formData[key]).format("YYYY-MM-DD"));
+        }
       } else if (Array.isArray(formData[key])) {
         form.append(key, JSON.stringify(formData[key]));
-      } else if (key === "created_at") {
-        // Skip it here, we will append it correctly below to avoid nulls
+      } else if (key === "created_at" || key === "updated_at") {
+        // ✅ only skip these two
       } else {
         form.append(key, formData[key]);
       }
     });
 
-    // Ensure created_at is never null as per DB constraints
     const createdAtValue = formatToBackendIST(new Date());
-    form.append("created_at", createdAtValue);
+    form.append(jobData?.id ? "updated_at" : "created_at", createdAtValue);
 
     if (fileList.length > 0 && fileList[0].originFileObj) {
       form.append("job_description", fileList[0].originFileObj);
     }
 
-    console.log(formData, "formData");
-    // return;
+    // ✅ Proper debug (this is important)
+    for (let pair of form.entries()) {
+      console.log(pair[0], pair[1]);
+    }
+
     try {
       if (jobData?.id) {
         await updateJob(jobData.id, form);
