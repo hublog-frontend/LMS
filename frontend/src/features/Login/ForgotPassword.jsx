@@ -7,6 +7,7 @@ import { GrNotes } from "react-icons/gr";
 import { AiOutlineLock, AiOutlineArrowLeft } from "react-icons/ai";
 import { FiEyeOff, FiEye, FiMail, FiCheckCircle } from "react-icons/fi";
 import { MdOutlineEmail } from "react-icons/md";
+import { BsStars } from "react-icons/bs";
 import "./styles.css";
 import {
   emailValidator,
@@ -328,6 +329,10 @@ export default function ForgotPassword() {
           <div className="loginpage_left_content">
             <div className="loginpage_logo_container">
               <img src={Logo} className="loginpage_logo" alt="Acte Logo" />
+              <div className="ai-glass-badge">
+                <BsStars />
+                <span>AI Powered</span>
+              </div>
             </div>
             <h1 className="loginpage_title">
               <span style={{ color: "#ffde59" }}>Secure</span> Access

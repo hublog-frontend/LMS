@@ -242,7 +242,6 @@ export default function TestResult() {
 
       <Collapse
         defaultActiveKey={["1"]}
-        expandIconPosition="end"
         className="testresult_main_collapse"
         items={testResultData.map((section) => ({
           key: section.id,

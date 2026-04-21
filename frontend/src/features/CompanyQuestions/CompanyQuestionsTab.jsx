@@ -51,16 +51,24 @@ export default function CompanyQuestionsTab() {
       setCompanyLogoBase64(item?.company_logo || "");
 
       // Map skills back to IDs
-      const rawSkills =
-        typeof item?.skills === "string"
-          ? JSON.parse(item?.skills || "[]")
-          : item?.skills || [];
+      let rawSkills = [];
+      if (Array.isArray(item?.skills)) {
+        rawSkills = item.skills;
+      } else if (typeof item?.skills === "string") {
+        try {
+          const parsed = JSON.parse(item.skills || "[]");
+          rawSkills = Array.isArray(parsed) ? parsed : [parsed];
+        } catch (e) {
+          rawSkills = [item.skills];
+        }
+      }
+
       const skillIds = rawSkills
         .map((name) => {
           const skillObj = skillsData.find(
             (s) => s.name === name || s.role_name === name,
           );
-          return skillObj ? skillObj.id || skillObj.skill_id : null;
+          return skillObj ? (skillObj.id || skillObj.skill_id) : null;
         })
         .filter((id) => id !== null);
       setSkills(skillIds);

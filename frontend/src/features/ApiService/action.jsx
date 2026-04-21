@@ -629,6 +629,15 @@ export const getFavoriteCompanies = async (payload) => {
   }
 };
 
+export const addSkill = async (payload) => {
+  try {
+    const response = await api.post(`/api/addSkill`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const runCode = async (payload) => {
   try {
     const response = await api.post(`/api/runCode`, payload);

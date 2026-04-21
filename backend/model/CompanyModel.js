@@ -17,11 +17,12 @@ const CompanyModel = {
     try {
       let affectedRows = 0;
       if (!company_id) {
+        const finalSkills = Array.isArray(skills) ? skills : (skills ? [skills] : []);
         const query = `INSERT INTO company_questions (company_name, company_logo, skills, created_date) VALUES (?, ?, ?, ?)`;
         const [insertQuestion] = await pool.query(query, [
           company_name,
           company_logo,
-          JSON.stringify(skills),
+          JSON.stringify(finalSkills),
           created_date,
         ]);
         affectedRows += insertQuestion.affectedRows;
@@ -64,11 +65,12 @@ const CompanyModel = {
         if (isCompanyExist.length <= 0) {
           throw new Error("Company not found");
         }
+        const finalSkills = Array.isArray(skills) ? skills : (skills ? [skills] : []);
         const query = `UPDATE company_questions SET company_name = ?, company_logo = ?, skills = ? WHERE id = ?`;
         const [updateQuestion] = await pool.query(query, [
           company_name,
           company_logo,
-          JSON.stringify(skills),
+          JSON.stringify(finalSkills),
           company_id,
         ]);
         affectedRows += updateQuestion.affectedRows;
@@ -187,9 +189,18 @@ const CompanyModel = {
 
       const combinedResult = result.map((item) => {
         const itemAttachments = attachmentsMap.get(item.id) || [];
+        let parsedSkills = [];
+        try {
+          parsedSkills = JSON.parse(item.skills);
+          if (!Array.isArray(parsedSkills)) {
+            parsedSkills = parsedSkills ? [parsedSkills] : [];
+          }
+        } catch (error) {
+          parsedSkills = item.skills ? [item.skills] : [];
+        }
         return {
           ...item,
-          skills: JSON.parse(item.skills),
+          skills: parsedSkills,
           attachments: itemAttachments,
         };
       });
@@ -242,9 +253,18 @@ const CompanyModel = {
 
       const combinedResult = result.map((item) => {
         const itemAttachments = attachmentsMap.get(item.id) || [];
+        let parsedSkills = [];
+        try {
+          parsedSkills = JSON.parse(item.skills);
+          if (!Array.isArray(parsedSkills)) {
+            parsedSkills = parsedSkills ? [parsedSkills] : [];
+          }
+        } catch (error) {
+          parsedSkills = item.skills ? [item.skills] : [];
+        }
         return {
           ...item,
-          skills: JSON.parse(item.skills),
+          skills: parsedSkills,
           attachments: itemAttachments,
         };
       });
@@ -395,9 +415,18 @@ const CompanyModel = {
 
       const combinedResult = result.map((item) => {
         const itemAttachments = attachmentsMap.get(item.company_id) || [];
+        let parsedSkills = [];
+        try {
+          parsedSkills = JSON.parse(item.skills);
+          if (!Array.isArray(parsedSkills)) {
+            parsedSkills = parsedSkills ? [parsedSkills] : [];
+          }
+        } catch (error) {
+          parsedSkills = item.skills ? [item.skills] : [];
+        }
         return {
           ...item,
-          skills: JSON.parse(item.skills),
+          skills: parsedSkills,
           attachments: itemAttachments,
         };
       });

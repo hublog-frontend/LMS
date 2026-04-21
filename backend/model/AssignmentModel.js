@@ -9,6 +9,7 @@ const AssignmentModel = {
     difficulty,
     created_date,
   ) => {
+
     let affectedRow = 0;
     try {
       if (!assignment_id) {
@@ -467,7 +468,11 @@ const AssignmentModel = {
   userWiseAssignments: async (assignment_name, user_id) => {
     try {
       const queryParams = [];
-      let query = `SELECT id, assignment_name, logo_image, description, difficulty FROM assignments WHERE is_active = 1`;
+      let query = `
+      SELECT id, assignment_name, logo_image, description, difficulty 
+      FROM assignments 
+      WHERE is_active = 1
+    `;
 
       if (assignment_name) {
         query += ` AND assignment_name LIKE ?`;
@@ -478,67 +483,84 @@ const AssignmentModel = {
 
       const [assignments] = await pool.query(query, queryParams);
 
-      const ids = [...new Set(assignments.map((assignment) => assignment.id))];
+      const ids = [...new Set(assignments.map((a) => a.id))];
 
       let moduleMap = new Map();
       let totalResultsMap = new Map();
       let userPerformanceMap = new Map();
 
       if (ids.length > 0) {
-        // Fetch total modules per assignment
+        // ✅ Total modules
         const [modules] = await pool.query(
-          `SELECT COUNT(id) as total_modules, assignment_id FROM assignment_module WHERE assignment_id IN (?) AND is_active = 1 GROUP BY assignment_id`,
+          `
+        SELECT 
+          COUNT(id) as total_modules, 
+          assignment_id 
+        FROM assignment_module 
+        WHERE assignment_id IN (?) AND is_active = 1 
+        GROUP BY assignment_id
+        `,
           [ids],
         );
 
-        // Fetch total questions and total marks per assignment
+        // ✅ Total questions & marks
         const [totalResults] = await pool.query(
-          `SELECT
-              COUNT(amq.question_id) AS total_questions,
-              SUM(amq.marks) AS total_marks,
-              a.id AS assignment_id
-          FROM
-              assignments AS a
-          INNER JOIN assignment_module AS am ON
-              a.id = am.assignment_id AND am.is_active = 1
-          INNER JOIN assignment_module_questions AS amq ON
-              am.id = amq.assignment_module_id AND amq.is_active = 1
-          WHERE a.is_active = 1 AND a.id IN (?)
-          GROUP BY a.id`,
+          `
+        SELECT
+          COUNT(amq.question_id) AS total_questions,
+          SUM(amq.marks) AS total_marks,
+          a.id AS assignment_id
+        FROM assignments AS a
+        INNER JOIN assignment_module AS am 
+          ON a.id = am.assignment_id AND am.is_active = 1
+        INNER JOIN assignment_module_questions AS amq 
+          ON am.id = amq.assignment_module_id AND amq.is_active = 1
+        WHERE a.is_active = 1 AND a.id IN (?)
+        GROUP BY a.id
+        `,
           [ids],
         );
 
-        // Fetch user performance (solved, attempted, marks scored) per assignment
+        // ✅ User performance (FIXED QUERY)
         const [userPerformance] = await pool.query(
-          `SELECT
-              assignment_id,
-              COUNT(DISTINCT attempted_mq_id) AS attempted_questions,
-              COUNT(DISTINCT solved_mq_id) AS solved_questions,
-              IFNULL(SUM(max_score), 0) AS marks_scored
-          FROM (
-              SELECT
-                  a.id AS assignment_id,
-                  amq.id AS mq_id,
-                  aa.module_question_id AS attempted_mq_id,
-                  CASE WHEN ar.score_obtained > 0 THEN ar.module_question_id END AS solved_mq_id,
-                  MAX(ar.score_obtained) AS max_score
-              FROM
-                  assignments AS a
-              INNER JOIN assignment_module AS am ON
-                  a.id = am.assignment_id AND am.is_active = 1
-              INNER JOIN assignment_module_questions AS amq ON
-                  am.id = amq.assignment_module_id AND amq.is_active = 1
-              LEFT JOIN assignment_attempts AS aa ON
-                  amq.id = aa.module_question_id AND aa.user_id = ?
-              LEFT JOIN assignment_results AS ar ON
-                  amq.id = ar.module_question_id AND ar.user_id = ?
-              WHERE a.is_active = 1 AND a.id IN (?)
-              GROUP BY a.id, amq.id
-          ) AS performance_data
-          GROUP BY assignment_id`,
+          `
+        SELECT
+          assignment_id,
+          COUNT(DISTINCT attempted_mq_id) AS attempted_questions,
+          COUNT(DISTINCT CASE WHEN max_score > 0 THEN mq_id END) AS solved_questions,
+          SUM(max_score) AS marks_scored
+        FROM (
+            SELECT
+                a.id AS assignment_id,
+                amq.id AS mq_id,
+
+                MAX(aa.module_question_id) AS attempted_mq_id,
+                MAX(IFNULL(ar.score_obtained, 0)) AS max_score
+
+            FROM assignments AS a
+            INNER JOIN assignment_module AS am 
+              ON a.id = am.assignment_id AND am.is_active = 1
+            INNER JOIN assignment_module_questions AS amq 
+              ON am.id = amq.assignment_module_id AND amq.is_active = 1
+
+            LEFT JOIN assignment_attempts AS aa 
+              ON amq.id = aa.module_question_id AND aa.user_id = ?
+
+            LEFT JOIN assignment_results AS ar 
+              ON amq.id = ar.module_question_id AND ar.user_id = ?
+
+            WHERE a.is_active = 1 AND a.id IN (?)
+
+            GROUP BY a.id, amq.id
+
+        ) AS performance_data
+
+        GROUP BY assignment_id
+        `,
           [user_id, user_id, ids],
         );
 
+        // ✅ Map results
         modules.forEach((r) => moduleMap.set(r.assignment_id, r));
         totalResults.forEach((r) => totalResultsMap.set(r.assignment_id, r));
         userPerformance.forEach((r) =>
@@ -546,6 +568,7 @@ const AssignmentModel = {
         );
       }
 
+      // ✅ Final aggregation
       let overall_total_questions = 0;
       let overall_solved = 0;
       let overall_attempted = 0;
@@ -558,15 +581,19 @@ const AssignmentModel = {
 
         assignment.total_modules =
           Number(moduleMap.get(assignment.id)?.total_modules) || 0;
+
         assignment.total_questions = Number(totalData.total_questions) || 0;
+
         assignment.total_marks = Number(totalData.total_marks) || 0;
 
         assignment.attempted_questions =
           Number(userData.attempted_questions) || 0;
+
         assignment.solved_questions = Number(userData.solved_questions) || 0;
+
         assignment.marks_scored = Number(userData.marks_scored) || 0;
 
-        // Progress percentage for the progress bar shown in the image
+        // ✅ Progress %
         assignment.progress =
           assignment.total_questions > 0
             ? Math.round(
@@ -575,6 +602,7 @@ const AssignmentModel = {
               )
             : 0;
 
+        // ✅ Overall stats
         overall_total_questions += assignment.total_questions;
         overall_solved += assignment.solved_questions;
         overall_attempted += assignment.attempted_questions;

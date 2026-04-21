@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import { Layout, Drawer, Button, Grid, Divider } from "antd";
 import { MenuOutlined } from "@ant-design/icons";
+import { BsStars } from "react-icons/bs";
 import ActeLogo from "../../assets/acte-logo.png";
 import Login from "../Login/Login";
 import ForgotPassword from "../Login/ForgotPassword";
@@ -179,13 +180,31 @@ export default function Pages() {
           theme="light"
         >
           <div className="pages_sidebar_innercontainer">
-            <img
-              src={ActeLogo}
-              alt="Logo"
-              className={
-                collapsed ? "sidebar_logo_collapsed" : "sidebar_logo_expanded"
-              }
-            />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: collapsed ? "column" : "row",
+                alignItems: collapsed ? "center" : "flex-start",
+              }}
+            >
+              <img
+                src={ActeLogo}
+                alt="Logo"
+                className={
+                  collapsed ? "sidebar_logo_collapsed" : "sidebar_logo_expanded"
+                }
+              />
+              <div
+                className={
+                  collapsed
+                    ? "ai-glass-badge ai-badge-collapsed"
+                    : "ai-glass-badge ai-badge-down"
+                }
+              >
+                <BsStars />
+                {!collapsed && <span>AI Powered</span>}
+              </div>
+            </div>
 
             <SideMenu />
 
@@ -257,7 +276,13 @@ export default function Pages() {
             onClick={() => setMobileOpen(true)}
           />
 
-          <img src={ActeLogo} alt="Logo" height={32} />
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <img src={ActeLogo} alt="Logo" height={32} />
+            <div className="ai-glass-badge" style={{ marginLeft: "10px" }}>
+              <BsStars />
+              <span>AI Powered</span>
+            </div>
+          </div>
         </Header>
       )}
 

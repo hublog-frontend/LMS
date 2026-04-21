@@ -6,9 +6,12 @@
 }
 .loginpage_logo_container {
   position: absolute;
-  top: 60px;
+  top: 40px;
   left: 80px;
   z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 .loginpage_logo {
   width: 120px;
@@ -167,7 +170,7 @@
     top: 0;
     left: 0;
     margin-bottom: 40px;
-    text-align: center;
+    justify-content: center;
   }
   .loginpage_title {
     text-align: center;

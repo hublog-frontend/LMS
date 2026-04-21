@@ -18,6 +18,7 @@ import LearningBanner from "../../assets/learning_banner.jpg";
 import JourneyBanner from "../../assets/journey_banner.png";
 import AIBanner from "../../assets/ai_banner.png";
 import JourneyPDF from "../../assets/ShareYourJourney_Student.pdf";
+import PlacedStudentsBanner from "../../assets/placed_students_banner.jpeg";
 import { FiShare2 } from "react-icons/fi";
 import { IoIosCloseCircle } from "react-icons/io";
 import "./styles.css";
@@ -32,7 +33,7 @@ export default function Dashboard() {
     "#ACTETechnologies",
   ]);
   const [shareContent, setShareContent] = useState(
-    "Thrilled to share that I've ranked among the top coders on the TAP Academy leaderboard! Excited to keep pushing my limits and sharpening my coding skills.",
+    "Thrilled to share that I've ranked among the top coders on the ACTE Technologies leaderboard! Excited to keep pushing my limits and sharpening my coding skills.",
   );
 
   const availableHashtags = [
@@ -88,13 +89,19 @@ export default function Dashboard() {
     {
       id: 2,
       image_url: (
+        <img src={PlacedStudentsBanner} className="dashboard_banner_image" />
+      ),
+    },
+    {
+      id: 3,
+      image_url: (
         <a href={JourneyPDF} target="_blank" rel="noreferrer">
           <img src={JourneyBanner} className="dashboard_banner_image" />
         </a>
       ),
     },
     {
-      id: 3,
+      id: 4,
       image_url: <img src={AIBanner} className="dashboard_banner_image" />,
     },
   ];
@@ -303,83 +310,89 @@ export default function Dashboard() {
               centered
               className="linkedin_share_modal"
             >
-              <div style={{ padding: "10px 0" }}>
-                <div style={{ marginBottom: "20px" }}>
-                  <CommonTextArea
-                    rows={4}
-                    value={shareContent}
-                    onChange={(e) => setShareContent(e.target.value)}
-                    className="dashboard_linkedin_message_inputfield"
-                  />
-                </div>
+              <div
+                style={{
+                  padding: "10px 0",
+                }}
+              >
+                <div style={{ height: "360px", overflowY: "scroll" }}>
+                  <div style={{ marginBottom: "20px" }}>
+                    <CommonTextArea
+                      rows={4}
+                      value={shareContent}
+                      onChange={(e) => setShareContent(e.target.value)}
+                      className="dashboard_linkedin_message_inputfield"
+                    />
+                  </div>
 
-                <div
-                  style={{
-                    backgroundColor: "#fff",
-                    border: "1px solid #eaecf0",
-                    borderRadius: "12px",
-                    padding: "0px 20px 16px 20px",
-                    marginBottom: "20px",
-                  }}
-                >
-                  <h4
+                  <div
                     style={{
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      marginBottom: "10px",
+                      backgroundColor: "#fff",
+                      border: "1px solid #eaecf0",
+                      borderRadius: "12px",
+                      padding: "0px 20px 16px 20px",
+                      marginBottom: "20px",
                     }}
                   >
-                    Linkedin Message
-                  </h4>
-                  <p style={{ color: "#475467", marginBottom: "12px" }}>
-                    {shareContent}
-                  </p>
+                    <h4
+                      style={{
+                        fontSize: "16px",
+                        fontWeight: 600,
+                        marginBottom: "10px",
+                      }}
+                    >
+                      Linkedin Message
+                    </h4>
+                    <p style={{ color: "#475467", marginBottom: "12px" }}>
+                      {shareContent}
+                    </p>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "8px",
+                        marginTop: "6px",
+                      }}
+                    >
+                      {selectedHashtags.map((tag) => (
+                        <span key={tag} className="linkedin_hashtag_pill_light">
+                          {tag}{" "}
+                          {tag == "#ACTETechnologies" ? (
+                            ""
+                          ) : (
+                            <IoIosCloseCircle
+                              style={{
+                                cursor: "pointer",
+                                fontSize: "16px",
+                                verticalAlign: "middle",
+                              }}
+                              onClick={() => handleRemoveHashtag(tag)}
+                            />
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
                   <div
                     style={{
                       display: "flex",
                       flexWrap: "wrap",
                       gap: "8px",
-                      marginTop: "6px",
+                      marginBottom: "30px",
                     }}
                   >
-                    {selectedHashtags.map((tag) => (
-                      <span key={tag} className="linkedin_hashtag_pill_light">
-                        {tag}{" "}
-                        {tag == "#ACTETechnologies" ? (
-                          ""
-                        ) : (
-                          <IoIosCloseCircle
-                            style={{
-                              cursor: "pointer",
-                              fontSize: "16px",
-                              verticalAlign: "middle",
-                            }}
-                            onClick={() => handleRemoveHashtag(tag)}
-                          />
-                        )}
+                    {availableHashtags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="linkedin_hashtag_pill"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => handleAddHashtag(tag)}
+                      >
+                        {tag}
                       </span>
                     ))}
                   </div>
-                </div>
-
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "8px",
-                    marginBottom: "30px",
-                  }}
-                >
-                  {availableHashtags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="linkedin_hashtag_pill"
-                      style={{ cursor: "pointer" }}
-                      onClick={() => handleAddHashtag(tag)}
-                    >
-                      {tag}
-                    </span>
-                  ))}
                 </div>
 
                 <button

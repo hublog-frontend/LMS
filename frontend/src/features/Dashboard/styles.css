@@ -203,8 +203,8 @@
 }
 
 .linkedin_post_button {
-  width: 220px;
-  height: 48px;
+  width: 180px;
+  height: 42px;
   background-color: #2160ad;
   color: white;
   border: none;
@@ -213,4 +213,5 @@
   font-weight: 500 !important;
   cursor: pointer;
   transition: background-color 0.2s;
+  margin-top: 20px;
 }

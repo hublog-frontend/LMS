@@ -183,10 +183,7 @@ export default function FavoriteCompanyQuestions() {
                     </div>
 
                     <div className="company_questions_card_tag_container">
-                      {(typeof item?.skills === "string"
-                        ? JSON.parse(item?.skills)
-                        : item?.skills || []
-                      ).map((skill, i) => {
+                      {(item?.skills || []).map((skill, i) => {
                         const tagClasses = [
                           "company_tag--java",
                           "company_tag--program",

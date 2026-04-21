@@ -62,9 +62,11 @@ export default function JobDrawer({ visible, onClose, jobData, onSuccess }) {
   });
 
   useEffect(() => {
-    setLoading(false);
-    fetchInitialData();
-  }, []);
+    if (visible) {
+      setLoading(false);
+      fetchInitialData();
+    }
+  }, [visible]);
 
   const fetchInitialData = async () => {
     try {

@@ -8,6 +8,7 @@ import { AiOutlineLock } from "react-icons/ai";
 import { FiEyeOff, FiEye } from "react-icons/fi";
 import "./styles.css";
 import { MdOutlineEmail } from "react-icons/md";
+import { BsStars } from "react-icons/bs";
 import { emailValidator, passwordValidator } from "../Common/Validation";
 import { LoginApi, updateFirebaseToken } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
@@ -152,6 +153,10 @@ export default function Login() {
           <div className="loginpage_left_content">
             <div className="loginpage_logo_container">
               <img src={Logo} className="loginpage_logo" />
+              <div className="ai-glass-badge">
+                <BsStars />
+                <span>AI Powered</span>
+              </div>
             </div>
             <h1 className="loginpage_title">
               <span style={{ color: "#ffde59" }}>Gamify</span> Learning,
