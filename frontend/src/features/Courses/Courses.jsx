@@ -100,6 +100,7 @@ export default function Courses() {
       await createCourse(payload);
       setTimeout(() => {
         CommonMessage("success", "Course Created Successfully!");
+        getCoursesData(searchValue);
         formReset();
       }, 300);
     } catch (error) {

@@ -440,7 +440,9 @@ export default function CourseVideos({
                 setClickedCourseDetails(null);
               }}
             />
-            <p className="common_heading">Problem Solving</p>
+            <p className="common_heading">
+              {clickedCourseDetails?.course_name || "-"}
+            </p>
           </div>
         </Col>
         <Col
