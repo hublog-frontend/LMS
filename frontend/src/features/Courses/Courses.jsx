@@ -193,7 +193,7 @@ export default function Courses() {
                 const [hours, minutes] = item.duration_period.split(":");
                 return (
                   <React.Fragment key={index}>
-                    <Col xs={24} sm={24} md={24} lg={8}>
+                    <Col xs={24} sm={24} md={12} lg={8}>
                       <div
                         className="courses_cards"
                         onClick={() => {

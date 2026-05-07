@@ -83,7 +83,15 @@ export default function Dashboard() {
     {
       id: 1,
       image_url: (
-        <img src={LearningBanner} className="dashboard_banner_image" />
+        <a
+          href={
+            "https://docs.google.com/forms/d/e/1FAIpQLScrpaZNLEnuddGB5vr3FyG6e_vom6ukwHJRw89ViGVfhL6YUQ/viewform?usp=publish-editor"
+          }
+          target="_blank"
+          rel="noreferrer"
+        >
+          <img src={LearningBanner} className="dashboard_banner_image" />
+        </a>
       ),
     },
     {

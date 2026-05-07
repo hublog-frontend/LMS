@@ -150,6 +150,7 @@ export default function TestTopics() {
   };
 
   const formReset = () => {
+    setEditTestId(null);
     setIsOpenAddTestModal(false);
     setTestName("");
     setTestNameError("");

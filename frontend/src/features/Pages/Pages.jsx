@@ -278,7 +278,10 @@ export default function Pages() {
 
           <div style={{ display: "flex", alignItems: "center" }}>
             <img src={ActeLogo} alt="Logo" height={32} />
-            <div className="ai-glass-badge" style={{ marginLeft: "10px" }}>
+            <div
+              className="ai-glass-badge"
+              style={{ marginLeft: "10px", height: "30px" }}
+            >
               <BsStars />
               <span>AI Powered</span>
             </div>

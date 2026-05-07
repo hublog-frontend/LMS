@@ -280,7 +280,10 @@ export default function Tests() {
                       <button
                         className="tests_completedtests_viewresult_button"
                         onClick={() =>
-                          navigate(`/tests/onDemandTests/${test.topic_id}`)
+                          navigate(
+                            `/test-attempt/${test.test_name}/${test.id}`,
+                            { state: { duration: test.duration } },
+                          )
                         }
                       >
                         Start Test
