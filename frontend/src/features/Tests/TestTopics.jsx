@@ -27,6 +27,7 @@ import {
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonTable from "../Common/CommonTable";
 import EllipsisTooltip from "../Common/EllipsisTooltip";
+import CommonAntdMultiSelect from "../Common/CommonAntMultiSelect";
 
 export default function TestTopics() {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ export default function TestTopics() {
     totalPages: 0,
   });
   const [categoriesData, setCategoriesData] = useState([]);
-  const [categoryIdFilter, setCategoryIdFilter] = useState(null);
+  const [categoryIdFilter, setCategoryIdFilter] = useState([]);
   const [questionTypeFilter, setQuestionTypeFilter] = useState(null);
   const [selectedHistoryTestId, setSelectedHistoryTestId] = useState(null);
 
@@ -163,7 +164,7 @@ export default function TestTopics() {
   const handleOpenMapDrawer = (test) => {
     setMappingTestId(test.id);
     setIsOpenMapQuestionDrawer(true);
-    setCategoryIdFilter(null);
+    setCategoryIdFilter([]);
     setQuestionTypeFilter(null);
 
     // Parse comma-separated question_ids already available in the test object from getTests API
@@ -528,15 +529,16 @@ export default function TestTopics() {
       >
         <Row gutter={16} style={{ marginBottom: "16px" }}>
           <Col span={7}>
-            <CommonSelectField
+            <CommonAntdMultiSelect
               label="Category"
               isFilterField={true}
               options={categoriesData}
-              onChange={(e) => {
-                setCategoryIdFilter(e.target.value);
-                getAllQuestions(1, 10, e.target.value, questionTypeFilter);
+              onChange={(values) => {
+                setCategoryIdFilter(values);
+                getAllQuestions(1, 10, values, questionTypeFilter);
               }}
               value={categoryIdFilter}
+              placeholder="Select Categories"
             />
           </Col>
           <Col span={7}>
@@ -562,9 +564,19 @@ export default function TestTopics() {
           checkBox="true"
           size={"small"}
           selectedRowKeys={selectedQuestionIds}
-          selectedDatas={(rows) => {
-            setSelectedQuestions(rows);
-            setSelectedQuestionIds(rows.map((r) => r.id));
+          selectedDatas={(rows, keys) => {
+            setSelectedQuestionIds(keys);
+            setSelectedQuestions((prev) => {
+              const safePrev = prev ? prev.filter(Boolean) : [];
+              const safeRows = rows ? rows.filter(Boolean) : [];
+              const currentPageIds = allQuestions
+                .map((q) => q?.id || q?.question_id)
+                .filter(Boolean);
+              const otherPagesSelected = safePrev.filter(
+                (q) => !currentPageIds.includes(q?.id || q?.question_id),
+              );
+              return [...otherPagesSelected, ...safeRows];
+            });
           }}
           onPaginationChange={({ page, limit }) =>
             getAllQuestions(page, limit, categoryIdFilter, questionTypeFilter)

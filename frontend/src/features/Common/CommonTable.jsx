@@ -106,9 +106,10 @@ const CommonTable = ({
       ? null
       : {
           selectedRowKeys,
+          preserveSelectedRowKeys: true,
           onChange: (selectedKeys, selectedRows) => {
             if (selectedDatas) {
-              selectedDatas(selectedRows);
+              selectedDatas(selectedRows, selectedKeys);
             }
           },
         };

@@ -695,11 +695,18 @@ const TestModel = {
       let queryParams = [];
       let countQueryParams = [];
 
-      if (category_id) {
-        query += ` AND q.category_id = ?`;
-        countQuery += ` AND q.category_id = ?`;
-        queryParams.push(category_id);
-        countQueryParams.push(category_id);
+      if (category_id && (Array.isArray(category_id) ? category_id.length > 0 : true)) {
+        if (Array.isArray(category_id)) {
+          query += ` AND q.category_id IN (?)`;
+          countQuery += ` AND q.category_id IN (?)`;
+          queryParams.push(category_id);
+          countQueryParams.push(category_id);
+        } else {
+          query += ` AND q.category_id = ?`;
+          countQuery += ` AND q.category_id = ?`;
+          queryParams.push(category_id);
+          countQueryParams.push(category_id);
+        }
       }
 
       if (question_type) {

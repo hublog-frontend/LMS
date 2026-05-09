@@ -15,6 +15,7 @@ export default function CommonAntdMultiSelect({
   placeholder,
   allSelectLabel = "All",
   mode = "multiple",
+  isFilterField = false,
 }) {
   const isTagMode = mode === "tags";
 
@@ -91,7 +92,11 @@ export default function CommonAntdMultiSelect({
 
       <Select
         className={`${
-          !error ? "common_antd_inputfield" : "common_antd_error_inputfield"
+          isFilterField
+            ? "common_filter_antd_inputfield common_filter_multiselect"
+            : !error
+              ? "common_antd_inputfield"
+              : "common_antd_error_inputfield"
         } commonMultiselectfield`}
         style={{ width: "100%" }}
         suffixIcon={<IoCaretDownSharp color="rgba(0,0,0,0.54)" />}
