@@ -6,6 +6,7 @@ import viteLogo from "/vite.svg";
 import "./App.css";
 import Pages from "./features/Pages/Pages";
 import { reduxStore } from "./features/Redux/Store";
+import VersionCheckerManual from "./features/Common/VersionCheckerManual";
 
 function App() {
   // Disable logs in production
@@ -13,14 +14,14 @@ function App() {
     console.log = () => {};
     console.debug = () => {};
     console.info = () => {};
-    console.warn = () => {};
-    console.error = () => {};
+    // Keep error and warn for debugging
   }
 
   return (
     <>
       <Provider store={reduxStore}>
         <BrowserRouter>
+          <VersionCheckerManual />
           <Pages />
         </BrowserRouter>
       </Provider>

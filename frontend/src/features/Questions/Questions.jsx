@@ -28,7 +28,11 @@ import CommonInputField from "../Common/CommonInputField";
 import CommonSelectField from "../Common/CommonSelectField";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonAntdMultiSelect from "../Common/CommonAntMultiSelect";
-import { addressValidator, selectValidator, isAdmin } from "../Common/Validation";
+import {
+  addressValidator,
+  selectValidator,
+  isAdmin,
+} from "../Common/Validation";
 import {
   createCategory,
   createQuestion,
