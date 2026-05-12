@@ -1,6 +1,7 @@
 import React from "react";
 import { Select } from "antd";
 import "./commonstyles.css";
+import EllipsisTooltip from "./EllipsisTooltip";
 
 export default function CommonSelectField({
   label,
@@ -53,13 +54,21 @@ export default function CommonSelectField({
   };
 
   // ✅ convert to AntD options format
-  const mappedOptions = options.map((opt) => ({
-    value: opt.id,
-    label: renderOption ? renderOption(opt) : getLabel(opt),
-    disabled: opt.is_active === false,
-    group: groupBy ? groupBy(opt) : null,
-    raw: opt,
-  }));
+  const mappedOptions = options.map((opt) => {
+    const lbl = getLabel(opt);
+    return {
+      value: opt.id,
+      label: renderOption ? (
+        renderOption(opt)
+      ) : (
+        <EllipsisTooltip text={lbl || "-"} />
+      ),
+      filterLabel: lbl,
+      disabled: opt.is_active === false,
+      group: groupBy ? groupBy(opt) : null,
+      raw: opt,
+    };
+  });
 
   // ✅ group support
   const groupedOptions = groupBy
@@ -103,7 +112,7 @@ export default function CommonSelectField({
         }
         onFocus={onFocus}
         onBlur={onBlur}
-        optionFilterProp="label"
+        optionFilterProp="filterLabel"
         style={{
           width: "100%",
           fontWeight: 300,

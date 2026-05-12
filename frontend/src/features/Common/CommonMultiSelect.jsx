@@ -7,6 +7,7 @@ import TextField from "@mui/material/TextField";
 import "./commonstyles.css";
 import { Chip } from "@mui/material";
 import { Checkbox } from "antd";
+import EllipsisTooltip from "./EllipsisTooltip";
 
 export default function CommonMultiSelect({
   label,
@@ -180,9 +181,9 @@ export default function CommonMultiSelect({
                 size="small"
                 style={{ marginRight: 8 }}
               />
-              <span style={{ fontSize: optionsFontSize || "13px" }}>
-                {getLabel(option)}
-              </span>
+              <div style={{ flex: 1, overflow: "hidden" }}>
+                <EllipsisTooltip text={getLabel(option)} />
+              </div>
             </li>
           )}
         />

@@ -2,6 +2,7 @@ import React from "react";
 import { Select, Checkbox } from "antd";
 import "./commonstyles.css";
 import { IoCaretDownSharp } from "react-icons/io5";
+import EllipsisTooltip from "./EllipsisTooltip";
 
 export default function CommonAntdMultiSelect({
   options = [],
@@ -59,6 +60,7 @@ export default function CommonAntdMultiSelect({
               </div>
             ),
             value: "all",
+            filterLabel: allSelectLabel,
           },
         ]
       : []),
@@ -69,15 +71,25 @@ export default function CommonAntdMultiSelect({
 
       return {
         label: (
-          <div style={{ display: "flex", alignItems: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              width: "100%",
+              overflow: "hidden",
+            }}
+          >
             <Checkbox
               checked={value.includes(val)}
               style={{ marginRight: 8 }}
             />
-            {lbl}
+            <div style={{ flex: 1, overflow: "hidden" }}>
+              <EllipsisTooltip text={lbl} />
+            </div>
           </div>
         ),
         value: val,
+        filterLabel: lbl,
       };
     }),
   ];
@@ -110,10 +122,12 @@ export default function CommonAntdMultiSelect({
         onChange={handleChange}
         status={error ? "error" : ""}
         options={selectOptions} // ✅ new API
-        optionFilterProp="label"
+        optionFilterProp="filterLabel"
         maxTagCount="responsive"
         filterOption={(input, option) =>
-          String(option?.label).toLowerCase().includes(input.toLowerCase())
+          String(option?.filterLabel || "")
+            .toLowerCase()
+            .includes(input.toLowerCase())
         }
         open={mode === "tags" ? false : undefined} // optional
       />

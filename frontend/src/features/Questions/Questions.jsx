@@ -895,8 +895,18 @@ export default function Questions() {
             isFilterField={true}
             options={categoriesData}
             renderOption={(opt) => (
-              <div className="category-option-wrapper">
-                <span>{opt.name}</span>
+              <div
+                className="category-option-wrapper"
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  overflow: "hidden",
+                }}
+              >
+                <div style={{ flex: 1, overflow: "hidden" }}>
+                  <EllipsisTooltip text={opt.name} />
+                </div>
                 {isAdmin() && (
                   <div className="category-option-actions">
                     <div
