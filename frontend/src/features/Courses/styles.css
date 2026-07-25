@@ -149,6 +149,7 @@
 .courses_iframevideos {
   border-radius: 12px;
   width: 100%;
+  aspect-ratio: 16 / 9;
   /* height: 400px; */
   margin-bottom: 20px;
 }
@@ -279,6 +280,7 @@
 .coursevideos_delete_icon {
   opacity: 0;
   transition: all 0.3s ease;
+  color: #f5222d !important;
   visibility: hidden;
 }
 .coursevideos_accordion_content_container:hover .coursevideos_delete_icon {

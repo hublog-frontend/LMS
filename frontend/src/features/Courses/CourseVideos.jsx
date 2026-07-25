@@ -43,6 +43,7 @@ import {
 import CommonNodataFound from "../Common/CommonNoDataFound";
 import { CgPlayStopO } from "react-icons/cg";
 import { DeleteOutlined } from "@ant-design/icons";
+import { BsPlayCircle } from "react-icons/bs";
 
 const { Dragger } = Upload;
 
@@ -482,14 +483,13 @@ export default function CourseVideos({
                 allowFullScreen
                 allow="autoplay; encrypted-media"
                 className="courses_iframevideos"
-                style={{ height: "400px" }}
               ></iframe>
             ) : activeVideo.content_type === "google_drive" ? (
               <div
                 style={{
                   position: "relative",
                   overflow: "hidden",
-                  height: "400px",
+                  aspectRatio: "16/9",
                   width: "100%",
                   borderRadius: "8px",
                   border: "1px solid #eaecf0",
@@ -535,7 +535,7 @@ export default function CourseVideos({
                 alignItems: "center",
                 backgroundColor: "#f9fafb",
                 border: "1px solid #eaecf0",
-                height: "400px",
+                aspectRatio: "16/9",
               }}
             >
               <CommonNodataFound message="No videos found" />
@@ -780,6 +780,22 @@ export default function CourseVideos({
                                           }}
                                         />
                                       )}
+
+                                      {isAdmin() && (
+                                        <DeleteOutlined
+                                          size={20}
+                                          className="coursevideos_delete_icon"
+                                          color="#f5222d"
+                                          style={{
+                                            flexShrink: 0,
+                                            cursor: "pointer",
+                                          }}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteVideo(lesson);
+                                          }}
+                                        />
+                                      )}
                                     </p>
                                     <p className="coursevideos_videotiming">
                                       {getMinutes(lesson.duration)}
@@ -796,23 +812,8 @@ export default function CourseVideos({
                                     }}
                                     className="delete-btn"
                                   >
-                                    {isAdmin() && (
-                                      <DeleteOutlined
-                                        size={20}
-                                        className="coursevideos_delete_icon"
-                                        color="#f5222d"
-                                        style={{
-                                          flexShrink: 0,
-                                          cursor: "pointer",
-                                        }}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleDeleteVideo(lesson);
-                                        }}
-                                      />
-                                    )}
                                     {activeVideo?.id === lesson.id ? (
-                                      <CgPlayStopO size={22} color="#2160ad" />
+                                      <BsPlayCircle size={22} color="#2160ad" />
                                     ) : (
                                       <RiCheckboxCircleFill
                                         size={20}
