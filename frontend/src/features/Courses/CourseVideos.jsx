@@ -84,6 +84,12 @@ export default function CourseVideos({
   const [moduleVideosLoadingMap, setModuleVideosLoadingMap] = useState({});
   const [activeVideo, setActiveVideo] = useState(null);
 
+  // delete video modal states
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [videoToDelete, setVideoToDelete] = useState(null);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
+  const [deleteVideoLoading, setDeleteVideoLoading] = useState(false);
+
   const loginUserDetails = JSON.parse(localStorage.getItem("loginUserDetails"));
   const loginUserId = loginUserDetails?.id;
   const [hours, minutes] = clickedCourseDetails.duration_period.split(":");
@@ -286,27 +292,30 @@ export default function CourseVideos({
   };
 
   const handleDeleteVideo = (lesson) => {
-    Modal.confirm({
-      title: "Delete Video",
-      content: `Are you sure you want to delete "${lesson.title}"?`,
-      okText: "Yes, Delete",
-      okType: "danger",
-      cancelText: "No",
-      onOk: async () => {
-        try {
-          const filename =
-            lesson.content_type === "video" ? lesson.filename : null;
-          await deleteCourseVideo({ id: lesson.id, filename });
-          setTimeout(() => {
-            CommonMessage("success", "Video Deleted Successfully!");
-            getModuleVideos(lesson.module_id);
-            getCoursesData();
-          }, 300);
-        } catch (error) {
-          CommonMessage("error", "Failed to delete video");
-        }
-      },
-    });
+    setVideoToDelete(lesson);
+    setDeleteConfirmationText("");
+    setIsDeleteModalVisible(true);
+  };
+
+  const confirmDeleteVideo = async () => {
+    if (!videoToDelete) return;
+    setDeleteVideoLoading(true);
+    try {
+      const filename =
+        videoToDelete.content_type === "video" ? videoToDelete.filename : null;
+      await deleteCourseVideo({ id: videoToDelete.id, filename });
+      setTimeout(() => {
+        CommonMessage("success", "Video Deleted Successfully!");
+        getModuleVideos(videoToDelete.module_id);
+        getCoursesData();
+        setIsDeleteModalVisible(false);
+        setVideoToDelete(null);
+        setDeleteVideoLoading(false);
+      }, 300);
+    } catch (error) {
+      setDeleteVideoLoading(false);
+      CommonMessage("error", "Failed to delete video");
+    }
   };
 
   const getModuleVideos = async (id) => {
@@ -1053,6 +1062,52 @@ export default function CourseVideos({
           </div>
         </div>
       </Drawer>
+
+      <Modal
+        title="Delete Video"
+        open={isDeleteModalVisible}
+        onCancel={() => {
+          setIsDeleteModalVisible(false);
+          setVideoToDelete(null);
+        }}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => {
+              setIsDeleteModalVisible(false);
+              setVideoToDelete(null);
+            }}
+          >
+            Cancel
+          </Button>,
+          <Button
+            key="delete"
+            type="primary"
+            danger
+            loading={deleteVideoLoading}
+            disabled={deleteConfirmationText !== "Delete"}
+            onClick={confirmDeleteVideo}
+          >
+            Yes, Delete
+          </Button>,
+        ]}
+      >
+        <div style={{ marginTop: "20px" }}>
+          <p>
+            Are you sure you want to delete "<b>{videoToDelete?.title}</b>"?
+          </p>
+          <p style={{ marginTop: "16px" }}>
+            Please type <b>Delete</b> to confirm.
+          </p>
+          <div style={{ marginTop: "6px" }}>
+            <CommonInputField
+              onChange={(e) => setDeleteConfirmationText(e.target.value)}
+              value={deleteConfirmationText}
+              placeholder="Type Delete"
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
