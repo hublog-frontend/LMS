@@ -416,7 +416,9 @@ const Students = () => {
     } catch (error) {
       CommonMessage(
         "error",
-        error.response?.data?.message || "Error while adding user",
+        error.response?.data?.details ||
+          error.response?.data?.message ||
+          "Error while adding user",
       );
       console.log(error);
     } finally {
