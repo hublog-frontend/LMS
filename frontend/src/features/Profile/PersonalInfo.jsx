@@ -42,8 +42,8 @@ import { skillsOptions, stateList } from "../Common/CommonArrays";
 import CommonTextArea from "../Common/CommonTextArea";
 import CommonSpinner from "../Common/CommonSpinner";
 
-// Use local public worker to avoid any Vite bundling issues
-pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.mjs`;
+// Use unpkg CDN to completely bypass Vite bundler for the worker
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const { Dragger } = Upload;
 

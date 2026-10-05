@@ -13,8 +13,8 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import "./commonstyles.css";
 
-// Use local public worker to avoid any Vite bundling issues
-pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.mjs`;
+// Use unpkg CDN to completely bypass Vite bundler for the worker
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export default function CommonPdfViewer({
   open,
@@ -46,7 +46,9 @@ export default function CommonPdfViewer({
     if (open && isFullScreen) {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch((err) => {
-          console.error(`Error attempting to enable full-screen: ${err.message}`);
+          console.error(
+            `Error attempting to enable full-screen: ${err.message}`,
+          );
         });
       }
     }
@@ -77,10 +79,13 @@ export default function CommonPdfViewer({
   const zoomOut = () => setScale(Math.max(scale - 0.2, 0.5));
 
   const pdfFile = React.useMemo(() => ({ url: pdfUrl }), [pdfUrl]);
-  const pdfOptions = React.useMemo(() => ({
-    cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
-    cMapPacked: true,
-  }), []);
+  const pdfOptions = React.useMemo(
+    () => ({
+      cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
+      cMapPacked: true,
+    }),
+    [],
+  );
 
   if (isFullScreen) {
     if (!open) return null;
@@ -95,7 +100,12 @@ export default function CommonPdfViewer({
                 options={pdfOptions}
                 onLoadSuccess={onDocumentLoadSuccess}
                 loading={<div className="pdf-loading">Loading Document...</div>}
-                error={<div className="pdf-loading" style={{color: 'red'}}>Failed to load PDF document. Please check the network connection.</div>}
+                error={
+                  <div className="pdf-loading" style={{ color: "red" }}>
+                    Failed to load PDF document. Please check the network
+                    connection.
+                  </div>
+                }
               >
                 <Page
                   pageNumber={pageNumber}
@@ -132,9 +142,18 @@ export default function CommonPdfViewer({
                 </button>
               </div>
             </div>
-            
+
             {/* Fix: Added close button to exit fullscreen if PDF fails */}
-            <button className="pdf-full-close-btn" onClick={onClose} style={{position: 'absolute', top: '20px', right: '20px', zIndex: 1000}}>
+            <button
+              className="pdf-full-close-btn"
+              onClick={onClose}
+              style={{
+                position: "absolute",
+                top: "20px",
+                right: "20px",
+                zIndex: 1000,
+              }}
+            >
               <MdClose size={24} />
             </button>
           </div>
@@ -142,7 +161,6 @@ export default function CommonPdfViewer({
       </ErrorBoundary>
     );
   }
-
 
   return (
     <Modal

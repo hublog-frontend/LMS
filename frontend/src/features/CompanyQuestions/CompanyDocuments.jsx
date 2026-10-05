@@ -12,8 +12,8 @@ import { addBookmark, removeBookmark } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
 import { formatToBackendIST } from "../Common/Validation";
 
-// Use local public worker to avoid any Vite bundling issues
-pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.mjs`;
+// Use unpkg CDN to completely bypass Vite bundler for the worker
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export default function CompanyDocuments() {
   const navigate = useNavigate();
