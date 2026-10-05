@@ -20,7 +20,11 @@ import { LuClock4 } from "react-icons/lu";
 import { FiBookmark } from "react-icons/fi";
 import { FaBookmark } from "react-icons/fa6";
 import { IoCheckmarkSharp } from "react-icons/io5";
-import { addressValidator, formatToBackendIST, isAdmin } from "../Common/Validation";
+import {
+  addressValidator,
+  formatToBackendIST,
+  isAdmin,
+} from "../Common/Validation";
 import CommonSpinner from "../Common/CommonSpinner";
 import CommonInputField from "../Common/CommonInputField";
 import {
@@ -423,7 +427,7 @@ export default function ParticularAssignments() {
           user_id: loginUserId,
           category_type: "Question",
           key_column: question.mq_id,
-          created_date: new Date(),
+          created_date: formatToBackendIST(new Date()),
         };
         await addBookmark(payload);
         CommonMessage("success", "Bookmark added!");

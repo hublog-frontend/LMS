@@ -8,15 +8,13 @@ import {
   MdZoomIn,
   MdZoomOut,
 } from "react-icons/md";
+import { ErrorBoundary } from "./ErrorBoundary";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import "./commonstyles.css";
 
-// Use CDN worker for maximum compatibility across environments
-const PDF_WORKER_URL = `https://unpkg.com/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs`;
-
-// Set up the worker for react-pdf
-pdfjs.GlobalWorkerOptions.workerSrc = PDF_WORKER_URL;
+// Use local public worker to avoid any Vite bundling issues
+pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.mjs`;
 
 export default function CommonPdfViewer({
   open,
@@ -78,62 +76,70 @@ export default function CommonPdfViewer({
   const zoomIn = () => setScale(scale + 0.2);
   const zoomOut = () => setScale(Math.max(scale - 0.2, 0.5));
 
+  const pdfFile = React.useMemo(() => ({ url: pdfUrl }), [pdfUrl]);
+  const pdfOptions = React.useMemo(() => ({
+    cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
+    cMapPacked: true,
+  }), []);
+
   if (isFullScreen) {
     if (!open) return null;
     return (
-      <div className="pdf-full-page-viewer-overlay">
-        <div className="pdf-full-screen-container">
-          {/* PDF Content Area */}
-          <div className="pdf-scrollable-area">
-            <Document
-              file={{
-                url: pdfUrl,
-              }}
-              options={{
-                workerSrc: PDF_WORKER_URL,
-                cMapUrl: `https://unpkg.com/pdfjs-dist@5.4.296/cmaps/`,
-                cMapPacked: true,
-              }}
-              onLoadSuccess={onDocumentLoadSuccess}
-              loading={<div className="pdf-loading">Loading Document...</div>}
-            >
-              <Page
-                pageNumber={pageNumber}
-                scale={scale}
-                renderTextLayer={true}
-                renderAnnotationLayer={true}
-              />
-            </Document>
-          </div>
-
-          {/* Footer Navigation */}
-          <div className="pdf-full-footer">
-            <div className="pdf-footer-left">
-              <button
-                className="pdf-side-nav-btn"
-                disabled={pageNumber <= 1}
-                onClick={previousPage}
+      <ErrorBoundary>
+        <div className="pdf-full-page-viewer-overlay">
+          <div className="pdf-full-screen-container">
+            {/* PDF Content Area */}
+            <div className="pdf-scrollable-area">
+              <Document
+                file={pdfFile}
+                options={pdfOptions}
+                onLoadSuccess={onDocumentLoadSuccess}
+                loading={<div className="pdf-loading">Loading Document...</div>}
+                error={<div className="pdf-loading" style={{color: 'red'}}>Failed to load PDF document. Please check the network connection.</div>}
               >
-                <MdNavigateBefore size={24} /> Prev
-              </button>
+                <Page
+                  pageNumber={pageNumber}
+                  scale={scale}
+                  renderTextLayer={true}
+                  renderAnnotationLayer={true}
+                />
+              </Document>
             </div>
 
-            <div className="pdf-footer-center">
-              <span className="pdf-page-indicator">- {pageNumber} -</span>
-            </div>
+            {/* Footer Navigation */}
+            <div className="pdf-full-footer">
+              <div className="pdf-footer-left">
+                <button
+                  className="pdf-side-nav-btn"
+                  disabled={pageNumber <= 1}
+                  onClick={previousPage}
+                >
+                  <MdNavigateBefore size={24} /> Prev
+                </button>
+              </div>
 
-            <div className="pdf-footer-right">
-              <button
-                className="pdf-side-nav-btn"
-                disabled={pageNumber >= numPages}
-                onClick={nextPage}
-              >
-                Next <MdNavigateNext size={24} />
-              </button>
+              <div className="pdf-footer-center">
+                <span className="pdf-page-indicator">- {pageNumber} -</span>
+              </div>
+
+              <div className="pdf-footer-right">
+                <button
+                  className="pdf-side-nav-btn"
+                  disabled={pageNumber >= numPages}
+                  onClick={nextPage}
+                >
+                  Next <MdNavigateNext size={24} />
+                </button>
+              </div>
             </div>
+            
+            {/* Fix: Added close button to exit fullscreen if PDF fails */}
+            <button className="pdf-full-close-btn" onClick={onClose} style={{position: 'absolute', top: '20px', right: '20px', zIndex: 1000}}>
+              <MdClose size={24} />
+            </button>
           </div>
         </div>
-      </div>
+      </ErrorBoundary>
     );
   }
 
@@ -169,14 +175,8 @@ export default function CommonPdfViewer({
 
       <div className="pdf-document-container">
         <Document
-          file={{
-            url: pdfUrl,
-          }}
-          options={{
-            workerSrc: PDF_WORKER_URL,
-            cMapUrl: `https://unpkg.com/pdfjs-dist@5.4.624/cmaps/`,
-            cMapPacked: true,
-          }}
+          file={pdfFile}
+          options={pdfOptions}
           onLoadSuccess={onDocumentLoadSuccess}
           loading={<div className="pdf-loading">Loading PDF...</div>}
         >

@@ -66,9 +66,8 @@ import CommonSpinner from "../Common/CommonSpinner";
 import CommonSelectField from "../Common/CommonSelectField";
 import { IoMdInformationCircleOutline } from "react-icons/io";
 
-// Use CDN worker for maximum compatibility
-const PDF_WORKER_URL = `https://unpkg.com/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs`;
-pdfjs.GlobalWorkerOptions.workerSrc = PDF_WORKER_URL;
+// Use local public worker to avoid any Vite bundling issues
+pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.mjs`;
 
 const Students = () => {
   const [users, setUsers] = useState([]);

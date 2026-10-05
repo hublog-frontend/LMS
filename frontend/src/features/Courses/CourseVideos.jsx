@@ -21,6 +21,7 @@ import {
   selectValidator,
   youtubeLinkValidator,
   isAdmin,
+  formatToBackendIST,
 } from "../Common/Validation";
 import {
   createModule,
@@ -379,7 +380,7 @@ export default function CourseVideos({
           user_id: loginUserId,
           category_type: "Video",
           key_column: lesson.id,
-          created_date: new Date(),
+          created_date: formatToBackendIST(new Date()),
         };
         await addBookmark(payload);
         CommonMessage("success", "Bookmark added!");

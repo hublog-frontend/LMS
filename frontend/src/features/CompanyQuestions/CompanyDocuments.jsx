@@ -10,10 +10,10 @@ import PdfIcon from "../../assets/pdf_icon.png";
 import CommonPdfViewer from "../Common/CommonPdfViewer";
 import { addBookmark, removeBookmark } from "../ApiService/action";
 import { CommonMessage } from "../Common/CommonMessage";
+import { formatToBackendIST } from "../Common/Validation";
 
-// Use the same worker version established in the viewer
-const PDF_WORKER_URL = `https://unpkg.com/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs`;
-pdfjs.GlobalWorkerOptions.workerSrc = PDF_WORKER_URL;
+// Use local public worker to avoid any Vite bundling issues
+pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.mjs`;
 
 export default function CompanyDocuments() {
   const navigate = useNavigate();
@@ -22,7 +22,13 @@ export default function CompanyDocuments() {
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [currentPdf, setCurrentPdf] = useState({ url: "", title: "" });
   const [pageCounts, setPageCounts] = useState({});
-  const loginUserDetails = JSON.parse(localStorage.getItem("loginUserDetails"));
+  let loginUserDetails = null;
+  try {
+    const stored = localStorage.getItem("loginUserDetails");
+    loginUserDetails = stored && stored !== "undefined" ? JSON.parse(stored) : null;
+  } catch (e) {
+    console.error("Failed to parse loginUserDetails", e);
+  }
   const loginUserId = loginUserDetails?.id;
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -44,7 +50,6 @@ export default function CompanyDocuments() {
     try {
       const loadingTask = pdfjs.getDocument({
         url: `${API_URL}${item.file_path}`,
-        workerSrc: PDF_WORKER_URL,
       });
       const pdf = await loadingTask.promise;
       setPageCounts((prev) => ({
@@ -79,7 +84,7 @@ export default function CompanyDocuments() {
           user_id: loginUserId,
           category_type: "Lecture",
           key_column: item.id,
-          created_date: new Date(),
+          created_date: formatToBackendIST(new Date()),
         };
         await addBookmark(payload);
         CommonMessage("success", "Bookmark added!");
